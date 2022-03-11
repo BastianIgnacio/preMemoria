@@ -3,7 +3,6 @@
 import React, { useState } from 'react';
 import { Row } from 'reactstrap';
 import Select from 'react-select';
-import IntlMessages from '../../helpers/IntlMessages';
 import CustomSelectInput from '../../components/common/CustomSelectInput';
 import { Colxx } from '../../components/common/CustomBootstrap';
 
@@ -13,16 +12,12 @@ const selectData = [
   { label: 'Region de Ohiggins', value: 'ohiggins', key: 2 },
 ];
 
-const ReactSelectExample = () => {
+const ReactSelectRegiones = () => {
   const [selectedOption, setSelectedOption] = useState('');
-  const [selectedOptions, setSelectedOptions] = useState([]);
 
   return (
     <Row>
-      <Colxx xxs="12" md="6" className="mb-5">
-        <label>
-          <IntlMessages id="form-components.state-single" />
-        </label>
+      <Colxx xxs="12" md="12">
         <Select
           components={{ Input: CustomSelectInput }}
           className="react-select"
@@ -33,22 +28,7 @@ const ReactSelectExample = () => {
           options={selectData}
         />
       </Colxx>
-      <Colxx xxs="12" md="6">
-        <label>
-          <IntlMessages id="form-components.state-multiple" />
-        </label>
-        <Select
-          components={{ Input: CustomSelectInput }}
-          className="react-select"
-          classNamePrefix="react-select"
-          isMulti
-          name="form-field-name"
-          value={selectedOptions}
-          onChange={setSelectedOptions}
-          options={selectData}
-        />
-      </Colxx>
     </Row>
   );
 };
-export default ReactSelectExample;
+export default ReactSelectRegiones;

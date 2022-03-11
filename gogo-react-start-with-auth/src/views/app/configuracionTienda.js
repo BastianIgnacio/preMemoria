@@ -1,8 +1,19 @@
 import React from 'react';
-import { Row, Card, CardBody, FormGroup, Label, Button } from 'reactstrap';
+import {
+  Row,
+  Card,
+  CardBody,
+  FormGroup,
+  Label,
+  Button,
+  InputGroup,
+  CustomInput,
+  InputGroupAddon,
+} from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
 import { Colxx, Separator } from '../../components/common/CustomBootstrap';
 import Breadcrumb from '../../containers/navs/Breadcrumb';
+import ReactSelectRegiones from './reactSelectRegiones';
 
 const ConfiguracionTienda = ({ match }) => {
   const onSubmit = (values) => {
@@ -32,7 +43,7 @@ const ConfiguracionTienda = ({ match }) => {
               nombreTienda: 'Tiendita 1',
               direccionTienda: '3',
               region: '3',
-              comuna: 'Talca',
+              localidadComunaCiudad: 'Talca',
               linkPersonalizado: 'link',
             }}
             onSubmit={onSubmit}
@@ -51,6 +62,70 @@ const ConfiguracionTienda = ({ match }) => {
                       {errors.name}
                     </div>
                   )}
+                </FormGroup>
+                <FormGroup>
+                  <Label>Direccion de la tienda</Label>
+                  <Field
+                    className="form-control"
+                    name="direccionTienda"
+                    validate={validateName}
+                  />
+                  {errors.name && touched.name && (
+                    <div className="invalid-feedback d-block">
+                      {errors.name}
+                    </div>
+                  )}
+                </FormGroup>
+                <FormGroup>
+                  <Label>Region</Label>
+                  <ReactSelectRegiones
+                    className="form-control"
+                    classNamePrefix="asd"
+                    name="region"
+                    validate={validateName}
+                  />
+                  {errors.name && touched.name && (
+                    <div className="invalid-feedback d-block">
+                      {errors.name}
+                    </div>
+                  )}
+                </FormGroup>
+                <FormGroup>
+                  <Label>Localidad / Comuna / Ciudad</Label>
+                  <Field
+                    className="form-control"
+                    name="localidadComunaCiudad"
+                    validate={validateName}
+                  />
+                  {errors.name && touched.name && (
+                    <div className="invalid-feedback d-block">
+                      {errors.name}
+                    </div>
+                  )}
+                </FormGroup>
+                <FormGroup>
+                  <Label>Link Personalizado</Label>
+                  <Field
+                    className="form-control"
+                    name="linkPersonalizado"
+                    validate={validateName}
+                  />
+                  {errors.name && touched.name && (
+                    <div className="invalid-feedback d-block">
+                      {errors.name}
+                    </div>
+                  )}
+                </FormGroup>
+                <FormGroup>
+                  <Label>Link Personalizado</Label>
+                  <InputGroup className="mb-3">
+                    <CustomInput
+                      type="file"
+                      id="exampleCustomFileBrowser2"
+                      name="customFile"
+                    />
+                    <InputGroupAddon addonType="append">Upload</InputGroupAddon>
+                  </InputGroup>
                 </FormGroup>
                 <Button color="primary" type="submit">
                   Submit
