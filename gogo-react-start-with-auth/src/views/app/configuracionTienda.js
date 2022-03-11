@@ -11,9 +11,11 @@ import {
   InputGroupAddon,
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
+import { FormikSwitch } from '../../containers/form-validations/FormikFields';
 import { Colxx, Separator } from '../../components/common/CustomBootstrap';
 import Breadcrumb from '../../containers/navs/Breadcrumb';
 import ReactSelectRegiones from './reactSelectRegiones';
+import IntlMessages from '../../helpers/IntlMessages';
 
 const ConfiguracionTienda = ({ match }) => {
   const onSubmit = (values) => {
@@ -45,10 +47,11 @@ const ConfiguracionTienda = ({ match }) => {
               region: '3',
               localidadComunaCiudad: 'Talca',
               linkPersonalizado: 'link',
+              switch: false,
             }}
             onSubmit={onSubmit}
           >
-            {({ errors, touched }) => (
+            {({ errors, touched, values, setFieldValue, setFieldTouched }) => (
               <Form className="av-tooltip tooltip-label-right">
                 <FormGroup>
                   <Label>Nombre de la tienda</Label>
@@ -127,8 +130,25 @@ const ConfiguracionTienda = ({ match }) => {
                     <InputGroupAddon addonType="append">Upload</InputGroupAddon>
                   </InputGroup>
                 </FormGroup>
+                <FormGroup className="error-l-100">
+                  <Label>
+                    <IntlMessages id="Recibir ordenes con servicio de delivery" />
+                  </Label>
+                  <FormikSwitch
+                    name="switch"
+                    className="custom-switch custom-switch-primary"
+                    value={values.switch}
+                    onChange={setFieldValue}
+                    onBlur={setFieldTouched}
+                  />
+                  {errors.switch && touched.switch ? (
+                    <div className="invalid-feedback d-block">
+                      {errors.switch}
+                    </div>
+                  ) : null}
+                </FormGroup>
                 <Button color="primary" type="submit">
-                  Submit
+                  Guardar Cambios
                 </Button>
               </Form>
             )}
