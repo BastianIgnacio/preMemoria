@@ -2,44 +2,34 @@ import { adminRoot } from './defaultValues';
 
 const data = [
   {
-    id: 'gogo',
-    icon: 'iconsminds-air-balloon-1',
-    label: 'menu.gogo',
-    to: `${adminRoot}/gogo`,
-    subs: [
-      {
-        icon: 'simple-icon-paper-plane',
-        label: 'menu.start',
-        to: `${adminRoot}/gogo/start`,
-      },
-    ],
-  },
-  {
-    id: 'secondmenu',
-    icon: 'iconsminds-three-arrow-fork',
-    label: 'menu.second-menu',
-    to: `${adminRoot}/second-menu`,
-    // roles: [UserRole.Admin, UserRole.Editor],
-    subs: [
-      {
-        icon: 'simple-icon-paper-plane',
-        label: 'menu.second',
-        to: `${adminRoot}/second-menu/second`,
-      },
-    ],
-  },
-  {
-    id: 'blankpage',
+    id: 'categorias',
     icon: 'iconsminds-bucket',
-    label: 'menu.blank-page',
-    to: `${adminRoot}/blank-page`,
+    label: 'Categorias',
+    to: `${adminRoot}/categorias`,
   },
   {
-    id: 'docs',
-    icon: 'iconsminds-library',
-    label: 'menu.docs',
-    to: 'https://gogo-react-docs.coloredstrategies.com/',
-    newWindow: true,
+    id: 'productos',
+    icon: 'iconsminds-bucket',
+    label: 'Productos',
+    to: `${adminRoot}/productos`,
+  },
+  {
+    id: 'ventas',
+    icon: 'iconsminds-bucket',
+    label: 'Ventas',
+    to: `${adminRoot}/ventas`,
+  },
+  {
+    id: 'configuracionTienda',
+    icon: 'iconsminds-bucket',
+    label: 'Configuracion',
+    to: `${adminRoot}/configuracionTienda`,
+  },
+  {
+    id: 'mercadoPago',
+    icon: 'iconsminds-bucket',
+    label: 'MercadoPago',
+    to: `${adminRoot}/configuracionMercadoPago`,
   },
 ];
 export default data;

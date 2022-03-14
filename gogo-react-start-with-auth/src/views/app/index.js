@@ -8,11 +8,24 @@ import AppLayout from '../../layout/AppLayout';
 const Gogo = React.lazy(() =>
   import(/* webpackChunkName: "viwes-gogo" */ './gogo')
 );
-const SecondMenu = React.lazy(() =>
-  import(/* webpackChunkName: "viwes-second-menu" */ './second-menu')
-);
 const BlankPage = React.lazy(() =>
   import(/* webpackChunkName: "viwes-blank-page" */ './blank-page')
+);
+const Categorias = React.lazy(() =>
+  import(/* webpackChunkName: "viwes-blank-page" */ './categorias')
+);
+const Productos = React.lazy(() =>
+  import(/* webpackChunkName: "viwes-blank-page" */ './productos')
+);
+const Ventas = React.lazy(() =>
+  import(/* webpackChunkName: "viwes-blank-page" */ './ventas')
+);
+const ConfiguracionTienda = React.lazy(() =>
+  import(/* webpackChunkName: "viwes-blank-page" */ './configuracionTienda')
+);
+const ConfiguracionMercadoPago = React.lazy(() =>
+  // eslint-disable-next-line prettier/prettier
+  import(/* webpackChunkName: "viwes-blank-page" */ './configuracionMercadoPago')
 );
 
 const App = ({ match }) => {
@@ -26,10 +39,6 @@ const App = ({ match }) => {
               path={`${match.url}/gogo`}
               render={(props) => <Gogo {...props} />}
             />
-            <Route
-              path={`${match.url}/second-menu`}
-              render={(props) => <SecondMenu {...props} />}
-            />
             {/* <ProtectedRoute
                     path={`${match.url}/second-menu`}
                     component={SecondMenu}
@@ -38,6 +47,26 @@ const App = ({ match }) => {
             <Route
               path={`${match.url}/blank-page`}
               render={(props) => <BlankPage {...props} />}
+            />
+            <Route
+              path={`${match.url}/categorias`}
+              render={(props) => <Categorias {...props} />}
+            />
+            <Route
+              path={`${match.url}/productos`}
+              render={(props) => <Productos {...props} />}
+            />
+            <Route
+              path={`${match.url}/ventas`}
+              render={(props) => <Ventas {...props} />}
+            />
+            <Route
+              path={`${match.url}/configuracionTienda`}
+              render={(props) => <ConfiguracionTienda {...props} />}
+            />
+            <Route
+              path={`${match.url}/configuracionMercadoPago`}
+              render={(props) => <ConfiguracionMercadoPago {...props} />}
             />
             <Redirect to="/error" />
           </Switch>
