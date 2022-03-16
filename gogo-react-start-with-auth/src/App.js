@@ -67,7 +67,11 @@ class App extends React.Component {
                   <ProtectedRoute
                     path={adminRoot}
                     component={ViewApp}
-                    roles={[UserRole.Admin, UserRole.Editor]}
+                    // eslint-disable-next-line prettier/prettier
+                    roles={[
+                      UserRole.SuperAdmin,
+                      UserRole.AdminLocalComercial,
+                    ]}
                   />
                   <Route
                     path="/user"

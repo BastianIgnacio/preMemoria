@@ -1,16 +1,13 @@
 import React, { Suspense } from 'react';
-import { Route, withRouter, Switch, Redirect } from 'react-router-dom';
+import { withRouter, Switch, Redirect } from 'react-router-dom';
 import { connect } from 'react-redux';
 
 import AppLayout from '../../layout/AppLayout';
-// import { ProtectedRoute, UserRole } from '../../helpers/authHelper';
+// eslint-disable-next-line no-unused-vars
+import { ProtectedRoute } from '../../helpers/authHelper';
+// eslint-disable-next-line no-unused-vars
+import { UserRole } from '../../constants/defaultValues';
 
-const Gogo = React.lazy(() =>
-  import(/* webpackChunkName: "viwes-gogo" */ './gogo')
-);
-const BlankPage = React.lazy(() =>
-  import(/* webpackChunkName: "viwes-blank-page" */ './blank-page')
-);
 const Categorias = React.lazy(() =>
   import(/* webpackChunkName: "viwes-blank-page" */ './categorias')
 );
@@ -27,6 +24,14 @@ const ConfiguracionMercadoPago = React.lazy(() =>
   // eslint-disable-next-line prettier/prettier
   import(/* webpackChunkName: "viwes-blank-page" */ './configuracionMercadoPago')
 );
+const LocalesComerciales = React.lazy(() =>
+  // eslint-disable-next-line prettier/prettier
+  import(/* webpackChunkName: "viwes-blank-page" */ './localesComerciales')
+);
+const AdmsLocalesComerciales = React.lazy(() =>
+  // eslint-disable-next-line prettier/prettier
+  import(/* webpackChunkName: "viwes-blank-page" */ './admsLocalesComerciales')
+);
 
 const App = ({ match }) => {
   return (
@@ -34,39 +39,45 @@ const App = ({ match }) => {
       <div className="dashboard-wrapper">
         <Suspense fallback={<div className="loading" />}>
           <Switch>
-            <Redirect exact from={`${match.url}/`} to={`${match.url}/gogo`} />
-            <Route
-              path={`${match.url}/gogo`}
-              render={(props) => <Gogo {...props} />}
-            />
             {/* <ProtectedRoute
                     path={`${match.url}/second-menu`}
                     component={SecondMenu}
                     roles={[UserRole.Admin]}
             /> */}
-            <Route
-              path={`${match.url}/blank-page`}
-              render={(props) => <BlankPage {...props} />}
+            <ProtectedRoute
+              path={`${match.url}/localesComerciales`}
+              component={(props) => <LocalesComerciales {...props} />}
+              roles={[UserRole.SuperAdmin]}
             />
-            <Route
+            <ProtectedRoute
+              path={`${match.url}/administradoresLocalesComerciales`}
+              component={(props) => <AdmsLocalesComerciales {...props} />}
+              roles={[UserRole.SuperAdmin]}
+            />
+            <ProtectedRoute
               path={`${match.url}/categorias`}
-              render={(props) => <Categorias {...props} />}
+              component={(props) => <Categorias {...props} />}
+              roles={[UserRole.AdminLocalComercial]}
             />
-            <Route
+            <ProtectedRoute
               path={`${match.url}/productos`}
-              render={(props) => <Productos {...props} />}
+              component={(props) => <Productos {...props} />}
+              roles={[UserRole.AdminLocalComercial]}
             />
-            <Route
+            <ProtectedRoute
               path={`${match.url}/ventas`}
-              render={(props) => <Ventas {...props} />}
+              component={(props) => <Ventas {...props} />}
+              roles={[UserRole.AdminLocalComercial]}
             />
-            <Route
+            <ProtectedRoute
               path={`${match.url}/configuracionTienda`}
-              render={(props) => <ConfiguracionTienda {...props} />}
+              component={(props) => <ConfiguracionTienda {...props} />}
+              roles={[UserRole.AdminLocalComercial]}
             />
-            <Route
+            <ProtectedRoute
               path={`${match.url}/configuracionMercadoPago`}
-              render={(props) => <ConfiguracionMercadoPago {...props} />}
+              component={(props) => <ConfiguracionMercadoPago {...props} />}
+              roles={[UserRole.AdminLocalComercial]}
             />
             <Redirect to="/error" />
           </Switch>
