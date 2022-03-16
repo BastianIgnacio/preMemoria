@@ -17,9 +17,9 @@ import CustomSelectInput from '../../components/common/CustomSelectInput';
 
 const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
   const categories = [
-    { label: 'Cakes', value: 'Cakes', key: 0 },
-    { label: 'Cupcakes', value: 'Cupcakes', key: 1 },
-    { label: 'Desserts', value: 'Desserts', key: 2 },
+    { label: 'ADM1', value: 'Cakes', key: 0 },
+    { label: 'ADM2', value: 'Cupcakes', key: 1 },
+    { label: 'ADM3', value: 'Desserts', key: 2 },
   ];
   return (
     <Modal

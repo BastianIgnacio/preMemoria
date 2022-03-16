@@ -32,6 +32,10 @@ const AdmsLocalesComerciales = React.lazy(() =>
   // eslint-disable-next-line prettier/prettier
   import(/* webpackChunkName: "viwes-blank-page" */ './admsLocalesComerciales')
 );
+const BlankPage = React.lazy(() =>
+  // eslint-disable-next-line prettier/prettier
+  import(/* webpackChunkName: "viwes-blank-page" */ './blank-page')
+);
 
 const App = ({ match }) => {
   return (
@@ -78,6 +82,11 @@ const App = ({ match }) => {
               path={`${match.url}/configuracionMercadoPago`}
               component={(props) => <ConfiguracionMercadoPago {...props} />}
               roles={[UserRole.AdminLocalComercial]}
+            />
+            <ProtectedRoute
+              path={`${match.url}/`}
+              component={(props) => <BlankPage {...props} />}
+              roles={[UserRole.SuperAdmin, UserRole.AdminLocalComercial]}
             />
             <Redirect to="/error" />
           </Switch>

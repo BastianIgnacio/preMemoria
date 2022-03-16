@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { servicePath } from '../../constants/defaultValues';
 import ListPageHeading from '../../containers/pages/ListPageHeading';
-import AddNewModalProducto from '../../containers/pages/AddNewModalProducto';
+import AddNewModalAdministradorLocalComercial from '../../containers/pages/AddNewModalAdministradorLocalComercial';
 
 import ListPageListing from '../../containers/pages/ListPageListing';
 import useMousetrap from '../../hooks/use-mousetrap';
@@ -158,7 +158,7 @@ const AdmsLocalesComerciales = ({ match }) => {
     <>
       <div className="disable-text-selection">
         <ListPageHeading
-          heading="Locales Comerciales"
+          heading="Administradores de Locales Comerciales"
           displayMode={displayMode}
           changeDisplayMode={setDisplayMode}
           handleChangeSelectAll={handleChangeSelectAll}
@@ -185,7 +185,7 @@ const AdmsLocalesComerciales = ({ match }) => {
           pageSizes={pageSizes}
           toggleModal={() => setModalOpen(!modalOpen)}
         />
-        <AddNewModalProducto
+        <AddNewModalAdministradorLocalComercial
           modalOpen={modalOpen}
           toggleModal={() => setModalOpen(!modalOpen)}
           categories={categories}

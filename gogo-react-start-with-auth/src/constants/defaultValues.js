@@ -39,7 +39,7 @@ export const currentUser = {
   title: 'Saraasaah Korfgftney',
   img: '/assets/img/profiles/l-1.jpg',
   date: 'Last seen today 15:24',
-  role: UserRole.AdminLocalComercial,
+  role: UserRole.SuperAdmin,
 };
 
 export const themeColorStorageKey = '__theme_selected_color';

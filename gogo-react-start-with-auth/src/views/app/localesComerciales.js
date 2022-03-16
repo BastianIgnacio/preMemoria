@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { servicePath } from '../../constants/defaultValues';
 import ListPageHeading from '../../containers/pages/ListPageHeading';
-import AddNewModalProducto from '../../containers/pages/AddNewModalProducto';
+import AddNewModalLocalComercial from '../../containers/pages/AddNewModalLocalComercial';
 
 import ListPageListing from '../../containers/pages/ListPageListing';
 import useMousetrap from '../../hooks/use-mousetrap';
@@ -185,7 +185,7 @@ const LocalesComerciales = ({ match }) => {
           pageSizes={pageSizes}
           toggleModal={() => setModalOpen(!modalOpen)}
         />
-        <AddNewModalProducto
+        <AddNewModalLocalComercial
           modalOpen={modalOpen}
           toggleModal={() => setModalOpen(!modalOpen)}
           categories={categories}
