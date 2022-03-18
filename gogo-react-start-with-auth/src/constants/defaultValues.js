@@ -39,13 +39,13 @@ export const currentUser = {
   title: 'Saraasaah Korfgftney',
   img: '/assets/img/profiles/l-1.jpg',
   date: 'Last seen today 15:24',
-  role: UserRole.SuperAdmin,
+  role: UserRole.AdminLocalComercial,
 };
 
 export const themeColorStorageKey = '__theme_selected_color';
-export const isMultiColorActive = true;
+export const isMultiColorActive = false;
 export const defaultColor = 'light.purplemonster';
-export const isDarkSwitchActive = true;
+export const isDarkSwitchActive = false;
 export const defaultDirection = 'ltr';
 export const themeRadiusStorageKey = '__theme_radius';
 export const isAuthGuardActive = true;

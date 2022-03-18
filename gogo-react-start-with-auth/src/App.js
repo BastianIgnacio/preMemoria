@@ -35,8 +35,8 @@ const ViewError = React.lazy(() =>
 const ViewUnauthorized = React.lazy(() =>
   import(/* webpackChunkName: "views-error" */ './views/unauthorized')
 );
-const Tienda = React.lazy(() =>
-  import(/* webpackChunkName: "views-error" */ './views/app/tienda/tienda')
+const AppTienda = React.lazy(() =>
+  import(/* webpackChunkName: "views-error" */ './views/app/tienda')
 );
 
 class App extends React.Component {
@@ -77,7 +77,7 @@ class App extends React.Component {
                       UserRole.AdminLocalComercial,
                     ]}
                   />
-                  <Route path="/tienda/:id" children={<Tienda />} />
+                  <Route path="/tienda" children={<AppTienda />} />
                   <Route
                     path="/user"
                     render={(props) => <ViewUser {...props} />}

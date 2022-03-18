@@ -1,38 +1,49 @@
-import React, { useEffect } from 'react';
-import { Row, Card } from 'reactstrap';
+import React from 'react';
+import {
+  CardText,
+  Row,
+  Card,
+  CardImg,
+  CardTitle,
+  CardImgOverlay,
+} from 'reactstrap';
 import { useParams } from 'react-router-dom';
 import { Colxx } from '../../../components/common/CustomBootstrap';
 
 const Tienda = () => {
+  const categorias = [
+    { label: 'Completos', value: 'maule', key: 0 },
+    { label: 'Tecnologia', value: 'metropolitana', key: 1 },
+    { label: 'Veganos', value: 'ohiggins', key: 2 },
+  ];
+
+  const listCategorias = categorias.map((categoria) => (
+    <div key={categoria.key}>
+      <Card inverse className="mb-4">
+        <CardImg
+          src="../../../../assets/img/cards/thumb-1.jpg"
+          alt="Card image cap"
+        />
+        <CardImgOverlay>
+          <CardTitle>{categoria.label}</CardTitle>
+          <CardText>
+            This is a wider card with supporting text below as a natural
+            additional content.
+          </CardText>
+        </CardImgOverlay>
+      </Card>
+    </div>
+  ));
+
   const { id } = useParams();
-  useEffect(() => {
-    document.body.classList.add('background');
-    document.body.classList.add('no-footer');
-
-    return () => {
-      document.body.classList.remove('background');
-      document.body.classList.remove('no-footer');
-    };
-  }, []);
-
   return (
     <>
-      <div className="fixed-background" />
-      <main>
-        <div className="container">
-          <Row className="h-100">
-            <Colxx xxs="12" md="10" className="mx-auto my-auto">
-              <Card className="auth-card">
-                <div className="position-relative image-side ">
-                  <p className="text-white h2">
-                    LA TIENDA QUE ESTAMOS VISITANDO ES LA {id}
-                  </p>
-                </div>
-              </Card>
-            </Colxx>
-          </Row>
-        </div>
-      </main>
+      <Row>
+        <p>Tienda : {id}</p>
+        <Colxx xxs="12" xs="6" lg="3">
+          {listCategorias}
+        </Colxx>
+      </Row>
     </>
   );
 };
