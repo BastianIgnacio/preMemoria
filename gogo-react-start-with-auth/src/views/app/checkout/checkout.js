@@ -1,17 +1,15 @@
-/* eslint-disable no-unused-vars */
 import React from 'react';
-import { Row, Card, CardBody, Badge, Button } from 'reactstrap';
+import { Row, Card, CardBody, Badge } from 'reactstrap';
 import LinesEllipsis from 'react-lines-ellipsis';
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
 import { useParams, NavLink } from 'react-router-dom';
 import { Colxx, Separator } from '../../../components/common/CustomBootstrap';
 import { categorias } from '../../../data/categorias';
 import BreadcrumbTienda from '../../../containers/navs/BreadcrumbTienda';
-import IntlMessages from '../../../helpers/IntlMessages';
 
 const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
 
-const Tienda = (props) => {
+const CheckOut = (props) => {
   const { id } = useParams();
   const actualizarNav = () => {
     props.llamarPadre(id);
@@ -59,24 +57,17 @@ const Tienda = (props) => {
                 basedOn="words"
                 component="p"
               />
-              <Button
-                color="primary"
-                className="mb-2"
-                onClick={() => props.llamarPadre(id)}
-              >
-                <IntlMessages id="button.primary" />
-              </Button>{' '}
             </CardBody>
           </div>
         </Card>
       </Colxx>
     );
   });
-  actualizarNav();
+  actualizarNav(id);
   return (
     <Row>
       <Colxx xxs="12">
-        <BreadcrumbTienda heading="Tienda de " nombreTienda={id} />
+        <BreadcrumbTienda heading="Check out de " nombreTienda={id} />
         <Separator className="mb-5" />
       </Colxx>
       {listCategorias}
@@ -84,4 +75,4 @@ const Tienda = (props) => {
   );
 };
 
-export default Tienda;
+export default CheckOut;

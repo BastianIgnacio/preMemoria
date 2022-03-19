@@ -13,11 +13,11 @@ import {
 import { Formik, Form, Field } from 'formik';
 import { FormikSwitch } from '../../containers/form-validations/FormikFields';
 import { Colxx, Separator } from '../../components/common/CustomBootstrap';
-import Breadcrumb from '../../containers/navs/Breadcrumb';
+import BreadcrumbNoItems from '../../containers/navs/BreadcrumbNoItems';
 import ReactSelectRegiones from './reactSelectRegiones';
 import IntlMessages from '../../helpers/IntlMessages';
 
-const ConfiguracionTienda = ({ match }) => {
+const ConfiguracionTienda = () => {
   const onSubmit = (values) => {
     console.log(values);
   };
@@ -34,7 +34,7 @@ const ConfiguracionTienda = ({ match }) => {
     <>
       <Row>
         <Colxx xxs="12">
-          <Breadcrumb heading="Configuracion de tu tienda" match={match} />
+          <BreadcrumbNoItems heading="Configuracion de tu tienda" />
           <Separator className="mb-5" />
         </Colxx>
       </Row>

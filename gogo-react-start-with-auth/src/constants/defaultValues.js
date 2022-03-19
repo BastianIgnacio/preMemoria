@@ -30,6 +30,8 @@ export const firebaseConfig = {
 };
 
 export const adminRoot = '/app';
+export const carritoRoot = '/carrito';
+export const checkoutRoot = '/checkout';
 export const buyUrl = 'https://1.envato.market/k4z0';
 export const searchPath = `${adminRoot}/#`;
 export const servicePath = 'https://api.coloredstrategies.com';
@@ -43,12 +45,12 @@ export const currentUser = {
 };
 
 export const themeColorStorageKey = '__theme_selected_color';
-export const isMultiColorActive = false;
+export const isMultiColorActive = true;
 export const defaultColor = 'light.purplemonster';
 export const isDarkSwitchActive = false;
 export const defaultDirection = 'ltr';
 export const themeRadiusStorageKey = '__theme_radius';
-export const isAuthGuardActive = true;
+export const isAuthGuardActive = false;
 export const colors = [
   'bluenavy',
   'blueyale',

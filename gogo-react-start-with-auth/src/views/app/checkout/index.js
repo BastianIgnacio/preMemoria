@@ -9,9 +9,9 @@ import { ProtectedRoute } from '../../../helpers/authHelper';
 // eslint-disable-next-line no-unused-vars
 import { UserRole } from '../../../constants/defaultValues';
 
-const Tienda = React.lazy(() =>
+const CheckOut = React.lazy(() =>
   // eslint-disable-next-line prettier/prettier
-  import(/* webpackChunkName: "viwes-blank-page" */ './tienda')
+  import(/* webpackChunkName: "viwes-blank-page" */ './checkout')
 );
 
 const AppTienda = ({ match }) => {
@@ -29,7 +29,7 @@ const AppTienda = ({ match }) => {
             <Route
               path={`${match.url}/:id`}
               component={(props) => (
-                <Tienda llamarPadre={handleFunction} {...props} />
+                <CheckOut llamarPadre={handleFunction} {...props} />
               )}
             />
             <Redirect to="/error" />

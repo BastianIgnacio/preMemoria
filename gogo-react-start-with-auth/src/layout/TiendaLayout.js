@@ -5,10 +5,10 @@ import { withRouter } from 'react-router-dom';
 import TopNavTienda from '../containers/navs/tienda/TopnavTienda';
 import Footer from '../containers/navs/Footer';
 
-const TiendaLayout = ({ containerClassnames, children, history }) => {
+const TiendaLayout = ({ containerClassnames, children, history, idTienda }) => {
   return (
     <div id="app-container" className={containerClassnames}>
-      <TopNavTienda history={history} />
+      <TopNavTienda history={history} idTienda={idTienda} />
       <main>
         <div className="container-fluid">{children}</div>
       </main>

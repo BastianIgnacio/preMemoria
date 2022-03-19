@@ -9,12 +9,12 @@ import { ProtectedRoute } from '../../../helpers/authHelper';
 // eslint-disable-next-line no-unused-vars
 import { UserRole } from '../../../constants/defaultValues';
 
-const Tienda = React.lazy(() =>
+const Carrito = React.lazy(() =>
   // eslint-disable-next-line prettier/prettier
-  import(/* webpackChunkName: "viwes-blank-page" */ './tienda')
+  import(/* webpackChunkName: "viwes-blank-page" */ './carrito')
 );
 
-const AppTienda = ({ match }) => {
+const AppCarrito = ({ match }) => {
   const [idTienda, setIdTienda] = useState('asdasd');
   const handleFunction = (id) => {
     console.log('You clicked submit.');
@@ -29,7 +29,7 @@ const AppTienda = ({ match }) => {
             <Route
               path={`${match.url}/:id`}
               component={(props) => (
-                <Tienda llamarPadre={handleFunction} {...props} />
+                <Carrito llamarPadre={handleFunction} {...props} />
               )}
             />
             <Redirect to="/error" />
@@ -45,4 +45,4 @@ const mapStateToProps = ({ menu }) => {
   return { containerClassnames };
 };
 
-export default withRouter(connect(mapStateToProps, {})(AppTienda));
+export default withRouter(connect(mapStateToProps, {})(AppCarrito));

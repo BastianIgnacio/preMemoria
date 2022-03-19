@@ -16,7 +16,8 @@ import {
   FormikSwitch,
   FormikDatePicker,
 } from '../../containers/form-validations/FormikFields';
-import { Colxx } from '../../components/common/CustomBootstrap';
+import { Colxx, Separator } from '../../components/common/CustomBootstrap';
+import BreadcrumbNoItems from '../../containers/navs/BreadcrumbNoItems';
 import IntlMessages from '../../helpers/IntlMessages';
 
 const SignupSchema = Yup.object().shape({
@@ -83,11 +84,14 @@ const ConfiguracionMercadoPago = () => {
   };
 
   return (
-    <Row className="mb-4">
+    <Row>
+      <Colxx xxs="12">
+        <BreadcrumbNoItems heading="Configuración Cuenta de MercadoPago" />
+        <Separator className="mb-5" />
+      </Colxx>
       <Colxx xxs="12">
         <Card>
           <CardBody>
-            <h6 className="mb-4">Configuración Cuenta de MercadoPago</h6>
             <Formik
               initialValues={{
                 email: 'test@test.com',

@@ -25,6 +25,8 @@ import {
   searchPath,
   isDarkSwitchActive,
   adminRoot,
+  carritoRoot,
+  checkoutRoot,
 } from '../../../constants/defaultValues';
 
 import TopnavDarkSwitch from '../Topnav.DarkSwitch';
@@ -32,6 +34,7 @@ import TopnavDarkSwitch from '../Topnav.DarkSwitch';
 const TopNav = ({
   history,
   containerClassnames,
+  idTienda,
   selectedMenuHasSubItems,
   setContainerClassnamesAction,
 }) => {
@@ -111,7 +114,6 @@ const TopNav = ({
   };
 
   const initMenu = (_conClassnames) => {
-    console.log('iniciando');
     setTimeout(() => {
       const event = document.createEvent('HTMLEvents');
       event.initEvent('resize', false, false);
@@ -153,8 +155,24 @@ const TopNav = ({
               </span>
             </DropdownToggle>
             <DropdownMenu className="mt-3" right>
-              <DropdownItem>Ver Carrito</DropdownItem>
-              <DropdownItem>Check Out</DropdownItem>
+              <NavLink to={`${carritoRoot}/${idTienda}`}>
+                <DropdownItem
+                  onClick={() => {
+                    console.log(idTienda);
+                  }}
+                >
+                  Ver Carrito {idTienda}
+                </DropdownItem>
+              </NavLink>
+              <NavLink to={`${checkoutRoot}/${idTienda}`}>
+                <DropdownItem
+                  onClick={() => {
+                    console.log(idTienda);
+                  }}
+                >
+                  CheckOut {idTienda}
+                </DropdownItem>
+              </NavLink>
             </DropdownMenu>
           </UncontrolledDropdown>
         </div>
