@@ -14,7 +14,8 @@ export const categorias = [
         precioProducto: 6900,
         thumb: '/assets/img/blog/small-5.jpg',
         badge: 'NEW',
-        descripcion: 'Es un pie bn rico',
+        descripcion:
+          'Es un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn rico',
       },
       {
         idProducto: '002',

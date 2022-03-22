@@ -96,41 +96,41 @@ const Tienda = (props) => {
     console.log("-----------");
   }
 
+
+  const divAction = () => {
+    console.log("funka")
+  }
   const listProductos = categorias[indexCat].productos.map((producto, index) => {
     return (
       // eslint-disable-next-line react/no-array-index-key
       <Colxx xxs="12" lg="4" className="mb-5" key={`producto_${index}`}>
         <Card className="flex-row listing-card-container">
           <div className="w-40 position-relative">
-            <NavLink to={`${id}/${producto.idProducto}`}>
-              <img
-                className="card-img-left"
-                src={producto.thumb}
-                alt="Card cap"
-              />
-              {producto.badge && (
-                <Badge
-                  color="primary"
-                  pill
-                  className="position-absolute badge-top-left"
-                >
-                  {producto.badge}
-                </Badge>
-              )}
-            </NavLink>
+            <img
+              className="card-img-left"
+              src={producto.thumb}
+              alt="Card cap"
+            />
+            {producto.badge && (
+              <Badge
+                color="primary"
+                pill
+                className="position-absolute badge-top-left"
+              >
+                {producto.badge}
+              </Badge>
+            )}
           </div>
           <div className="w-60 d-flex align-items-center">
             <CardBody>
-              <NavLink to={`${id}/${producto.idProducto}`}>
-                <ResponsiveEllipsis
-                  className="mb-3 listing-heading"
-                  text={producto.nombreProducto}
-                  maxLine="2"
-                  trimRight
-                  basedOn="words"
-                  component="h5"
-                />
-              </NavLink>
+              <ResponsiveEllipsis
+                className="mb-3 listing-heading"
+                text={producto.nombreProducto}
+                maxLine="2"
+                trimRight
+                basedOn="words"
+                component="h5"
+              />
               <ResponsiveEllipsis
                 className="listing-desc text-muted"
                 text={`${producto.precioProducto}`}
@@ -141,11 +141,10 @@ const Tienda = (props) => {
               />
               <Button
                 color="primary"
-                className="mb-2"
+                className="mb-2 iconsminds-add"
                 onClick={() => { abrirModal(producto.nombreProducto, producto.descripcion, producto.precioProducto) }}
-              >
-                <IntlMessages id="Añadir" />
-              </Button>{' '}
+              >Añadir
+              </Button>
             </CardBody>
           </div>
         </Card>
@@ -173,35 +172,31 @@ const Tienda = (props) => {
       <Colxx xxs="12" lg="4" className="mb-5" key={`categoria_${index}`}>
         <Card className="flex-row listing-card-container">
           <div className="w-40 position-relative">
-            <NavLink to={`${id}/${categoria.id_categoria}`}>
-              <img
-                className="card-img-left"
-                src={categoria.thumb}
-                alt="Card cap"
-              />
-              {categoria.badge && (
-                <Badge
-                  color="primary"
-                  pill
-                  className="position-absolute badge-top-left"
-                >
-                  {categoria.badge}
-                </Badge>
-              )}
-            </NavLink>
+            <img
+              className="card-img-left"
+              src={categoria.thumb}
+              alt="Card cap"
+            />
+            {categoria.badge && (
+              <Badge
+                color="primary"
+                pill
+                className="position-absolute badge-top-left"
+              >
+                {categoria.badge}
+              </Badge>
+            )}
           </div>
           <div className="w-60 d-flex align-items-center">
             <CardBody>
-              <NavLink to={`${id}/${categoria.id_categoria}`}>
-                <ResponsiveEllipsis
-                  className="mb-3 listing-heading"
-                  text={categoria.title}
-                  maxLine="2"
-                  trimRight
-                  basedOn="words"
-                  component="h5"
-                />
-              </NavLink>
+              <ResponsiveEllipsis
+                className="mb-3 listing-heading"
+                text={categoria.title}
+                maxLine="2"
+                trimRight
+                basedOn="words"
+                component="h5"
+              />
               <ResponsiveEllipsis
                 className="listing-desc text-muted"
                 text={categoria.description}
@@ -211,12 +206,13 @@ const Tienda = (props) => {
                 component="p"
               />
               <Button
-                color="primary"
+                color="primary iconsminds-arrow-right-in-circle"
                 className="mb-2"
+                block
                 onClick={() => verProductos(index)}
               >
-                <IntlMessages id={categoria.id_categoria} />
-              </Button>{' '}
+                Ver más
+              </Button>
             </CardBody>
           </div>
         </Card>
@@ -243,8 +239,8 @@ const Tienda = (props) => {
       </Colxx>
       {showBotonAtras ? (
         <Colxx xxs="12">
-          <Button color="primary" block className="mb-2" onClick={verCategorias} >
-            <IntlMessages id="Atras" />
+          <Button color="primary" block className="mb-2 iconsminds-arrow-left-in-circle" onClick={verCategorias} >
+            Categorias
           </Button>{' '}
         </Colxx>
       ) : (
@@ -277,84 +273,100 @@ const Tienda = (props) => {
         size="lg"
         toggle={() => setModalLarge(!modalLarge)}
       >
-        <ModalHeader>Producto : {modalNombreProducto}</ModalHeader>
         <ModalBody>
           <Row>
-            <Colxx xxs="12" xs="12" lg="8">
-              <Card className="mb-2">
-                <div className="position-relative">
-                  <CardImg
-                    top
-                    src="/assets/img/cards/thumb-1.jpg"
-                    alt="Card image cap"
-                  />
-                  <Badge
-                    color="primary"
-                    pill
-                    className="position-absolute badge-top-left"
-                  >
-                    NEW
-                  </Badge>
-                  <Badge
-                    color="secondary"
-                    pill
-                    className="position-absolute badge-top-left-2"
-                  >
-                    PICO
-                  </Badge>
-                </div>
-                <CardBody>
-                  <CardSubtitle className="mb-4">
-                    {modalDescripcionProducto}
-                  </CardSubtitle>
-                  <CardText className="text-muted text-small mb-0 font-weight-light">
-                    PRECIO UNITARIO $ {modalPrecioProducto}
-                  </CardText>
-                </CardBody>
-              </Card>
-            </Colxx>
-            <Colxx xxs="12" xs="12" lg="4">
-              <Card className="mb-2">
-                <CardBody>
-                  ASDAS
-                </CardBody>
-              </Card>
-            </Colxx>
-            <Colxx xxs="12" xs="12" lg="12">
-              <Card className="mb-4">
-                <CardBody>
-                  <AvForm
-                    className="av-tooltip tooltip-label-right"
-                    onSubmit={(event, errors, values) => onSubmit(event, errors, values)}
-                  >
-                    <AvGroup>
-                      <Label>Añade una nota al Local Comercial</Label>
-                      <AvInput type="textarea" name="details" id="details" required />
-                      <AvFeedback>Please enter some details!</AvFeedback>
-                    </AvGroup>
-                    <AvGroup>
-                      <Colxx xxs="12" xs="12" lg="12">
-                        <ButtonGroup className="mr-2 ">
-                          <Button color="primary" block onClick={restarProducto}>
-                            <IntlMessages id="-" />
-                          </Button>
-                          <Button color="primary">
-                            {contadorProducto}
-                          </Button>
-                          <Button color="primary" onClick={sumarProducto}>
-                            <IntlMessages id="+" />
-                          </Button>
-                        </ButtonGroup>
-                        <h1>
-                          $ {contadorProducto * modalPrecioProducto}
-                        </h1>
-                      </Colxx>
-                    </AvGroup>
-                    <Button color="primary" block onClick={ver} >Agregar al carrito</Button>
-                  </AvForm>
-                </CardBody>
-              </Card>
-            </Colxx>
+            <AvForm
+              className="av-tooltip tooltip-label-right"
+              onSubmit={(event, errors, values) => onSubmit(event, errors, values)}
+            >
+              <Row>
+                <Colxx xxs="12" xs="12" lg="6">
+                  <Card className="mb-2">
+                    <div className="position-relative">
+                      <CardImg
+                        top
+                        src="/assets/img/cards/thumb-1.jpg"
+                        alt="Card image cap"
+                      />
+                      <Badge
+                        color="primary"
+                        pill
+                        className="position-absolute badge-top-left"
+                      >
+                        $ {modalPrecioProducto}
+                      </Badge>
+                      <Badge
+                        color="secondary"
+                        pill
+                        className="position-absolute badge-top-left-2"
+                      >
+                        NUEVO
+                      </Badge>
+                    </div>
+                    <CardBody>
+                      <CardText className="text-muted text-center text-medium mb-0 font-weight-bold">
+                        PRECIO UNITARIO $ {modalPrecioProducto}
+                      </CardText>
+                    </CardBody>
+                  </Card>
+                </Colxx>
+                <Colxx xxs="12" xs="12" lg="6">
+                  <Card className="mb-2">
+                    <CardBody>
+                      <CardText className="text-muted text-center text-medium mb-4 font-weight-bold">
+                        DESCIPCIÓN
+                      </CardText>
+                      <CardSubtitle className="text-muted text-center text-medium mb-4 font-weight-light">
+                        {modalDescripcionProducto}
+                      </CardSubtitle>
+                    </CardBody>
+                  </Card>
+                </Colxx>
+                <Colxx xxs="12" xs="12" lg="12">
+                  <Card className="mb-2">
+                    <CardBody>
+                      <AvGroup>
+                        <CardText className="text-muted text-center text-medium mb-2 font-weight-bold">
+                          AÑADE UNA NOTA AL LOCAL COMERCIAL
+                        </CardText>
+                        <AvInput type="textarea" placeholder="Aca puedes incluir una nota" min name="details" id="details" rows="4" />
+                      </AvGroup>
+                    </CardBody>
+                  </Card>
+                </Colxx>
+
+                <Colxx xxs="12" xs="12" lg="12">
+                  <Card className="mb-4">
+                    <CardBody>
+                      <AvGroup>
+                        <Row>
+                          <Colxx xxs="12" xs="12" lg="6" className="text-center bm-6">
+                            <ButtonGroup >
+                              <Button color="primary" block onClick={restarProducto}>
+                                <IntlMessages id="-" />
+                              </Button>
+                              <Button color="primary">
+                                {contadorProducto}
+                              </Button>
+                              <Button color="primary" onClick={sumarProducto}>
+                                <IntlMessages id="+" />
+                              </Button>
+                            </ButtonGroup>
+                          </Colxx>
+                          <Colxx xxs="12" xs="12" lg="6" className="text-center" >
+                            <CardText className="text-muted text-center text-large font-weight-bold mt-2">
+                              $ {contadorProducto * modalPrecioProducto}
+                            </CardText>
+                          </Colxx>
+                        </Row>
+                      </AvGroup>
+                      <Button color="primary" className='iconsminds-add-cart' block onClick={ver} >Agregar al carrito</Button>
+                      <Button color="secondary" block onClick={() => { setModalLarge(false) }} >Volver</Button>
+                    </CardBody>
+                  </Card>
+                </Colxx>
+              </Row>
+            </AvForm>
           </Row>
         </ModalBody>
       </Modal>
