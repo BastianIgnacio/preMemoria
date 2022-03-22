@@ -2,12 +2,12 @@
 import React from 'react';
 import IntlMessages from '../../helpers/IntlMessages';
 
-const BreadcrumbContainer = ({ heading, nombreTienda }) => {
+const BreadcrumbContainer = ({ heading }) => {
   return (
     <>
       {heading && (
         <h1>
-          <IntlMessages id={heading + nombreTienda} />
+          <IntlMessages id={heading} />
         </h1>
       )}
     </>
