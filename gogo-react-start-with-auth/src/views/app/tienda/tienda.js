@@ -96,16 +96,12 @@ const Tienda = (props) => {
     console.log("-----------");
   }
 
-
-  const divAction = () => {
-    console.log("funka")
-  }
   const listProductos = categorias[indexCat].productos.map((producto, index) => {
     return (
       // eslint-disable-next-line react/no-array-index-key
-      <Colxx xxs="12" lg="4" className="mb-5" key={`producto_${index}`}>
+      <Colxx xxs="12" lg="6" className="mb-5" key={`producto_${index}`}>
         <Card className="flex-row listing-card-container">
-          <div className="w-40 position-relative">
+          <div className="w-30 position-relative">
             <img
               className="card-img-left"
               src={producto.thumb}
@@ -133,7 +129,7 @@ const Tienda = (props) => {
               />
               <ResponsiveEllipsis
                 className="listing-desc text-muted"
-                text={`${producto.precioProducto}`}
+                text={`${producto.descripcion}`}
                 maxLine="3"
                 trimRight
                 basedOn="words"
@@ -143,7 +139,7 @@ const Tienda = (props) => {
                 color="primary"
                 className="mb-2 iconsminds-add"
                 onClick={() => { abrirModal(producto.nombreProducto, producto.descripcion, producto.precioProducto) }}
-              >Añadir
+              >$ {`${producto.precioProducto}`}
               </Button>
             </CardBody>
           </div>
@@ -270,7 +266,6 @@ const Tienda = (props) => {
       )}
       <Modal
         isOpen={modalLarge}
-        size="lg"
         toggle={() => setModalLarge(!modalLarge)}
       >
         <ModalBody>
@@ -305,7 +300,7 @@ const Tienda = (props) => {
                     </div>
                     <CardBody>
                       <CardText className="text-muted text-center text-medium mb-0 font-weight-bold">
-                        PRECIO UNITARIO $ {modalPrecioProducto}
+                        PRECIO $ {modalPrecioProducto}
                       </CardText>
                     </CardBody>
                   </Card>
@@ -340,7 +335,7 @@ const Tienda = (props) => {
                     <CardBody>
                       <AvGroup>
                         <Row>
-                          <Colxx xxs="12" xs="12" lg="6" className="text-center bm-6">
+                          <Colxx xxs="12" xs="12" lg="6" className="text-center mb-2">
                             <ButtonGroup >
                               <Button color="primary" block onClick={restarProducto}>
                                 <IntlMessages id="-" />

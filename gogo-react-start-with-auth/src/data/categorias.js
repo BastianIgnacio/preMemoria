@@ -12,7 +12,7 @@ export const categorias = [
         idProducto: '001',
         nombreProducto: 'Producto 1',
         precioProducto: 6900,
-        thumb: '/assets/img/blog/small-5.jpg',
+        thumb: '/assets/img/blog/producto1.jpg',
         badge: 'NEW',
         descripcion:
           'Es un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn ricoEs un pie bn rico',

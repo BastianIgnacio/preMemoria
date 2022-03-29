@@ -42,9 +42,6 @@ const AppTienda = React.lazy(() =>
 const AppCarrito = React.lazy(() =>
   import(/* webpackChunkName: "views-error" */ './views/app/carrito')
 );
-const AppCheckOut = React.lazy(() =>
-  import(/* webpackChunkName: "views-error" */ './views/app/checkout')
-);
 
 class App extends React.Component {
   constructor(props) {
@@ -87,7 +84,6 @@ class App extends React.Component {
                   />
                   <Route path="/tienda" children={<AppTienda />} />
                   <Route path="/carrito" children={<AppCarrito />} />
-                  <Route path="/checkout" children={<AppCheckOut />} />
                   <Route
                     path="/user"
                     render={(props) => <ViewUser {...props} />}
