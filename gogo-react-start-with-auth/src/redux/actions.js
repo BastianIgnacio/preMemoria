@@ -72,6 +72,16 @@ export const SURVEY_GET_DETAILS_ERROR = 'SURVEY_GET_DETAILS_ERROR';
 export const SURVEY_DELETE_QUESTION = 'SURVEY_DELETE_QUESTION';
 export const SURVEY_SAVE = 'SURVEY_SAVE';
 
+/* ACTION DE Tienda */
+export const TIENDA_LIST_GET_PRODUCTS = 'TIENDA_LIST_GET_PRODUCTS';
+export const TIENDA_LIST_GET_PRODUCTS_SUCCESS =
+  'TIENDA_LIST_GET_PRODUCTS_SUCCESS';
+
+export const CARRITO_ADD_NEW_PRODUCT = 'CARRITO_ADD_NEW_PRODUCT';
+export const CARRITO_DELETE_PRODUCT = 'CARRITO_DELETE_PRODUCT';
+export const CARRITO_ADD_PRODUCT = 'CARRITO_ADD_PRODUCT';
+export const CARRITO_SUBTRACT_PRODUCT = 'CARRITO_SUBTRACT_PRODUCT';
+
 export * from './menu/actions';
 export * from './settings/actions';
 export * from './auth/actions';
@@ -79,3 +89,5 @@ export * from './todo/actions';
 export * from './chat/actions';
 export * from './surveyList/actions';
 export * from './surveyDetail/actions';
+export * from './tienda/actions';
+export * from './carrito/actions';

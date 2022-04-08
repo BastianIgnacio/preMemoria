@@ -31,7 +31,7 @@ export const firebaseConfig = {
 
 export const adminRoot = '/app';
 export const carritoRoot = '/carrito';
-export const checkoutRoot = '/checkout';
+export const tiendaRoot = '/tienda';
 export const buyUrl = 'https://1.envato.market/k4z0';
 export const searchPath = `${adminRoot}/#`;
 export const servicePath = 'https://api.coloredstrategies.com';
@@ -41,7 +41,7 @@ export const currentUser = {
   title: 'Saraasaah Korfgftney',
   img: '/assets/img/profiles/l-1.jpg',
   date: 'Last seen today 15:24',
-  role: UserRole.AdminLocalComercial,
+  role: UserRole.SuperAdmin,
 };
 
 export const themeColorStorageKey = '__theme_selected_color';

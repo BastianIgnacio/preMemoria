@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 // eslint-disable-next-line no-unused-vars
 import {
   Row,
@@ -20,9 +21,7 @@ import { AvForm, AvGroup, AvInput } from 'availity-reactstrap-validation';
 import LinesEllipsis from 'react-lines-ellipsis';
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
 import { useParams, Redirect } from 'react-router-dom';
-import { Colxx, Separator } from '../../../components/common/CustomBootstrap';
-import BreadcrumbTienda from '../../../containers/navs/BreadcrumbTienda';
-import ProductosCarro from '../../../data/productosCarro';
+import { Colxx } from '../../../components/common/CustomBootstrap';
 
 // eslint-disable-next-line no-unused-vars
 const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
@@ -33,8 +32,19 @@ const Carrito = (props) => {
   const [header, setHeader] = useState('Carrito de compras de ');
   const { id } = useParams();
   // Variable para saber que id del array del carrito vamos a eliminar
-  const [idParaEliminar, setIdParaEliminar] = useState(-1);
+  // eslint-disable-next-line no-unused-vars
+  const [idKeyEliminar, setIdKeyEliminar] = useState(-1);
+  const [cantidadProductoEliminar, setCantidadProductoEliminar] = useState(-1);
+  const [nombreProductoEliminar, setNombreProductoEliminar] = useState(-1);
+  const [notaProductoEliminar, setNotaProductoEliminar] = useState(-1);
+  const [precioProductoEliminar, setPrecioProductoEliminar] = useState(-1);
   const [modalEliminar, setModalEliminar] = useState(false);
+
+  // Variables para el estado del componente
+  // eslint-disable-next-line no-unused-vars
+  const dispatch = useDispatch();
+  // eslint-disable-next-line no-unused-vars
+  const estadoApp = useSelector((state) => state);
 
   // Variables para el modal
   const [modalLarge, setModalLarge] = useState(false);
@@ -57,6 +67,18 @@ const Carrito = (props) => {
     dataRetiroEnLocal[0]
   );
 
+  // Variable para mostrar el array correspondiente
+  // eslint-disable-next-line no-unused-vars
+  // eslint-disable-next-line no-unused-vars
+  const [arrayCarrito, setArrayCarrito] = useState(
+    JSON.parse(localStorage.getItem('carritoLocalStorage'))
+  );
+  // Suma total del array de productos
+  const totalInit = arrayCarrito.reduce(
+    (sum, el) => sum + el.precio * el.cantidad,
+    0
+  );
+
   const clickRetiroEnLocal = () => {
     setSelectedRadioEntrega(1);
     setDelivery(false);
@@ -69,14 +91,7 @@ const Carrito = (props) => {
     setRetiroEnLocal(false);
   };
 
-  // Variable para mostrar el array correspondiente
   // eslint-disable-next-line no-unused-vars
-  const [cloneArray, setCloneArray] = useState([...ProductosCarro]);
-  // Suma total del array de productos
-  const totalInit = cloneArray.reduce(
-    (sum, el) => sum + el.precioUnitario * el.cantidad,
-    0
-  );
   const [total, setTotal] = useState(totalInit);
 
   const actualizarNav = () => {
@@ -88,50 +103,61 @@ const Carrito = (props) => {
     return <Redirect to="/error" />;
   }
 
+  // Variables modal eliminar
+  const abrirModalEliminar = (idKey) => {
+    const found = arrayCarrito.find((element) => element.idKey === idKey);
+    setIdKeyEliminar(found.idKey);
+    setNombreProductoEliminar(found.nombre);
+    setCantidadProductoEliminar(found.cantidad);
+    setNotaProductoEliminar(found.notaEspecial);
+    setPrecioProductoEliminar(found.precio);
+    setModalEliminar(true);
+  };
+
   // eslint-disable-next-line no-unused-vars
-  const sumar = (index) => {
-    console.log('sumar');
-    console.log(cloneArray);
-    const cant = cloneArray[index].cantidad;
-    cloneArray[index].cantidad = cant + 1;
-    const nuevoArray = [...cloneArray];
-    setCloneArray(nuevoArray);
-    const totalSum = cloneArray.reduce(
-      (sum, el) => sum + el.precioUnitario * el.cantidad,
+  const sumar = (idKey) => {
+    const found = arrayCarrito.find((element) => element.idKey === idKey);
+    const index = arrayCarrito.indexOf(found);
+    const cant = arrayCarrito[index].cantidad;
+    arrayCarrito[index].cantidad = cant + 1;
+    const nuevoArray = [...arrayCarrito];
+    setArrayCarrito(nuevoArray);
+    localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
+    const totalSum = nuevoArray.reduce(
+      (sum, el) => sum + el.precio * el.cantidad,
       0
     );
     setTotal(totalSum);
   };
 
-  const restar = (index) => {
-    console.log('sumar');
-    console.log(cloneArray);
-    const cant = cloneArray[index].cantidad;
+  const restar = (idKey) => {
+    const found = arrayCarrito.find((element) => element.idKey === idKey);
+    const index = arrayCarrito.indexOf(found);
+    const cant = arrayCarrito[index].cantidad;
     if (cant > 1) {
-      cloneArray[index].cantidad = cant - 1;
-      const nuevoArray = [...cloneArray];
-      setCloneArray(nuevoArray);
-      const totalSum = cloneArray.reduce(
-        (sum, el) => sum + el.precioUnitario * el.cantidad,
+      arrayCarrito[index].cantidad = cant - 1;
+      const nuevoArray = [...arrayCarrito];
+      setArrayCarrito(nuevoArray);
+      localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
+      const totalSum = nuevoArray.reduce(
+        (sum, el) => sum + el.precio * el.cantidad,
         0
       );
       setTotal(totalSum);
+    } else {
+      abrirModalEliminar(idKey);
     }
   };
 
-  // Variables modal cancelar
-  const abrirModalCancelar = (index) => {
-    console.log('Eliminar');
-    console.log(index);
-    setIdParaEliminar(index);
-    setModalEliminar(true);
-  };
-  const eliminar = () => {
-    cloneArray.splice(idParaEliminar, 1);
-    const nuevoArray = [...cloneArray];
-    setCloneArray(nuevoArray);
-    const totalSum = cloneArray.reduce(
-      (sum, el) => sum + el.precioUnitario * el.cantidad,
+  const eliminar = (idKey) => {
+    const found = arrayCarrito.find((element) => element.idKey === idKey);
+    const index = arrayCarrito.indexOf(found);
+    arrayCarrito.splice(index, 1);
+    const nuevoArray = [...arrayCarrito];
+    setArrayCarrito(nuevoArray);
+    localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
+    const totalSum = nuevoArray.reduce(
+      (sum, el) => sum + el.precio * el.cantidad,
       0
     );
     setTotal(totalSum);
@@ -141,7 +167,7 @@ const Carrito = (props) => {
   actualizarNav(id);
   const pagar = () => {
     console.log('pagar');
-    setModalLarge(true);
+    console.log(estadoApp);
   };
 
   const onSubmit = (event, errors, values) => {
@@ -154,16 +180,12 @@ const Carrito = (props) => {
 
   return (
     <Row>
-      <Colxx xxs="12">
-        <BreadcrumbTienda heading={`${header}${id}`} />
-        <Separator className="mb-5" />
-      </Colxx>
       <Card className="container-fluid">
         <CardBody>
           <Row className="container-fluid">
-            {cloneArray.map((producto, index) => {
+            {arrayCarrito.map((producto) => {
               return (
-                <Colxx xxs="12" key={producto.id}>
+                <Colxx xxs="12" key={producto.idKey}>
                   <Card className="d-flex flex-row mb-2">
                     <div className="d-flex">
                       <img
@@ -175,7 +197,7 @@ const Carrito = (props) => {
                     <div className="pl-2 d-flex flex-grow-1 min-width-zero">
                       <div className="card-body align-self-center d-flex flex-column flex-lg-row justify-content-between min-width-zero ">
                         <p className="list-item-heading mb-1 w-60 w-sm-100 font-weight-bold">
-                          {producto.title}
+                          {producto.nombre}
                           {/* VALIDACION --> NOMBRE MAXIMO DE 65 CARACTERES */}
                         </p>
                         <p className="mb-1 text-small w-8 w-sm-100 d-flex justify-content-end">
@@ -184,17 +206,17 @@ const Carrito = (props) => {
                             {producto.cantidad}
                             {'\u00A0'}
                           </div>
-                          x $ {producto.precioUnitario}
+                          x $ {producto.precio}
                         </p>
                         <p className="mb-1 text-muted list-item-heading font-weight-bold w-8 w-sm-100 d-flex justify-content-end">
-                          $ {producto.cantidad * producto.precioUnitario}
+                          $ {producto.cantidad * producto.precio}
                         </p>
                         <div className="w-15 w-sm-100 d-flex justify-content-end">
                           <Button
                             color="primary"
                             size="xs"
                             className="mb-0 mr-1"
-                            onClick={() => restar(index)}
+                            onClick={() => restar(producto.idKey)}
                           >
                             -
                           </Button>
@@ -202,7 +224,7 @@ const Carrito = (props) => {
                             color="primary"
                             size="xs"
                             className="mb-0 mr-1"
-                            onClick={() => sumar(index)}
+                            onClick={() => sumar(producto.idKey)}
                           >
                             +
                           </Button>
@@ -210,7 +232,7 @@ const Carrito = (props) => {
                             color="danger"
                             size="xs"
                             className="mb-0 simple-icon-trash"
-                            onClick={() => abrirModalCancelar(index)}
+                            onClick={() => abrirModalEliminar(producto.idKey)}
                           />
                         </div>
                       </div>
@@ -219,6 +241,19 @@ const Carrito = (props) => {
                 </Colxx>
               );
             })}
+            {arrayCarrito.length < 1 && (
+              <Colxx xxs="12" xs="12" lg="12">
+                <Card className="container-fluid d-flex flex-row mb-2 ">
+                  <div className="container-fluid pl-0 d-flex flex-grow-1 min-width-zero">
+                    <div className="container-fluid card-body align-self-center d-flex flex-column flex-lg-row justify-content-center min-width-zero ">
+                      <p className="mb-1 text-muted text-large font-weight-bold">
+                        EL CARRITO ESTA VACIO!
+                      </p>
+                    </div>
+                  </div>
+                </Card>
+              </Colxx>
+            )}
             <Colxx xxs="12" xs="12" lg="12">
               <Card className="container-fluid d-flex flex-row mb-2 ">
                 <div className="container-fluid pl-0 d-flex flex-grow-1 min-width-zero">
@@ -232,11 +267,7 @@ const Carrito = (props) => {
                     </p>
                   </div>
                   <div className="custom-control custom-checkbox pl-0 align-self-center pr-4">
-                    <Button
-                      color="primary"
-                      className="mb-0"
-                      onClick={() => pagar()}
-                    >
+                    <Button color="primary" className="mb-0" onClick={pagar}>
                       FINALIZAR COMPRA
                     </Button>
                   </div>
@@ -412,13 +443,7 @@ const Carrito = (props) => {
                       >
                         ENVIAR PEDIDO
                       </Button>
-                      <Button
-                        color="secondary"
-                        block
-                        onClick={() => {
-                          setModalLarge(false);
-                        }}
-                      >
+                      <Button color="secondary" block onClick={pagar}>
                         Volver
                       </Button>
                     </CardBody>
@@ -434,8 +459,32 @@ const Carrito = (props) => {
         toggle={() => setModalEliminar(!modalEliminar)}
       >
         <ModalHeader>Quieres eliminar el producto ?</ModalHeader>
+        <ModalBody>
+          <Row>
+            <Colxx xxs="12" xs="12" lg="12">
+              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                NOMBRE: {nombreProductoEliminar}
+              </CardText>
+            </Colxx>
+            <Colxx xxs="12" xs="12" lg="12">
+              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                NOTA ESPECIAL: {notaProductoEliminar}
+              </CardText>
+            </Colxx>
+            <Colxx xxs="12" xs="12" lg="12">
+              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                CANTIDAD: {cantidadProductoEliminar}
+              </CardText>
+            </Colxx>
+            <Colxx xxs="12" xs="12" lg="12">
+              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                PRECIO: {precioProductoEliminar}
+              </CardText>
+            </Colxx>
+          </Row>
+        </ModalBody>
         <ModalFooter>
-          <Button color="primary" onClick={eliminar}>
+          <Button color="primary" onClick={() => eliminar(idKeyEliminar)}>
             Eliminar
           </Button>{' '}
           <Button color="secondary" onClick={() => setModalEliminar(false)}>

@@ -24,9 +24,8 @@ import {
 import {
   searchPath,
   isDarkSwitchActive,
-  adminRoot,
   carritoRoot,
-  checkoutRoot,
+  tiendaRoot,
 } from '../../../constants/defaultValues';
 
 import TopnavDarkSwitch from '../Topnav.DarkSwitch';
@@ -125,9 +124,8 @@ const TopNav = ({
   return (
     <nav className="navbar fixed-top">
       <div className="d-flex align-items-center navbar-left" />
-      <NavLink className="navbar-logo" to={adminRoot}>
-        <span className="logo d-none d-xs-block" />
-        <span className="logo-mobile d-block d-xs-none" />
+      <NavLink className="navbar-logo" to={`${tiendaRoot}/${idTienda}`}>
+        LOGO TIENDA
       </NavLink>
 
       <div className="navbar-right">
@@ -161,16 +159,16 @@ const TopNav = ({
                     console.log(idTienda);
                   }}
                 >
-                  Ver Carrito {idTienda}
+                  Ver Carrito
                 </DropdownItem>
               </NavLink>
-              <NavLink to={`${checkoutRoot}/${idTienda}`}>
+              <NavLink to={`${tiendaRoot}/${idTienda}`}>
                 <DropdownItem
                   onClick={() => {
                     console.log(idTienda);
                   }}
                 >
-                  CheckOut {idTienda}
+                  Volver a la tienda
                 </DropdownItem>
               </NavLink>
             </DropdownMenu>

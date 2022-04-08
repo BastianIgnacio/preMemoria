@@ -17,8 +17,6 @@ const Tienda = React.lazy(() =>
 const AppTienda = ({ match }) => {
   const [idTienda, setIdTienda] = useState('asdasd');
   const handleFunction = (id) => {
-    console.log('You clicked submit.');
-    console.log(id);
     setIdTienda(id);
   };
   return (

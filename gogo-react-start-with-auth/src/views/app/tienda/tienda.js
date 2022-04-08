@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Row, Card, CardBody, Badge, Button, Modal,
   ModalHeader,
@@ -24,12 +25,14 @@ import {
 } from 'availity-reactstrap-validation';
 import LinesEllipsis from 'react-lines-ellipsis';
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
-import { useParams, NavLink } from 'react-router-dom';
+import { useParams, NavLink, useHistory } from 'react-router-dom';
 import { Colxx, Separator } from '../../../components/common/CustomBootstrap';
-import { categorias } from '../../../data/categorias';
 import BreadcrumbTienda from '../../../containers/navs/BreadcrumbTienda';
 import IntlMessages from '../../../helpers/IntlMessages';
 import ImageCardModalProducto from '../../../containers/ui/ImageCardModalProducto';
+import { getTiendaList } from '../../../redux/tienda/actions';
+import { addNewProductCarrito } from '../../../redux/carrito/actions';
+import { NotificationManager } from '../../../components/common/react-notifications';
 
 const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
 
@@ -44,9 +47,22 @@ const Tienda = (props) => {
   const [modalNombreProducto, setModalNombreProducto] = useState("");
   const [modalDescripcionProducto, setModalDescripcionProducto] = useState("");
   const [modalPrecioProducto, setModalPrecioProducto] = useState(0);
+  const [modalIdProducto, setModalIdProducto] = useState("");
 
   const [contadorProducto, setContadorProducto] = useState(0);
-  const [total, setTotal] = useState(0)
+  const [total, setTotal] = useState(0);
+
+  // Obtenemos las categorias del state
+  const categorias = useSelector((state) => state.tiendaApp.categorias_y_productos);
+  const nombreTienda = useSelector((state) => state.tiendaApp.nombreTienda);
+  const horarioTienda = useSelector((state) => state.tiendaApp.horarioTienda);
+  const dispatch = useDispatch();
+  const estadoApp = useSelector((state) => state);
+  const history = useHistory();
+
+
+
+
 
 
   const restarProducto = () => {
@@ -58,42 +74,24 @@ const Tienda = (props) => {
     }
   }
   const sumarProducto = () => {
-    console.log("Antes de setear un +1 ");
-    console.log(contadorProducto);
     const cantidadProducto = contadorProducto + 1;
     setContadorProducto(cantidadProducto);
-    console.log("Despues de setear un +1");
-    console.log(contadorProducto);
-
     setTotal(contadorProducto * modalPrecioProducto);
   }
 
   const actualizarNav = () => {
     props.llamarPadre(id);
   };
-  const [header, setHeader] = useState(`Categorias de la tienda : ${id}`)
 
-
-  const abrirModal = (nombre, descripcion, precio) => {
-
+  const abrirModal = (nombre, descripcion, precio, idProducto) => {
     setModalNombreProducto(nombre);
     setModalDescripcionProducto(descripcion);
     setModalPrecioProducto(precio);
     setContadorProducto(1);
     setTotal(1 * precio);
+    setModalIdProducto(idProducto);
     console.log("Abrimos modal")
     setModalLarge(true);
-
-
-  }
-
-  const ver = () => {
-    console.log("-----------");
-    console.log(contadorProducto);
-    console.log(modalPrecioProducto);
-    console.log("Total a pagar:");
-    console.log(contadorProducto * modalPrecioProducto);
-    console.log("-----------");
   }
 
   const listProductos = categorias[indexCat].productos.map((producto, index) => {
@@ -104,16 +102,16 @@ const Tienda = (props) => {
           <div className="w-30 position-relative">
             <img
               className="card-img-left"
-              src={producto.thumb}
+              src={producto.rutaFotoProducto}
               alt="Card cap"
             />
-            {producto.badge && (
+            {producto.badgeProducto && (
               <Badge
                 color="primary"
                 pill
                 className="position-absolute badge-top-left"
               >
-                {producto.badge}
+                {producto.badgeProducto}
               </Badge>
             )}
           </div>
@@ -129,7 +127,7 @@ const Tienda = (props) => {
               />
               <ResponsiveEllipsis
                 className="listing-desc text-muted"
-                text={`${producto.descripcion}`}
+                text={`${producto.descripcionProducto}`}
                 maxLine="3"
                 trimRight
                 basedOn="words"
@@ -138,7 +136,7 @@ const Tienda = (props) => {
               <Button
                 color="primary"
                 className="mb-2 iconsminds-add"
-                onClick={() => { abrirModal(producto.nombreProducto, producto.descripcion, producto.precioProducto) }}
+                onClick={() => { abrirModal(producto.nombreProducto, producto.descripcionProducto, producto.precioProducto, producto.idProducto) }}
               >$ {`${producto.precioProducto}`}
               </Button>
             </CardBody>
@@ -152,14 +150,12 @@ const Tienda = (props) => {
     console.log(index);
     setIndexCat(index);
     setShowBotonAtras(true);
-    setHeader(`Productos de la Tienda : categoria ${index}`);
     setShowProductos(true);
   }
 
   const verCategorias = () => {
     setShowBotonAtras(false);
     setShowProductos(false);
-    setHeader(`Categorias de la tienda : ${id}`);
   }
 
   const listCategorias = categorias.map((categoria, index) => {
@@ -170,16 +166,16 @@ const Tienda = (props) => {
           <div className="w-40 position-relative">
             <img
               className="card-img-left"
-              src={categoria.thumb}
+              src={categoria.rutaFotoCategoria}
               alt="Card cap"
             />
-            {categoria.badge && (
+            {categoria.badgeCategoria && (
               <Badge
                 color="primary"
                 pill
                 className="position-absolute badge-top-left"
               >
-                {categoria.badge}
+                {categoria.badgeCategoria}
               </Badge>
             )}
           </div>
@@ -187,7 +183,7 @@ const Tienda = (props) => {
             <CardBody>
               <ResponsiveEllipsis
                 className="mb-3 listing-heading"
-                text={categoria.title}
+                text={categoria.nombreCategoria}
                 maxLine="2"
                 trimRight
                 basedOn="words"
@@ -195,7 +191,7 @@ const Tienda = (props) => {
               />
               <ResponsiveEllipsis
                 className="listing-desc text-muted"
-                text={categoria.description}
+                text={categoria.descripcionCategoria}
                 maxLine="3"
                 trimRight
                 basedOn="words"
@@ -207,7 +203,7 @@ const Tienda = (props) => {
                 block
                 onClick={() => verProductos(index)}
               >
-                Ver más
+                Ver productos
               </Button>
             </CardBody>
           </div>
@@ -216,54 +212,124 @@ const Tienda = (props) => {
     );
   });
 
+  const notificacionProductoAgregado = (nombreProducto, cantidad, precioTotal) => {
+    const str = `Agregado a tu carrito ${nombreProducto} por un total de $${precioTotal} cantidad ${cantidad}`;
+    NotificationManager.success(
+      str,
+      'CLICK PARA VER TU CARRITO',
+      3000,
+      () => history.push(`/carrito/${id}`),
+      null,
+      'filled'
+    );
+
+  }
+
   const onSubmit = (event, errors, values) => {
-    console.log(errors);
-    console.log(values);
-    if (errors.length === 0) {
-      // submit
+    console.log("Agregando");
+    let notaEspecialToAdd = '';
+    if (values.details === '') {
+      notaEspecialToAdd = 'SIN NOTA ESPECIAL';
     }
+    else {
+      notaEspecialToAdd = values.details;
+    }
+    const idProductoToAdd = modalIdProducto;
+    const nombreProductoToAdd = modalNombreProducto;
+    const precioProductoToAdd = modalPrecioProducto;
+    const cantidadProductoToAdd = contadorProducto;
+    const totalProductoToAdd = contadorProducto * modalPrecioProducto;
+
+
+    console.log(nombreProductoToAdd);
+    console.log(notaEspecialToAdd);
+    console.log(precioProductoToAdd);
+    console.log(cantidadProductoToAdd);
+    console.log(totalProductoToAdd);
+
+    let idKeyCarrito = JSON.parse(localStorage.getItem('idKeyCarrito'));
+    if (idKeyCarrito === null) {
+      idKeyCarrito = 0;
+    }
+    else {
+      idKeyCarrito += 1;
+    }
+
+    localStorage.setItem('idKeyCarrito', JSON.stringify(idKeyCarrito));
+
+    const productoToAdd = {
+      idKey: idKeyCarrito,
+      id: idProductoToAdd,
+      nombre: nombreProductoToAdd,
+      notaEspecial: notaEspecialToAdd,
+      precio: precioProductoToAdd,
+      cantidad: cantidadProductoToAdd,
+    }
+
+    // dispatch(addNewProductCarrito(productoToAdd));
+    let arr = JSON.parse(localStorage.getItem('carritoLocalStorage'));
+    if (arr === null) {
+      arr = [];
+    }
+    arr.push(productoToAdd);
+    localStorage.setItem('carritoLocalStorage', JSON.stringify(arr));
+    setModalLarge(false);
+    notificacionProductoAgregado(nombreProductoToAdd, cantidadProductoToAdd, totalProductoToAdd);
   };
+
+
+
+  const estado = () => {
+    console.log(estadoApp);
+  }
+
 
   actualizarNav();
   return (
     <Row>
       <Colxx xxs="12">
-        <BreadcrumbTienda heading={header} />
+        <BreadcrumbTienda heading={nombreTienda} />
       </Colxx>
       <Colxx xxs="12">
         <Separator className="mb-5" />
       </Colxx>
-      {showBotonAtras ? (
-        <Colxx xxs="12">
-          <Button color="primary" block className="mb-2 iconsminds-arrow-left-in-circle" onClick={verCategorias} >
-            Categorias
-          </Button>{' '}
-        </Colxx>
-      ) : (
-        <Colxx xxs="12" />
-      )}
-
-      {showProductos ? (
-        <Colxx xxs="12">
-          <Card>
-            <CardBody>
-              <Row>
-                {listProductos}
-              </Row>
-            </CardBody>
-          </Card>
-        </Colxx>
-      ) : (
-        <Colxx xxs="12">
-          <Card>
-            <CardBody>
-              <Row>
-                {listCategorias}
-              </Row>
-            </CardBody>
-          </Card>
-        </Colxx>
-      )}
+      {
+        showBotonAtras ? (
+          <Colxx xxs="12">
+            <Button color="primary" block className="mb-2 iconsminds-arrow-left-in-circle" onClick={verCategorias} >
+              Volver a Categorias
+            </Button>{' '}
+          </Colxx>
+        ) : (
+          <Colxx xxs="12" />
+        )
+      }
+      {
+        showProductos ? (
+          <Colxx xxs="12">
+            <Card>
+              <CardBody>
+                <Row>
+                  {listProductos}
+                </Row>
+              </CardBody>
+            </Card>
+          </Colxx>
+        ) : (
+          <Colxx xxs="12">
+            <Card>
+              <CardBody>
+                <Row>
+                  {listCategorias}
+                </Row>
+              </CardBody>
+            </Card>
+          </Colxx>
+        )
+      }
+      <Button color="primary" block className="mb-2 iconsminds-arrow-left-in-circle" onClick={estado} >
+        ver estado
+      </Button>{' '}
       <Modal
         isOpen={modalLarge}
         toggle={() => setModalLarge(!modalLarge)}
@@ -338,13 +404,13 @@ const Tienda = (props) => {
                           <Colxx xxs="12" xs="12" lg="6" className="text-center mb-2">
                             <ButtonGroup >
                               <Button color="primary" block onClick={restarProducto}>
-                                <IntlMessages id="-" />
+                                -
                               </Button>
                               <Button color="primary">
                                 {contadorProducto}
                               </Button>
                               <Button color="primary" onClick={sumarProducto}>
-                                <IntlMessages id="+" />
+                                +
                               </Button>
                             </ButtonGroup>
                           </Colxx>
@@ -355,7 +421,7 @@ const Tienda = (props) => {
                           </Colxx>
                         </Row>
                       </AvGroup>
-                      <Button color="primary" className='iconsminds-add-cart' block onClick={ver} >Agregar al carrito</Button>
+                      <Button color="primary" className='iconsminds-add-cart' block >Agregar al carrito</Button>
                       <Button color="secondary" block onClick={() => { setModalLarge(false) }} >Volver</Button>
                     </CardBody>
                   </Card>
