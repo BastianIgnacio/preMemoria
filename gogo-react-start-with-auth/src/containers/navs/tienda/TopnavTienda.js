@@ -125,7 +125,7 @@ const TopNav = ({
     <nav className="navbar fixed-top">
       <div className="d-flex align-items-center navbar-left" />
       <NavLink className="navbar-logo" to={`${tiendaRoot}/${idTienda}`}>
-        LOGO TIENDA
+        LOGO TIENDA DE {idTienda}
       </NavLink>
 
       <div className="navbar-right">

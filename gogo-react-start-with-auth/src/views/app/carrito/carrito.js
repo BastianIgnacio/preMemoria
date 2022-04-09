@@ -30,6 +30,7 @@ const Carrito = (props) => {
   // Variables para identificar que pag corresponde
   // eslint-disable-next-line no-unused-vars
   const [header, setHeader] = useState('Carrito de compras de ');
+  // ID DE LA TIENDA QUE ESTAMOS CARGANDO EN EL COMPONENTE
   const { id } = useParams();
   // Variable para saber que id del array del carrito vamos a eliminar
   // eslint-disable-next-line no-unused-vars
@@ -73,11 +74,14 @@ const Carrito = (props) => {
   const [arrayCarrito, setArrayCarrito] = useState(
     JSON.parse(localStorage.getItem('carritoLocalStorage'))
   );
+
   // Suma total del array de productos
-  const totalInit = arrayCarrito.reduce(
-    (sum, el) => sum + el.precio * el.cantidad,
-    0
-  );
+  const totalInit = arrayCarrito
+    .filter((producto) => producto.idTienda === id)
+    .reduce((sum, el) => sum + el.precio * el.cantidad, 0);
+
+  // eslint-disable-next-line no-unused-vars
+  const [total, setTotal] = useState(totalInit);
 
   const clickRetiroEnLocal = () => {
     setSelectedRadioEntrega(1);
@@ -90,9 +94,6 @@ const Carrito = (props) => {
     setDelivery(true);
     setRetiroEnLocal(false);
   };
-
-  // eslint-disable-next-line no-unused-vars
-  const [total, setTotal] = useState(totalInit);
 
   const actualizarNav = () => {
     props.llamarPadre(id);
@@ -123,10 +124,9 @@ const Carrito = (props) => {
     const nuevoArray = [...arrayCarrito];
     setArrayCarrito(nuevoArray);
     localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
-    const totalSum = nuevoArray.reduce(
-      (sum, el) => sum + el.precio * el.cantidad,
-      0
-    );
+    const totalSum = nuevoArray
+      .filter((producto) => producto.idTienda === id)
+      .reduce((sum, el) => sum + el.precio * el.cantidad, 0);
     setTotal(totalSum);
   };
 
@@ -139,10 +139,9 @@ const Carrito = (props) => {
       const nuevoArray = [...arrayCarrito];
       setArrayCarrito(nuevoArray);
       localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
-      const totalSum = nuevoArray.reduce(
-        (sum, el) => sum + el.precio * el.cantidad,
-        0
-      );
+      const totalSum = nuevoArray
+        .filter((producto) => producto.idTienda === id)
+        .reduce((sum, el) => sum + el.precio * el.cantidad, 0);
       setTotal(totalSum);
     } else {
       abrirModalEliminar(idKey);
@@ -156,10 +155,9 @@ const Carrito = (props) => {
     const nuevoArray = [...arrayCarrito];
     setArrayCarrito(nuevoArray);
     localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
-    const totalSum = nuevoArray.reduce(
-      (sum, el) => sum + el.precio * el.cantidad,
-      0
-    );
+    const totalSum = nuevoArray
+      .filter((producto) => producto.idTienda === id)
+      .reduce((sum, el) => sum + el.precio * el.cantidad, 0);
     setTotal(totalSum);
     setModalEliminar(false);
   };
@@ -183,65 +181,67 @@ const Carrito = (props) => {
       <Card className="container-fluid">
         <CardBody>
           <Row className="container-fluid">
-            {arrayCarrito.map((producto) => {
-              return (
-                <Colxx xxs="12" key={producto.idKey}>
-                  <Card className="d-flex flex-row mb-2">
-                    <div className="d-flex">
-                      <img
-                        alt="Thumbnail"
-                        src="/assets/img/products/chocolate-cake-thumb.jpg"
-                        className="list-thumbnail responsive border-0 card-img-left"
-                      />
-                    </div>
-                    <div className="pl-2 d-flex flex-grow-1 min-width-zero">
-                      <div className="card-body align-self-center d-flex flex-column flex-lg-row justify-content-between min-width-zero ">
-                        <p className="list-item-heading mb-1 w-60 w-sm-100 font-weight-bold">
-                          {producto.nombre}
-                          {/* VALIDACION --> NOMBRE MAXIMO DE 65 CARACTERES */}
-                        </p>
-                        <p className="mb-1 text-small w-8 w-sm-100 d-flex justify-content-end">
-                          <div className=" list-item-heading font-weight-bold">
-                            {' '}
-                            {producto.cantidad}
-                            {'\u00A0'}
+            {arrayCarrito
+              .filter((producto) => producto.idTienda === id)
+              .map((producto) => {
+                return (
+                  <Colxx xxs="12" key={producto.idKey}>
+                    <Card className="d-flex flex-row mb-2">
+                      <div className="d-flex">
+                        <img
+                          alt="Thumbnail"
+                          src="/assets/img/products/chocolate-cake-thumb.jpg"
+                          className="list-thumbnail responsive border-0 card-img-left"
+                        />
+                      </div>
+                      <div className="pl-2 d-flex flex-grow-1 min-width-zero">
+                        <div className="card-body align-self-center d-flex flex-column flex-lg-row justify-content-between min-width-zero ">
+                          <p className="list-item-heading mb-1 w-60 w-sm-100 font-weight-bold">
+                            {producto.nombreProducto}
+                            {/* VALIDACION --> NOMBRE MAXIMO DE 65 CARACTERES */}
+                          </p>
+                          <p className="mb-1 text-small w-8 w-sm-100 d-flex justify-content-end">
+                            <div className=" list-item-heading font-weight-bold">
+                              {' '}
+                              {producto.cantidad}
+                              {'\u00A0'}
+                            </div>
+                            x $ {producto.precio}
+                          </p>
+                          <p className="mb-1 text-muted list-item-heading font-weight-bold w-8 w-sm-100 d-flex justify-content-end">
+                            $ {producto.cantidad * producto.precio}
+                          </p>
+                          <div className="w-15 w-sm-100 d-flex justify-content-end">
+                            <Button
+                              color="primary"
+                              size="xs"
+                              className="mb-0 mr-1"
+                              onClick={() => restar(producto.idKey)}
+                            >
+                              -
+                            </Button>
+                            <Button
+                              color="primary"
+                              size="xs"
+                              className="mb-0 mr-1"
+                              onClick={() => sumar(producto.idKey)}
+                            >
+                              +
+                            </Button>
+                            <Button
+                              color="danger"
+                              size="xs"
+                              className="mb-0 simple-icon-trash"
+                              onClick={() => abrirModalEliminar(producto.idKey)}
+                            />
                           </div>
-                          x $ {producto.precio}
-                        </p>
-                        <p className="mb-1 text-muted list-item-heading font-weight-bold w-8 w-sm-100 d-flex justify-content-end">
-                          $ {producto.cantidad * producto.precio}
-                        </p>
-                        <div className="w-15 w-sm-100 d-flex justify-content-end">
-                          <Button
-                            color="primary"
-                            size="xs"
-                            className="mb-0 mr-1"
-                            onClick={() => restar(producto.idKey)}
-                          >
-                            -
-                          </Button>
-                          <Button
-                            color="primary"
-                            size="xs"
-                            className="mb-0 mr-1"
-                            onClick={() => sumar(producto.idKey)}
-                          >
-                            +
-                          </Button>
-                          <Button
-                            color="danger"
-                            size="xs"
-                            className="mb-0 simple-icon-trash"
-                            onClick={() => abrirModalEliminar(producto.idKey)}
-                          />
                         </div>
                       </div>
-                    </div>
-                  </Card>
-                </Colxx>
-              );
-            })}
-            {arrayCarrito.length < 1 && (
+                    </Card>
+                  </Colxx>
+                );
+              })}
+            {total === 0 && (
               <Colxx xxs="12" xs="12" lg="12">
                 <Card className="container-fluid d-flex flex-row mb-2 ">
                   <div className="container-fluid pl-0 d-flex flex-grow-1 min-width-zero">

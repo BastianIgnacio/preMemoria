@@ -213,10 +213,10 @@ const Tienda = (props) => {
   });
 
   const notificacionProductoAgregado = (nombreProducto, cantidad, precioTotal) => {
-    const str = `Agregado a tu carrito ${nombreProducto} por un total de $${precioTotal} cantidad ${cantidad}`;
+    const str = `${nombreProducto} x ${cantidad} || $${precioTotal}`;
     NotificationManager.success(
       str,
-      'CLICK PARA VER TU CARRITO',
+      'AGREGADO CORRECTAMENTE',
       3000,
       () => history.push(`/carrito/${id}`),
       null,
@@ -259,8 +259,9 @@ const Tienda = (props) => {
 
     const productoToAdd = {
       idKey: idKeyCarrito,
-      id: idProductoToAdd,
-      nombre: nombreProductoToAdd,
+      idProducto: idProductoToAdd,
+      idTienda: id,
+      nombreProducto: nombreProductoToAdd,
       notaEspecial: notaEspecialToAdd,
       precio: precioProductoToAdd,
       cantidad: cantidadProductoToAdd,
