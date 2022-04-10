@@ -13,15 +13,15 @@ import {
   CardText,
   ButtonGroup,
   Label,
-  Input,
 } from 'reactstrap';
 import Select from 'react-select';
 import { AvForm, AvGroup, AvInput } from 'availity-reactstrap-validation';
 
 import LinesEllipsis from 'react-lines-ellipsis';
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
-import { useParams, Redirect } from 'react-router-dom';
+import { useParams, Redirect, useHistory } from 'react-router-dom';
 import { Colxx } from '../../../components/common/CustomBootstrap';
+import { NotificationManager } from '../../../components/common/react-notifications';
 
 // eslint-disable-next-line no-unused-vars
 const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
@@ -44,36 +44,70 @@ const Carrito = (props) => {
   // Variables para el estado del componente
   // eslint-disable-next-line no-unused-vars
   const dispatch = useDispatch();
+  const history = useHistory();
   // eslint-disable-next-line no-unused-vars
   const estadoApp = useSelector((state) => state);
 
   // Variables para el modal
-  const [modalLarge, setModalLarge] = useState(false);
+  const [modalFinalizarCompra, setModalFinalizarCompra] = useState(false);
   const [selectedRadioPago, setSelectedRadioPago] = useState(0);
   const [selectedRadioEntrega, setSelectedRadioEntrega] = useState(0);
-  // eslint-disable-next-line no-unused-vars
-  const [retiroEnLocal, setRetiroEnLocal] = useState(false);
-  const [delivery, setDelivery] = useState(false);
+
+  // Variables para el select del tiempo para opcion retiro el local
   const dataRetiroEnLocal = [
     { label: 'Lo antes posible', value: 0, key: 0 },
     { label: 'En 15 a 30 minutos', value: 1, key: 1 },
     { label: 'En 30 a 40 minutos', value: 2, key: 2 },
     { label: 'En 40 a 50 minutos', value: 3, key: 3 },
-    { label: 'En 50 minutos a 60 minutos', value: 4, key: 4 },
-    { label: 'En 90 minutos', value: 5, key: 5 },
-    { label: 'En 120 minutos', value: 6, key: 6 },
+    { label: 'En 50 a 60 minutos', value: 4, key: 4 },
+    { label: 'En 60 a 90 minutos', value: 5, key: 5 },
+    { label: 'En 90 a 120 minutos', value: 6, key: 6 },
   ];
-  // eslint-disable-next-line no-unused-vars
   const [selectedOptionLO, setSelectedOptionLO] = useState(
     dataRetiroEnLocal[0]
   );
 
+  // Variable para el select del tiempo para la opcion de delivery
+  const dataDelivery = [
+    { label: 'Lo antes posible', value: 0, key: 0 },
+    { label: 'En 30 a 60 minutos', value: 1, key: 1 },
+    { label: 'En 60 a 90 minutos', value: 2, key: 2 },
+    { label: 'En 90 a 120 minutos', value: 3, key: 3 },
+    { label: 'En 120 a 150 minutos', value: 4, key: 4 },
+  ];
+  const [selectedOptionDelivery, setSelectedOptionDelivery] = useState(
+    dataDelivery[0]
+  );
+
+  // Variables para metodo de pago
+  // eslint-disable-next-line no-unused-vars
+  const [mercadoPago, setMercadoPago] = useState(true);
+  // eslint-disable-next-line no-unused-vars
+  const [efectivo, setEfectivo] = useState(true);
+  // eslint-disable-next-line no-unused-vars
+  const [redcompra, setRedcompra] = useState(true);
+  // eslint-disable-next-line no-unused-vars
+  const [metodoDePago, setMetodoDePago] = useState(0);
+
+  // Variables para metodo de entrega que posee un local comercial
+  // eslint-disable-next-line no-unused-vars
+  const [delivery, setDelivery] = useState(true);
+  // eslint-disable-next-line no-unused-vars
+  const [retiroEnLocal, setRetiroEnLocal] = useState(true);
+  // eslint-disable-next-line no-unused-vars
+  const [metodoDeEntrega, setMetodoDeEntrega] = useState(0);
+
+  // Funcion para iniciar el carrito de compras, en caso de que este null en el localstorage
+  const initCarrito = () => {
+    if (JSON.parse(localStorage.getItem('carritoLocalStorage')) === null) {
+      return [];
+    }
+    return JSON.parse(localStorage.getItem('carritoLocalStorage'));
+  };
+
   // Variable para mostrar el array correspondiente
   // eslint-disable-next-line no-unused-vars
-  // eslint-disable-next-line no-unused-vars
-  const [arrayCarrito, setArrayCarrito] = useState(
-    JSON.parse(localStorage.getItem('carritoLocalStorage'))
-  );
+  const [arrayCarrito, setArrayCarrito] = useState(initCarrito());
 
   // Suma total del array de productos
   const totalInit = arrayCarrito
@@ -85,14 +119,12 @@ const Carrito = (props) => {
 
   const clickRetiroEnLocal = () => {
     setSelectedRadioEntrega(1);
-    setDelivery(false);
-    setRetiroEnLocal(true);
+    setMetodoDeEntrega(1);
   };
 
   const clickDelivery = () => {
     setSelectedRadioEntrega(2);
-    setDelivery(true);
-    setRetiroEnLocal(false);
+    setMetodoDeEntrega(2);
   };
 
   const actualizarNav = () => {
@@ -104,18 +136,30 @@ const Carrito = (props) => {
     return <Redirect to="/error" />;
   }
 
+  // Notificacion al eliminar un producto
+  const notificacionEliminarProducto = (nombreProducto) => {
+    NotificationManager.info(
+      nombreProducto,
+      'ELIMINADO DEL CARRITO',
+      2000,
+      () => history.push(`/carrito/${id}`),
+      null,
+      'filled'
+    );
+  };
+
   // Variables modal eliminar
   const abrirModalEliminar = (idKey) => {
     const found = arrayCarrito.find((element) => element.idKey === idKey);
     setIdKeyEliminar(found.idKey);
-    setNombreProductoEliminar(found.nombre);
+    setNombreProductoEliminar(found.nombreProducto);
     setCantidadProductoEliminar(found.cantidad);
     setNotaProductoEliminar(found.notaEspecial);
     setPrecioProductoEliminar(found.precio);
     setModalEliminar(true);
   };
 
-  // eslint-disable-next-line no-unused-vars
+  // Funcion para sumar un producto en el carrito de compras
   const sumar = (idKey) => {
     const found = arrayCarrito.find((element) => element.idKey === idKey);
     const index = arrayCarrito.indexOf(found);
@@ -130,6 +174,7 @@ const Carrito = (props) => {
     setTotal(totalSum);
   };
 
+  // Funcion para restar un producto en el carrito de compras
   const restar = (idKey) => {
     const found = arrayCarrito.find((element) => element.idKey === idKey);
     const index = arrayCarrito.indexOf(found);
@@ -148,9 +193,11 @@ const Carrito = (props) => {
     }
   };
 
+  // Funcion para eliminar un producto en el carrito de compras
   const eliminar = (idKey) => {
     const found = arrayCarrito.find((element) => element.idKey === idKey);
     const index = arrayCarrito.indexOf(found);
+    const nombreEliminar = arrayCarrito[index].nombreProducto;
     arrayCarrito.splice(index, 1);
     const nuevoArray = [...arrayCarrito];
     setArrayCarrito(nuevoArray);
@@ -160,22 +207,37 @@ const Carrito = (props) => {
       .reduce((sum, el) => sum + el.precio * el.cantidad, 0);
     setTotal(totalSum);
     setModalEliminar(false);
+    notificacionEliminarProducto(nombreEliminar);
+  };
+
+  const finalizarCompra = () => {
+    setModalFinalizarCompra(true);
+  };
+
+  const modificarMetodoPago = (metodo) => {
+    setMetodoDePago(metodo);
+    setSelectedRadioPago(metodo);
+  };
+
+  // Funcion para Enviar el pedido
+  const onSubmit = (event, errors, values) => {
+    console.log(`NOMBRE ${values.nombrePedido}`);
+    console.log(`Telefono ${values.telefono}`);
+    console.log(`Correo ${values.emailNotificacion}`);
+    console.log(`Metodo de entrega:${metodoDeEntrega}`);
+    if (metodoDeEntrega === 1) {
+      console.log(`Entrega en ${selectedOptionLO.label}`);
+      console.log(`Entrega en ${selectedOptionLO.key}`);
+      console.log(`Entrega en ${selectedOptionLO.value}`);
+    }
+    if (metodoDeEntrega === 2) {
+      console.log(`Delivery a ${values.direccionDelivery}`);
+      console.log(`Tiempo de entrega delivery ${selectedOptionDelivery.label}`);
+    }
+    console.log(`Metodo de pago:${metodoDePago}`);
   };
 
   actualizarNav(id);
-  const pagar = () => {
-    console.log('pagar');
-    console.log(estadoApp);
-  };
-
-  const onSubmit = (event, errors, values) => {
-    console.log(errors);
-    console.log(values);
-    if (errors.length === 0) {
-      // submit
-    }
-  };
-
   return (
     <Row>
       <Card className="container-fluid">
@@ -267,7 +329,11 @@ const Carrito = (props) => {
                     </p>
                   </div>
                   <div className="custom-control custom-checkbox pl-0 align-self-center pr-4">
-                    <Button color="primary" className="mb-0" onClick={pagar}>
+                    <Button
+                      color="primary"
+                      className="mb-0"
+                      onClick={finalizarCompra}
+                    >
                       FINALIZAR COMPRA
                     </Button>
                   </div>
@@ -277,7 +343,10 @@ const Carrito = (props) => {
           </Row>
         </CardBody>
       </Card>
-      <Modal isOpen={modalLarge} toggle={() => setModalLarge(!modalLarge)}>
+      <Modal
+        isOpen={modalFinalizarCompra}
+        toggle={() => setModalFinalizarCompra(!modalFinalizarCompra)}
+      >
         <ModalBody>
           <Row>
             <AvForm
@@ -299,12 +368,20 @@ const Carrito = (props) => {
                         <Colxx xxs="12" xs="12" lg="12">
                           <div className="mt-1">
                             <Label className="form-group has-float-label">
-                              <Input type="email" />
+                              <AvInput name="nombrePedido" maxLength="50" />
                               <span>NOMBRE </span>
                             </Label>
                             <Label className="form-group has-float-label">
-                              <Input type="email" />
-                              <span>TELEFONO </span>
+                              <AvInput
+                                name="telefono"
+                                maxLength="14"
+                                placeholder="+569"
+                              />
+                              <span>TELEFONO / WHATSAPP </span>
+                            </Label>
+                            <Label className="form-group has-float-label">
+                              <AvInput name="emailNotificacion" type="email" />
+                              <span>EMAIL </span>
                             </Label>
                           </div>
                         </Colxx>
@@ -324,40 +401,28 @@ const Carrito = (props) => {
                         <Colxx xxs="12" xs="12" lg="12">
                           <div className="d-flex justify-content-center mb-2">
                             <ButtonGroup>
-                              <Button
-                                color="primary"
-                                onClick={clickRetiroEnLocal}
-                                active={selectedRadioEntrega === 1}
-                              >
-                                RETIRO EN LOCAL
-                              </Button>
-                              <Button
-                                color="primary"
-                                onClick={clickDelivery}
-                                active={selectedRadioEntrega === 2}
-                              >
-                                DELIVERY
-                              </Button>
+                              {retiroEnLocal && (
+                                <Button
+                                  color="primary"
+                                  onClick={clickRetiroEnLocal}
+                                  active={selectedRadioEntrega === 1}
+                                >
+                                  RETIRO EN LOCAL
+                                </Button>
+                              )}
+                              {delivery && (
+                                <Button
+                                  color="primary"
+                                  onClick={clickDelivery}
+                                  active={selectedRadioEntrega === 2}
+                                >
+                                  DELIVERY
+                                </Button>
+                              )}
                             </ButtonGroup>
                           </div>
                         </Colxx>
-                        {delivery ? (
-                          <Colxx xxs="12" xs="12" lg="12">
-                            <div className="d-flex justify-content-center ml-4 mr-4">
-                              <AvInput
-                                type="textarea"
-                                placeholder="Aca debe ir la direccion de entrega, lo más exacto posible."
-                                min
-                                name="details"
-                                id="details"
-                                rows="5"
-                              />
-                            </div>
-                          </Colxx>
-                        ) : (
-                          ' '
-                        )}
-                        {retiroEnLocal ? (
+                        {metodoDeEntrega === 1 && (
                           <Colxx xxs="12" xs="12" lg="12">
                             <div className="form-group has-float-label mt-1">
                               <Select
@@ -367,13 +432,36 @@ const Carrito = (props) => {
                                 value={selectedOptionLO}
                                 onChange={(val) => setSelectedOptionLO(val)}
                                 options={dataRetiroEnLocal}
-                                placeholder=""
                               />
-                              <span>EN CUANTO ?</span>
+                              <span>EN CUANTO TIEMPO DESEAS RETIRAR?</span>
                             </div>
                           </Colxx>
-                        ) : (
-                          ' '
+                        )}
+                        {metodoDeEntrega === 2 && (
+                          <Colxx xxs="12" xs="12" lg="12">
+                            <div className="form-group has-float-label mt-1">
+                              <Select
+                                className="react-select"
+                                classNamePrefix="react-select"
+                                name="form-field-name"
+                                value={selectedOptionDelivery}
+                                onChange={(val) =>
+                                  setSelectedOptionDelivery(val)
+                                }
+                                options={dataDelivery}
+                              />
+                              <span>EN CUANTO TIEMPO DESEAS LA ENTREGA?</span>
+                            </div>
+                            <div className="d-flex justify-content-center ml-0 mr-0">
+                              <AvInput
+                                type="textarea"
+                                placeholder="¿Donde lo entregamos?"
+                                name="direccionDelivery"
+                                id="details"
+                                rows="3"
+                              />
+                            </div>
+                          </Colxx>
                         )}
                       </Row>
                     </CardBody>
@@ -391,27 +479,33 @@ const Carrito = (props) => {
                         <Colxx xxs="12" xs="12" lg="12">
                           <div className="d-flex justify-content-center">
                             <ButtonGroup>
-                              <Button
-                                color="primary"
-                                onClick={() => setSelectedRadioPago(1)}
-                                active={selectedRadioPago === 1}
-                              >
-                                EFECTIVO
-                              </Button>
-                              <Button
-                                color="primary"
-                                onClick={() => setSelectedRadioPago(2)}
-                                active={selectedRadioPago === 2}
-                              >
-                                REDCOMPRA
-                              </Button>
-                              <Button
-                                color="primary"
-                                onClick={() => setSelectedRadioPago(3)}
-                                active={selectedRadioPago === 3}
-                              >
-                                MERCADOPAGO
-                              </Button>
+                              {efectivo && (
+                                <Button
+                                  color="primary"
+                                  onClick={() => modificarMetodoPago(1)}
+                                  active={selectedRadioPago === 1}
+                                >
+                                  EFECTIVO
+                                </Button>
+                              )}
+                              {redcompra && (
+                                <Button
+                                  color="primary"
+                                  onClick={() => modificarMetodoPago(2)}
+                                  active={selectedRadioPago === 2}
+                                >
+                                  REDCOMPRA
+                                </Button>
+                              )}
+                              {mercadoPago && (
+                                <Button
+                                  color="primary"
+                                  onClick={() => modificarMetodoPago(3)}
+                                  active={selectedRadioPago === 3}
+                                >
+                                  WEBPAY
+                                </Button>
+                              )}
                             </ButtonGroup>
                           </div>
                         </Colxx>
@@ -443,7 +537,11 @@ const Carrito = (props) => {
                       >
                         ENVIAR PEDIDO
                       </Button>
-                      <Button color="secondary" block onClick={pagar}>
+                      <Button
+                        color="secondary"
+                        block
+                        onClick={() => setModalFinalizarCompra(false)}
+                      >
                         Volver
                       </Button>
                     </CardBody>

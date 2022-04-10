@@ -217,7 +217,7 @@ const Tienda = (props) => {
     NotificationManager.success(
       str,
       'AGREGADO CORRECTAMENTE',
-      3000,
+      4000,
       () => history.push(`/carrito/${id}`),
       null,
       'filled'
