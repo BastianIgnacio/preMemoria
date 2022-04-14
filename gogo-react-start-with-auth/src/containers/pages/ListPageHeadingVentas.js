@@ -14,30 +14,15 @@ import { injectIntl } from 'react-intl';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Colxx, Separator } from '../../components/common/CustomBootstrap';
-import Breadcrumb from '../navs/Breadcrumb';
-import IntlMessages from '../../helpers/IntlMessages';
 
-
-import {
-  DataListIcon,
-  ThumbListIcon,
-  ImageListIcon,
-} from '../../components/svg';
 
 const ListPageHeadingVentas = ({
   intl,
-  displayMode,
-  changeDisplayMode,
-  changeOrderBy,
   changePageSize,
   selectedPageSize,
   totalItemCount,
-  selectedOrderOption,
-  match,
   startIndex,
   endIndex,
-  onSearchKey,
-  orderOptions,
   pageSizes,
   heading,
 }) => {
@@ -50,20 +35,8 @@ const ListPageHeadingVentas = ({
       <Colxx xxs="12">
         <div className="mb-2">
           <h1>
-            <IntlMessages id={heading} />
+            {heading}
           </h1>
-
-          <div className="text-zero top-right-button-container">
-            {'  '}
-            <div>
-              <DatePicker
-                selected={startDate}
-                onChange={setStartDate}
-                placeholderText={messages['forms.date']}
-              />
-            </div>
-          </div>
-          <Breadcrumb match={match} />
         </div>
 
         <div className="mb-2">
@@ -72,7 +45,7 @@ const ListPageHeadingVentas = ({
             className="pt-0 pl-0 d-inline-block d-md-none"
             onClick={() => setDisplayOptionsIsOpen(!displayOptionsIsOpen)}
           >
-            <IntlMessages id="pages.display-options" />{' '}
+            OPCIONES {' '}
             <i className="simple-icon-arrow-down align-middle" />
           </Button>
           <Collapse
@@ -80,59 +53,12 @@ const ListPageHeadingVentas = ({
             className="d-md-block"
             id="displayOptions"
           >
-            <span className="mr-3 d-inline-block float-md-left">
-              <a
-                href="#/"
-                className={`mr-2 view-icon ${displayMode === 'list' ? 'active' : ''
-                  }`}
-                onClick={() => changeDisplayMode('list')}
-              >
-                <DataListIcon />
-              </a>
-              <a
-                href="#/"
-                className={`mr-2 view-icon ${displayMode === 'thumblist' ? 'active' : ''
-                  }`}
-                onClick={() => changeDisplayMode('thumblist')}
-              >
-                <ThumbListIcon />
-              </a>
-              <a
-                href="#/"
-                className={`mr-2 view-icon ${displayMode === 'imagelist' ? 'active' : ''
-                  }`}
-                onClick={() => changeDisplayMode('imagelist')}
-              >
-                <ImageListIcon />
-              </a>
-            </span>
-
             <div className="d-block d-md-inline-block pt-1">
-              <UncontrolledDropdown className="mr-1 float-md-left btn-group mb-1">
-                <DropdownToggle caret color="outline-dark" size="xs">
-                  <IntlMessages id="pages.orderby" />
-                  {selectedOrderOption.label}
-                </DropdownToggle>
-                <DropdownMenu>
-                  {orderOptions.map((order, index) => {
-                    return (
-                      <DropdownItem
-                        key={index}
-                        onClick={() => changeOrderBy(order.column)}
-                      >
-                        {order.label}
-                      </DropdownItem>
-                    );
-                  })}
-                </DropdownMenu>
-              </UncontrolledDropdown>
               <div className="search-sm d-inline-block float-md-left mr-1 mb-1 align-top">
-                <input
-                  type="text"
-                  name="keyword"
-                  id="search"
-                  placeholder={messages['menu.search']}
-                  onKeyPress={(e) => onSearchKey(e)}
+                <DatePicker
+                  selected={startDate}
+                  onChange={setStartDate}
+                  placeholderText={messages['forms.date']}
                 />
               </div>
             </div>

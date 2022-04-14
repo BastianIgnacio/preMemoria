@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 
 import axios from 'axios';
 import { servicePath } from '../../constants/defaultValues';
-import ListPageHeading from '../../containers/pages/ListPageHeading';
 import AddNewModalAdministradorLocalComercial from '../../containers/pages/AddNewModalAdministradorLocalComercial';
 
 import ListPageListing from '../../containers/pages/ListPageListing';
 import useMousetrap from '../../hooks/use-mousetrap';
+import ListPageHeadingAdministradorLocalComercial from '../../containers/pages/ListPageHeadingAdministradorLocalComercial';
 
 const getIndex = (value, arr, prop) => {
   for (let i = 0; i < arr.length; i += 1) {
@@ -157,7 +157,7 @@ const AdmsLocalesComerciales = ({ match }) => {
   ) : (
     <>
       <div className="disable-text-selection">
-        <ListPageHeading
+        <ListPageHeadingAdministradorLocalComercial
           heading="Administradores de Locales Comerciales"
           displayMode={displayMode}
           changeDisplayMode={setDisplayMode}

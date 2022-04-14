@@ -23,13 +23,13 @@ const orderOptions = [
   { column: 'category', label: 'Category' },
   { column: 'status', label: 'Status' },
 ];
-const pageSizes = [4, 8, 12, 20];
+const pageSizes = [5, 10, 15, 20];
 
 const Ventas = ({ match }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [displayMode, setDisplayMode] = useState('list');
+  const [displayMode, setDisplayMode] = useState('thumblist');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedPageSize, setSelectedPageSize] = useState(8);
+  const [selectedPageSize, setSelectedPageSize] = useState(5);
   const [selectedOrderOption, setSelectedOrderOption] = useState({
     column: 'title',
     label: 'Product Name',

@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable no-unused-vars */
 import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 // eslint-disable-next-line no-unused-vars
@@ -13,13 +15,20 @@ import {
   CardText,
   ButtonGroup,
   Label,
+  FormGroup,
 } from 'reactstrap';
-import Select from 'react-select';
-import { AvForm, AvGroup, AvInput } from 'availity-reactstrap-validation';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
 
 import LinesEllipsis from 'react-lines-ellipsis';
 import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
 import { useParams, Redirect, useHistory } from 'react-router-dom';
+import {
+  FormikReactSelect,
+  FormikTagsInput,
+  FormikDatePicker,
+} from '../../../containers/form-validations/FormikFields';
+
 import { Colxx } from '../../../components/common/CustomBootstrap';
 import { NotificationManager } from '../../../components/common/react-notifications';
 
@@ -148,6 +157,41 @@ const Carrito = (props) => {
     );
   };
 
+  // Notificacion al eliminar un producto
+  const notificacionFaltaDireccion = () => {
+    NotificationManager.warning(
+      'POR FAVOR INGRESAR LA DIRECCION PARA LA ENTREGA',
+      'DONDE LO ENTREGAMOS ?',
+      2000,
+      null,
+      null,
+      'filled'
+    );
+  };
+
+  // Notificacion al eliminar un producto
+  const notificacionFormaDePago = () => {
+    NotificationManager.warning(
+      'POR FAVOR SELECCIONAR LA FORMA DE PAGO',
+      'FORMA DE PAGO',
+      2000,
+      null,
+      null,
+      'filled'
+    );
+  };
+
+  // Notificacion al eliminar un producto
+  const notificacionFormaEntrega = () => {
+    NotificationManager.warning(
+      'POR FAVOR SELECCIONAR LA FORMA DE ENTREGA',
+      'ENTREGA',
+      2000,
+      null,
+      null,
+      'filled'
+    );
+  };
   // Variables modal eliminar
   const abrirModalEliminar = (idKey) => {
     const found = arrayCarrito.find((element) => element.idKey === idKey);
@@ -220,22 +264,53 @@ const Carrito = (props) => {
   };
 
   // Funcion para Enviar el pedido
-  const onSubmit = (event, errors, values) => {
-    console.log(`NOMBRE ${values.nombrePedido}`);
-    console.log(`Telefono ${values.telefono}`);
-    console.log(`Correo ${values.emailNotificacion}`);
-    console.log(`Metodo de entrega:${metodoDeEntrega}`);
-    if (metodoDeEntrega === 1) {
-      console.log(`Entrega en ${selectedOptionLO.label}`);
-      console.log(`Entrega en ${selectedOptionLO.key}`);
-      console.log(`Entrega en ${selectedOptionLO.value}`);
-    }
-    if (metodoDeEntrega === 2) {
-      console.log(`Delivery a ${values.direccionDelivery}`);
-      console.log(`Tiempo de entrega delivery ${selectedOptionDelivery.label}`);
-    }
-    console.log(`Metodo de pago:${metodoDePago}`);
+  const onSubmit = (values, { setSubmitting }) => {
+    const payload = {
+      ...values,
+      tiempoDelivery: values.tiempoDelivery.value,
+      tiempoRetiro: values.tiempoRetiro.value,
+      metodoDeEntrega,
+      metodoDePago,
+    };
+    setTimeout(() => {
+      // Cuando no se ha seleccionado metodo de entrega
+      if (payload.metodoDeEntrega === 0) {
+        notificacionFormaEntrega();
+        return;
+      }
+      // Cuando no se ha seleccionado metodo de pago
+      if (metodoDePago === 0) {
+        notificacionFormaDePago();
+        return;
+      }
+      // Cuando la direccion es null o undefined y el metodo de esntrega es delivery
+      if ((typeof payload.direccionDelivery === 'undefined') && (metodoDeEntrega === 2)) {
+        notificacionFaltaDireccion();
+        return;
+      }
+      // Cuando la direccion es vacia y el metodo de entrega es delivery
+      if ((payload.direccionDelivery === "") && (metodoDeEntrega === 2)) {
+        notificacionFaltaDireccion();
+        return;
+      }
+      console.log(JSON.stringify(payload, null, 2));
+      setSubmitting(false);
+      // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
+
+    }, 500);
+
+
   };
+
+  // Validacion para el form que envia la orden
+  const SignupSchema = Yup.object().shape({
+    nombre: Yup.string().required('El nombre es requerido!'),
+    telefono: Yup.string().required('El telefono o whatsapp es requerido!'),
+    email: Yup.string()
+      .email('La direccion de email es invalida')
+      .required('La direccion de email es requerida!'),
+    direccionDelivery: Yup.string(),
+  });
 
   actualizarNav(id);
   return (
@@ -349,206 +424,265 @@ const Carrito = (props) => {
       >
         <ModalBody>
           <Row>
-            <AvForm
-              className="av-tooltip tooltip-label-right"
-              onSubmit={(event, errors, values) =>
-                onSubmit(event, errors, values)
-              }
+            <Formik
+              initialValues={{
+                nombre: '',
+                telefono: '',
+                email: '',
+                tiempoDelivery: {
+                  label: 'Lo antes posible',
+                  value: 0,
+                  key: 0,
+                },
+                tiempoRetiro: { label: 'Lo antes posible', value: 0, key: 0 },
+              }}
+              validationSchema={SignupSchema}
+              onSubmit={onSubmit}
             >
-              <Row>
-                <Colxx xxs="12" xs="12" lg="12">
-                  <Card className="mb-2">
-                    <CardBody>
-                      <Row>
-                        <Colxx xxs="12" xs="12" lg="12">
-                          <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                            DATOS DE CONTACTO
-                          </CardText>
-                        </Colxx>
-                        <Colxx xxs="12" xs="12" lg="12">
-                          <div className="mt-1">
-                            <Label className="form-group has-float-label">
-                              <AvInput name="nombrePedido" maxLength="50" />
-                              <span>NOMBRE </span>
-                            </Label>
-                            <Label className="form-group has-float-label">
-                              <AvInput
-                                name="telefono"
-                                maxLength="14"
-                                placeholder="+569"
-                              />
-                              <span>TELEFONO / WHATSAPP </span>
-                            </Label>
-                            <Label className="form-group has-float-label">
-                              <AvInput name="emailNotificacion" type="email" />
-                              <span>EMAIL </span>
-                            </Label>
-                          </div>
-                        </Colxx>
-                      </Row>
-                    </CardBody>
-                  </Card>
-                </Colxx>
-                <Colxx xxs="12" xs="12" lg="12">
-                  <Card className="mb-2">
-                    <CardBody>
-                      <Row>
-                        <Colxx xxs="12" xs="12" lg="12">
-                          <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                            ENTREGA
-                          </CardText>
-                        </Colxx>
-                        <Colxx xxs="12" xs="12" lg="12">
-                          <div className="d-flex justify-content-center mb-2">
-                            <ButtonGroup>
-                              {retiroEnLocal && (
-                                <Button
-                                  color="primary"
-                                  onClick={clickRetiroEnLocal}
-                                  active={selectedRadioEntrega === 1}
-                                >
-                                  RETIRO EN LOCAL
-                                </Button>
-                              )}
-                              {delivery && (
-                                <Button
-                                  color="primary"
-                                  onClick={clickDelivery}
-                                  active={selectedRadioEntrega === 2}
-                                >
-                                  DELIVERY
-                                </Button>
-                              )}
-                            </ButtonGroup>
-                          </div>
-                        </Colxx>
-                        {metodoDeEntrega === 1 && (
-                          <Colxx xxs="12" xs="12" lg="12">
-                            <div className="form-group has-float-label mt-1">
-                              <Select
-                                className="react-select"
-                                classNamePrefix="react-select"
-                                name="form-field-name"
-                                value={selectedOptionLO}
-                                onChange={(val) => setSelectedOptionLO(val)}
-                                options={dataRetiroEnLocal}
-                              />
-                              <span>EN CUANTO TIEMPO DESEAS RETIRAR?</span>
-                            </div>
-                          </Colxx>
-                        )}
-                        {metodoDeEntrega === 2 && (
-                          <Colxx xxs="12" xs="12" lg="12">
-                            <div className="form-group has-float-label mt-1">
-                              <Select
-                                className="react-select"
-                                classNamePrefix="react-select"
-                                name="form-field-name"
-                                value={selectedOptionDelivery}
-                                onChange={(val) =>
-                                  setSelectedOptionDelivery(val)
-                                }
-                                options={dataDelivery}
-                              />
-                              <span>EN CUANTO TIEMPO DESEAS LA ENTREGA?</span>
-                            </div>
-                            <div className="d-flex justify-content-center ml-0 mr-0">
-                              <AvInput
-                                type="textarea"
-                                placeholder="¿Donde lo entregamos?"
-                                name="direccionDelivery"
-                                id="details"
-                                rows="3"
-                              />
-                            </div>
-                          </Colxx>
-                        )}
-                      </Row>
-                    </CardBody>
-                  </Card>
-                </Colxx>
-                <Colxx xxs="12" xs="12" lg="12">
-                  <Card className="mb-2">
-                    <CardBody>
-                      <Row>
-                        <Colxx xxs="12" xs="12" lg="12">
-                          <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                            FORMA DE PAGO
-                          </CardText>
-                        </Colxx>
-                        <Colxx xxs="12" xs="12" lg="12">
-                          <div className="d-flex justify-content-center">
-                            <ButtonGroup>
-                              {efectivo && (
-                                <Button
-                                  color="primary"
-                                  onClick={() => modificarMetodoPago(1)}
-                                  active={selectedRadioPago === 1}
-                                >
-                                  EFECTIVO
-                                </Button>
-                              )}
-                              {redcompra && (
-                                <Button
-                                  color="primary"
-                                  onClick={() => modificarMetodoPago(2)}
-                                  active={selectedRadioPago === 2}
-                                >
-                                  REDCOMPRA
-                                </Button>
-                              )}
-                              {mercadoPago && (
-                                <Button
-                                  color="primary"
-                                  onClick={() => modificarMetodoPago(3)}
-                                  active={selectedRadioPago === 3}
-                                >
-                                  WEBPAY
-                                </Button>
-                              )}
-                            </ButtonGroup>
-                          </div>
-                        </Colxx>
-                      </Row>
-                    </CardBody>
-                  </Card>
-                </Colxx>
-                <Colxx xxs="12" xs="12" lg="12">
-                  <Card className="mb-4">
-                    <CardBody>
-                      <AvGroup>
-                        <Row>
-                          <Colxx
-                            xxs="12"
-                            xs="12"
-                            lg="12"
-                            className="text-center"
+              {({
+                handleSubmit,
+                setFieldValue,
+                setFieldTouched,
+                handleChange,
+                handleBlur,
+                values,
+                errors,
+                touched,
+                isSubmitting,
+              }) => (
+                <Form className="av-tooltip tooltip-label-bottom">
+                  <Row>
+                    <Colxx xxs="12" xs="12" lg="12">
+                      <Card className="mb-2">
+                        <CardBody>
+                          <Row>
+                            <Colxx xxs="12" xs="12" lg="12">
+                              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                                DATOS DE CONTACTO
+                              </CardText>
+                            </Colxx>
+                            <Colxx xxs="12" xs="12" lg="12">
+                              <FormGroup className="form-group has-top-label error-l-100 tooltip-label-right">
+                                <Label>NOMBRE</Label>
+                                <Field className="form-control" name="nombre" />
+                                {errors.nombre && touched.nombre ? (
+                                  <div className="invalid-feedback d-block ">
+                                    {errors.nombre}
+                                  </div>
+                                ) : null}
+                              </FormGroup>
+                              <FormGroup className="form-group has-top-label error-l-100 tooltip-label-right">
+                                <Label>TELEFONO/ WHATSAPP (+569XXXXXXXX)</Label>
+                                <Field
+                                  className="form-control"
+                                  name="telefono"
+                                  maxLength="14"
+                                />
+                                {errors.telefono && touched.telefono ? (
+                                  <div className="invalid-feedback d-block">
+                                    {errors.telefono}
+                                  </div>
+                                ) : null}
+                              </FormGroup>
+                              <FormGroup className="form-group has-top-label error-l-100 tooltip-label-right">
+                                <Label>EMAIL</Label>
+                                <Field className="form-control" name="email" />
+                                {errors.email && touched.email ? (
+                                  <div className="invalid-feedback d-block">
+                                    {errors.email}
+                                  </div>
+                                ) : null}
+                              </FormGroup>
+                            </Colxx>
+                          </Row>
+                        </CardBody>
+                      </Card>
+                    </Colxx>
+                    <Colxx xxs="12" xs="12" lg="12">
+                      <Card className="mb-2">
+                        <CardBody>
+                          <Row>
+                            <Colxx xxs="12" xs="12" lg="12">
+                              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                                ENTREGA
+                              </CardText>
+                            </Colxx>
+                            <Colxx xxs="12" xs="12" lg="12">
+                              <div className="d-flex justify-content-center mb-2">
+                                <ButtonGroup>
+                                  {retiroEnLocal && (
+                                    <Button
+                                      color="primary"
+                                      onClick={clickRetiroEnLocal}
+                                      active={selectedRadioEntrega === 1}
+                                    >
+                                      RETIRO EN LOCAL
+                                    </Button>
+                                  )}
+                                  {delivery && (
+                                    <Button
+                                      color="primary"
+                                      onClick={clickDelivery}
+                                      active={selectedRadioEntrega === 2}
+                                    >
+                                      DELIVERY
+                                    </Button>
+                                  )}
+                                </ButtonGroup>
+                              </div>
+                            </Colxx>
+                            {metodoDeEntrega === 1 && (
+                              <Colxx xxs="12" xs="12" lg="12">
+                                <div className="form-group has-float-label mt-1">
+                                  <FormGroup className="form-group has-top-label">
+                                    <Label>
+                                      EN CUANTO TIEMPO DESEAS RETIRAR?
+                                    </Label>
+                                    <FormikReactSelect
+                                      name="tiempoRetiro"
+                                      id="state"
+                                      value={values.tiempoRetiro}
+                                      options={dataDelivery}
+                                      onChange={setFieldValue}
+                                      onBlur={setFieldTouched}
+                                    />
+                                    {errors.state && touched.state ? (
+                                      <div className="invalid-feedback d-block">
+                                        {errors.state}
+                                      </div>
+                                    ) : null}
+                                  </FormGroup>
+                                </div>
+                              </Colxx>
+                            )}
+                            {metodoDeEntrega === 2 && (
+                              <Colxx xxs="12" xs="12" lg="12">
+                                <div className="form-group has-float-label mt-1">
+                                  <FormGroup className="form-group has-top-label">
+                                    <Label>
+                                      EN CUANTO TIEMPO DESEAS LA ENTREGA?
+                                    </Label>
+                                    <FormikReactSelect
+                                      name="tiempoDelivery"
+                                      value={values.tiempoDelivery}
+                                      options={dataDelivery}
+                                      onChange={setFieldValue}
+                                      onBlur={setFieldTouched}
+                                    />
+                                    {errors.state && touched.state ? (
+                                      <div className="invalid-feedback d-block">
+                                        {errors.state}
+                                      </div>
+                                    ) : null}
+                                  </FormGroup>
+                                </div>
+                                <div className="form-group has-float-label mt-1">
+                                  <FormGroup className="form-group has-top-label">
+                                    <Label>EN DONDE LO ENTREGAMOS ? </Label>
+                                    <Field
+                                      as="textarea"
+                                      rows="2"
+                                      className="form-control"
+                                      name="direccionDelivery"
+                                      placeholder="Ingresar la direccion lo más detallado posible."
+                                    />
+                                    {errors.direccionDelivery &&
+                                      touched.direccionDelivery ? (
+                                      <div className="invalid-feedback d-block">
+                                        {errors.direccionDelivery}
+                                      </div>
+                                    ) : null}
+                                  </FormGroup>
+                                </div>
+                              </Colxx>
+                            )}
+                          </Row>
+                        </CardBody>
+                      </Card>
+                    </Colxx>
+                    <Colxx xxs="12" xs="12" lg="12">
+                      <Card className="mb-2">
+                        <CardBody>
+                          <Row>
+                            <Colxx xxs="12" xs="12" lg="12">
+                              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                                FORMA DE PAGO
+                              </CardText>
+                            </Colxx>
+                            <Colxx xxs="12" xs="12" lg="12">
+                              <div className="d-flex justify-content-center">
+                                <ButtonGroup>
+                                  {efectivo && (
+                                    <Button
+                                      color="primary"
+                                      onClick={() => modificarMetodoPago(1)}
+                                      active={selectedRadioPago === 1}
+                                    >
+                                      EFECTIVO
+                                    </Button>
+                                  )}
+                                  {redcompra && (
+                                    <Button
+                                      color="primary"
+                                      onClick={() => modificarMetodoPago(2)}
+                                      active={selectedRadioPago === 2}
+                                    >
+                                      REDCOMPRA
+                                    </Button>
+                                  )}
+                                  {mercadoPago && (
+                                    <Button
+                                      color="primary"
+                                      onClick={() => modificarMetodoPago(3)}
+                                      active={selectedRadioPago === 3}
+                                    >
+                                      WEBPAY
+                                    </Button>
+                                  )}
+                                </ButtonGroup>
+                              </div>
+                            </Colxx>
+                          </Row>
+                        </CardBody>
+                      </Card>
+                    </Colxx>
+                    <Colxx xxs="12" xs="12" lg="12">
+                      <Card className="mb-4">
+                        <CardBody>
+                          <Row>
+                            <Colxx
+                              xxs="12"
+                              xs="12"
+                              lg="12"
+                              className="text-center"
+                            >
+                              <CardText className="text-muted text-center text-large font-weight-bold mt-1 mb-2">
+                                TOTAL $ 12.500
+                              </CardText>
+                            </Colxx>
+                          </Row>
+                          <Button
+                            color="primary"
+                            className="iconsminds-add-cart"
+                            type="submit"
+                            block
                           >
-                            <CardText className="text-muted text-center text-large font-weight-bold mt-1 mb-2">
-                              TOTAL $ 12.500
-                            </CardText>
-                          </Colxx>
-                        </Row>
-                      </AvGroup>
-                      <Button
-                        color="primary"
-                        className="iconsminds-add-cart"
-                        block
-                      >
-                        ENVIAR PEDIDO
-                      </Button>
-                      <Button
-                        color="secondary"
-                        block
-                        onClick={() => setModalFinalizarCompra(false)}
-                      >
-                        Volver
-                      </Button>
-                    </CardBody>
-                  </Card>
-                </Colxx>
-              </Row>
-            </AvForm>
+                            ENVIAR PEDIDO
+                          </Button>
+                          <Button
+                            color="secondary"
+                            block
+                            onClick={() => setModalFinalizarCompra(false)}
+                          >
+                            Volver
+                          </Button>
+                        </CardBody>
+                      </Card>
+                    </Colxx>
+                  </Row>
+                </Form>
+              )}
+            </Formik>
           </Row>
         </ModalBody>
       </Modal>

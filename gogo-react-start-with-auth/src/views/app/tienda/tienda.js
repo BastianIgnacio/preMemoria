@@ -222,7 +222,6 @@ const Tienda = (props) => {
       null,
       'filled'
     );
-
   }
 
   const onSubmit = (event, errors, values) => {

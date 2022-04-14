@@ -19,8 +19,13 @@ import {
   resetPasswordError,
 } from './actions';
 
-import { adminRoot, currentUser } from '../../constants/defaultValues';
-import { setCurrentUser } from '../../helpers/Utils';
+import {
+  adminRoot,
+  currentUser,
+  adminLocalComercialRoot,
+  superAdminRoot,
+} from '../../constants/defaultValues';
+import { setCurrentUser, getCurrentUser } from '../../helpers/Utils';
 
 export function* watchLoginUser() {
   // eslint-disable-next-line no-use-before-define
@@ -43,7 +48,17 @@ function* loginWithEmailPassword({ payload }) {
       const item = { uid: loginUser.user.uid, ...currentUser };
       setCurrentUser(item);
       yield put(loginUserSuccess(item));
-      history.push(adminRoot);
+      //* ACA VAMOS A HARCODEAR EL LOGIN */
+      const parche = getCurrentUser();
+      if (parche.role === 1) {
+        // Role de super admin
+        history.push(superAdminRoot);
+      }
+      if (parche.role === 2) {
+        // Role de AdminLocalComercial
+        history.push(adminLocalComercialRoot);
+      }
+      // history.push(adminRoot);
     } else {
       yield put(loginUserError(loginUser.message));
     }

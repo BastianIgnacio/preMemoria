@@ -2,11 +2,11 @@ import React, { useState, useEffect } from 'react';
 
 import axios from 'axios';
 import { servicePath } from '../../constants/defaultValues';
-import ListPageHeading from '../../containers/pages/ListPageHeading';
 import AddNewModalLocalComercial from '../../containers/pages/AddNewModalLocalComercial';
 
 import ListPageListing from '../../containers/pages/ListPageListing';
 import useMousetrap from '../../hooks/use-mousetrap';
+import ListPageHeadingLocalesComerciales from '../../containers/pages/ListPageHeadingLocalesComerciales';
 
 const getIndex = (value, arr, prop) => {
   for (let i = 0; i < arr.length; i += 1) {
@@ -34,7 +34,7 @@ const categories = [
 
 const LocalesComerciales = ({ match }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [displayMode, setDisplayMode] = useState('list');
+  const [displayMode, setDisplayMode] = useState('thumblist');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPageSize, setSelectedPageSize] = useState(8);
   const [selectedOrderOption, setSelectedOrderOption] = useState({
@@ -157,7 +157,7 @@ const LocalesComerciales = ({ match }) => {
   ) : (
     <>
       <div className="disable-text-selection">
-        <ListPageHeading
+        <ListPageHeadingLocalesComerciales
           heading="Locales Comerciales"
           displayMode={displayMode}
           changeDisplayMode={setDisplayMode}

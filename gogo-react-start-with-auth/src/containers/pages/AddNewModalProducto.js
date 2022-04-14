@@ -1,92 +1,178 @@
+/* eslint-disable prettier/prettier */
+/* eslint-disable no-unused-vars */
 import React from 'react';
 import {
-  CustomInput,
   Button,
   Modal,
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Input,
   Label,
+  FormGroup,
+  Row,
   InputGroup,
   InputGroupAddon,
+  CustomInput,
+  Input
 } from 'reactstrap';
-import Select from 'react-select';
-import IntlMessages from '../../helpers/IntlMessages';
-import CustomSelectInput from '../../components/common/CustomSelectInput';
+import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
+import { FormikCustomRadioGroup } from '../form-validations/FormikFields';
+import { Colxx } from '../../components/common/CustomBootstrap';
+import PreviewImage from './previewImage';
 
 const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
-  const categories = [
-    { label: 'ADM1', value: 'Cakes', key: 0 },
-    { label: 'ADM2', value: 'Cupcakes', key: 1 },
-    { label: 'ADM3', value: 'Desserts', key: 2 },
+  const categorias = [
+    { value: "", label: 'Selecciona una opción' },
+    { value: "1", label: 'Cateogia 1' },
+    { value: "2", label: 'Categoria 2' },
+    { value: "3", label: 'Categoria 3' },
   ];
+  const enLinea = [
+    { label: 'En Linea (Visible)', value: 1 },
+    { label: 'Fuera de Linea (No Visible)', value: 2 },
+  ];
+
+  const onSubmit = (values, { setSubmitting }) => {
+    const payload = {
+      ...values,
+    };
+    setTimeout(() => {
+      // Cuando no se ha seleccionado metodo de entrega
+      console.log(values.foto);
+      console.log(JSON.stringify(payload, null, 2));
+      setSubmitting(false);
+      // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
+    }, 500);
+    toggleModal();
+  };
+
+  // Validacion para el form que envia la orden
+  const SignupSchema = Yup.object().shape({
+    nombreProducto: Yup.string().required(
+      'El nombre del producto es requerido!'
+    ),
+    selectCategoria: Yup.string().required('Debe seleccionar la categoria !'),
+  });
+
+
   return (
-    <Modal
-      isOpen={modalOpen}
-      toggle={toggleModal}
-      wrapClassName="modal-right"
-      backdrop="static"
+    <Formik
+      initialValues={{
+        nombreProducto: '',
+        selectCategoria: "",
+        enLineaRadio: 2,
+        foto: null,
+      }}
+      // validationSchema={SignupSchema}
+      onSubmit={onSubmit}
     >
-      <ModalHeader toggle={toggleModal}>
-        <IntlMessages id="Añadir Producto" />
-      </ModalHeader>
-      <ModalBody>
-        <Label className="mt-4">
-          <IntlMessages id="Nombre producto" />
-        </Label>
-        <Input />
-        <Label className="mt-4">
-          <IntlMessages id="Categoria del producto" />
-        </Label>
-        <Select
-          components={{ Input: CustomSelectInput }}
-          className="react-select"
-          classNamePrefix="react-select"
-          name="form-field-name"
-          options={categories}
-        />
-        <Label className="mt-4">
-          <IntlMessages id="Precio" />
-        </Label>
-        <Input />
-        <Label className="mt-4">
-          <IntlMessages id="Estado del articulo" />
-        </Label>
-        <CustomInput
-          type="radio"
-          id="exCustomRadio"
-          name="customRadio"
-          label="En linea"
-        />
-        <CustomInput
-          type="radio"
-          id="exCustomRadio2"
-          name="customRadio"
-          label="Fuera de linea"
-        />
-        <Label className="mt-4">
-          <IntlMessages id="Fotos del producto" />
-        </Label>
-        <InputGroup className="mb-3">
-          <CustomInput
-            type="file"
-            id="exampleCustomFileBrowser2"
-            name="customFile"
-          />
-          <InputGroupAddon addonType="append">Upload</InputGroupAddon>
-        </InputGroup>
-      </ModalBody>
-      <ModalFooter>
-        <Button color="secondary" outline onClick={toggleModal}>
-          <IntlMessages id="Cancelar" />
-        </Button>
-        <Button color="primary" onClick={toggleModal}>
-          <IntlMessages id="Agregar" />
-        </Button>{' '}
-      </ModalFooter>
-    </Modal>
+      {({
+        handleSubmit,
+        setFieldValue,
+        setFieldTouched,
+        handleChange,
+        handleBlur,
+        values,
+        errors,
+        touched,
+        isSubmitting,
+      }) => (
+        <Modal
+          isOpen={modalOpen}
+          toggle={toggleModal}
+          wrapClassName="modal-right"
+          backdrop="static"
+        >
+          <Form className="av-tooltip tooltip-label-bottom">
+            <ModalHeader toggle={toggleModal}>Añadir Producto</ModalHeader>
+            <ModalBody>
+              <Row>
+                <Colxx xxs="12" xs="12" lg="12">
+                  <FormGroup className="error-l-150">
+                    <Label>NOMBRE PRODUCTO </Label>
+                    <Field className="form-control" name="nombreProducto" />
+                    {errors.nombreProducto && touched.nombreProducto ? (
+                      <div className="invalid-feedback d-block">
+                        {errors.nombreProducto}
+                      </div>
+                    ) : null}
+                  </FormGroup>
+                </Colxx>
+                <Colxx xxs="12" xs="12" lg="12">
+                  <FormGroup className="error-l-150">
+                    <Label>CATEGORIA QUE PERTENECE </Label>
+                    <select
+                      name="selectCategoria"
+                      className="form-control"
+                      value={values.selectCategoria}
+                      onChange={handleChange}
+                      onBlur={handleBlur}
+                    >
+                      {categorias.map((item, i) => {
+                        return (
+                          <option value={item.value} key={item.value}>
+                            {item.label}
+                          </option>
+                        );
+                      })}
+                    </select>
+                    {errors.selectCategoria && touched.selectCategoria ? (
+                      <div className="invalid-feedback d-block">
+                        {errors.selectCategoria}
+                      </div>
+                    ) : null}
+                  </FormGroup>
+                </Colxx>
+                <Colxx xxs="12" xs="12" lg="12">
+                  <FormGroup className="error-l-175">
+                    <Label className="d-block">ESTADO DEL PRODUCTO</Label>
+                    <FormikCustomRadioGroup
+                      inline
+                      name="enLineaRadio"
+                      id="enLineaRadio"
+                      label="Which of these?"
+                      value={values.enLineaRadio}
+                      onChange={setFieldValue}
+                      onBlur={setFieldTouched}
+                      options={enLinea}
+                    />
+                    {errors.enLineaRadio && touched.enLineaRadio ? (
+                      <div className="invalid-feedback d-block">
+                        {errors.enLineaRadio}
+                      </div>
+                    ) : null}
+                  </FormGroup>
+
+                </Colxx>
+                <Colxx xxs="12" xs="12" lg="12">
+                  <FormGroup className="error-l-175">
+                    <Label className="d-block">FOTO DEL PRODUCTO (Opcional)</Label>
+                    <InputGroup className="mb-3">
+                      <Input
+                        type="file"
+                        name="foto"
+                        onChange={(event) => {
+                          setFieldValue("foto", event.target.files[0]);
+                        }} />
+                    </InputGroup>
+                  </FormGroup>
+                  {values.foto && <PreviewImage file={values.foto} />}
+                </Colxx>
+              </Row>
+            </ModalBody>
+            <ModalFooter>
+              <Button color="secondary" outline onClick={toggleModal}>
+                Cancelar
+              </Button>
+              <Button color="primary" type="submit">
+                Agregar
+              </Button>{' '}
+            </ModalFooter>
+          </Form>
+        </Modal>
+      )}
+    </Formik>
   );
 };
-
 export default AddNewModalCategoria;

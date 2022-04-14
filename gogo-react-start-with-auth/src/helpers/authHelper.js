@@ -16,8 +16,6 @@ const ProtectedRoute = ({
           if (roles.includes(currentUser.role)) {
             return <Component {...props} />;
           }
-          console.log('no autorizado');
-          console.log(currentUser.role);
           return (
             <Redirect
               to={{

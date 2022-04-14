@@ -1,4 +1,5 @@
-import React from 'react';
+/* eslint-disable no-unused-vars */
+import React, { useState } from 'react';
 import {
   Row,
   Card,
@@ -7,29 +8,67 @@ import {
   Label,
   Button,
   InputGroup,
-  CustomInput,
-  InputGroupAddon,
+  Input,
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
+import * as Yup from 'yup';
 import { FormikSwitch } from '../../containers/form-validations/FormikFields';
 import { Colxx, Separator } from '../../components/common/CustomBootstrap';
 import BreadcrumbNoItems from '../../containers/navs/BreadcrumbNoItems';
-import ReactSelectRegiones from './reactSelectRegiones';
-import IntlMessages from '../../helpers/IntlMessages';
+import PreviewImage from '../../containers/pages/previewImage';
+import { regionesChile } from '../../constants/defaultValues';
 
 const ConfiguracionTienda = () => {
-  const onSubmit = (values) => {
-    console.log(values);
+  // eslint-disable-next-line no-unused-vars
+  const [regiones, setRegiones] = useState(
+    JSON.parse(JSON.stringify(regionesChile))
+  );
+
+  const [region, setRegion] = useState(regiones[0].region);
+  const [comunas, setComunas] = useState(
+    JSON.parse(JSON.stringify(regiones[0].comunas))
+  );
+
+  const getComunas = (regionBuscar) => {
+    const comunasReturn = regiones.find(
+      (regionIterator) => regionIterator.region === regionBuscar
+    );
+    return JSON.parse(JSON.stringify(comunasReturn.comunas));
   };
-  const validateName = (value) => {
-    let error;
-    if (!value) {
-      error = 'Please enter your name';
-    } else if (value.length < 2) {
-      error = 'Value must be longer than 2 characters';
-    }
-    return error;
+
+  const [switchDeliery, setSwitchDelvivery] = useState(false);
+  const [direccionTienda, setDireccionTienda] = useState(
+    'DIRECCION DE LA TIENDA'
+  );
+  const [nombreTienda, setNombreTienda] = useState('NOMBRE DE LA TIENDA');
+  const [linkPersonalizado, setLinkPersonalizado] = useState(
+    'Linkpersonalizadodelatienda'
+  );
+
+  const onSubmit = (values, { setSubmitting }) => {
+    const payload = {
+      ...values,
+    };
+    setTimeout(() => {
+      console.log(JSON.stringify(payload, null, 2));
+      setSubmitting(false);
+      // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
+    }, 500);
   };
+
+  // Validacion para el form que envia la orden
+  const SignupSchema = Yup.object().shape({
+    nombreTienda: Yup.string().required('El nombre del producto es requerido!'),
+    direccionTienda: Yup.string().required(
+      'El nombre del producto es requerido!'
+    ),
+    selectRegion: Yup.string().required('El nombre del producto es requerido!'),
+    selectComuna: Yup.string().required('El nombre del producto es requerido!'),
+    linkPersonalizado: Yup.string().required(
+      'El nombre del producto es requerido!'
+    ),
+  });
+
   return (
     <>
       <Row>
@@ -42,114 +81,144 @@ const ConfiguracionTienda = () => {
         <CardBody>
           <Formik
             initialValues={{
-              nombreTienda: 'Tiendita 1',
-              direccionTienda: '3',
-              region: '3',
-              localidadComunaCiudad: 'Talca',
-              linkPersonalizado: 'link',
-              switch: false,
+              nombreTienda,
+              direccionTienda,
+              selectRegion: region,
+              selectComuna: comunas[0],
+              linkPersonalizado,
+              switch: switchDeliery,
             }}
+            validationSchema={SignupSchema}
             onSubmit={onSubmit}
           >
-            {({ errors, touched, values, setFieldValue, setFieldTouched }) => (
+            {({
+              errors,
+              touched,
+              values,
+              setFieldValue,
+              setFieldTouched,
+              handleChange,
+              handleBlur,
+            }) => (
               <Form className="av-tooltip tooltip-label-right">
-                <FormGroup>
-                  <Label>Nombre de la tienda</Label>
-                  <Field
-                    className="form-control"
-                    name="nombreTienda"
-                    validate={validateName}
-                  />
-                  {errors.name && touched.name && (
-                    <div className="invalid-feedback d-block">
-                      {errors.name}
-                    </div>
-                  )}
-                </FormGroup>
-                <FormGroup>
-                  <Label>Direccion de la tienda</Label>
-                  <Field
-                    className="form-control"
-                    name="direccionTienda"
-                    validate={validateName}
-                  />
-                  {errors.name && touched.name && (
-                    <div className="invalid-feedback d-block">
-                      {errors.name}
-                    </div>
-                  )}
-                </FormGroup>
-                <FormGroup>
-                  <Label>Region</Label>
-                  <ReactSelectRegiones
-                    className="form-control"
-                    classNamePrefix="asd"
-                    name="region"
-                    validate={validateName}
-                  />
-                  {errors.name && touched.name && (
-                    <div className="invalid-feedback d-block">
-                      {errors.name}
-                    </div>
-                  )}
-                </FormGroup>
-                <FormGroup>
-                  <Label>Localidad / Comuna / Ciudad</Label>
-                  <Field
-                    className="form-control"
-                    name="localidadComunaCiudad"
-                    validate={validateName}
-                  />
-                  {errors.name && touched.name && (
-                    <div className="invalid-feedback d-block">
-                      {errors.name}
-                    </div>
-                  )}
-                </FormGroup>
-                <FormGroup>
-                  <Label>Link Personalizado</Label>
-                  <Field
-                    className="form-control"
-                    name="linkPersonalizado"
-                    validate={validateName}
-                  />
-                  {errors.name && touched.name && (
-                    <div className="invalid-feedback d-block">
-                      {errors.name}
-                    </div>
-                  )}
-                </FormGroup>
-                <FormGroup>
-                  <Label>Link Personalizado</Label>
-                  <InputGroup className="mb-3">
-                    <CustomInput
-                      type="file"
-                      id="exampleCustomFileBrowser2"
-                      name="customFile"
-                    />
-                    <InputGroupAddon addonType="append">Upload</InputGroupAddon>
-                  </InputGroup>
-                </FormGroup>
-                <FormGroup className="error-l-100">
-                  <Label>
-                    <IntlMessages id="Recibir ordenes con servicio de delivery" />
-                  </Label>
-                  <FormikSwitch
-                    name="switch"
-                    className="custom-switch custom-switch-primary"
-                    value={values.switch}
-                    onChange={setFieldValue}
-                    onBlur={setFieldTouched}
-                  />
-                  {errors.switch && touched.switch ? (
-                    <div className="invalid-feedback d-block">
-                      {errors.switch}
-                    </div>
-                  ) : null}
-                </FormGroup>
-                <Button color="primary" type="submit">
-                  Guardar Cambios
-                </Button>
+                <Row>
+                  <Colxx xxs="12" xs="12" lg="6">
+                    <FormGroup>
+                      <Label>Nombre de la tienda</Label>
+                      <Field className="form-control" name="nombreTienda" />
+                      {errors.name && touched.name && (
+                        <div className="invalid-feedback d-block">
+                          {errors.name}
+                        </div>
+                      )}
+                    </FormGroup>
+                    <FormGroup className="error-l-150">
+                      <Label>Region</Label>
+                      <select
+                        name="selectRegion"
+                        className="form-control"
+                        value={values.selectRegion}
+                        onChange={(event) => {
+                          setFieldValue('selectRegion', event.target.value);
+                          const comunasNuevaRegion = getComunas(
+                            event.target.value
+                          );
+                          setComunas(comunasNuevaRegion);
+                          setFieldValue('selectComuna', comunasNuevaRegion[0]);
+                        }}
+                        onBlur={handleBlur}
+                      >
+                        {regiones.map((item, i) => {
+                          return (
+                            <option value={item.region} key={item.region}>
+                              {item.region}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </FormGroup>
+                    <FormGroup>
+                      <Label> Comuna </Label>
+                      <select
+                        name="selectComuna"
+                        className="form-control"
+                        value={values.selectComuna}
+                        onChange={(event) => {
+                          setFieldValue('selectComuna', event.target.value);
+                        }}
+                        onBlur={handleBlur}
+                      >
+                        {comunas.map((item, i) => {
+                          return (
+                            <option value={item} key={item}>
+                              {item}
+                            </option>
+                          );
+                        })}
+                      </select>
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Direccion de la tienda</Label>
+                      <Field className="form-control" name="direccionTienda" />
+                      {errors.name && touched.name && (
+                        <div className="invalid-feedback d-block">
+                          {errors.name}
+                        </div>
+                      )}
+                    </FormGroup>
+                    <FormGroup>
+                      <Label>Link Personalizado</Label>
+                      <Field
+                        className="form-control"
+                        name="linkPersonalizado"
+                      />
+                      {errors.name && touched.name && (
+                        <div className="invalid-feedback d-block">
+                          {errors.name}
+                        </div>
+                      )}
+                    </FormGroup>
+                  </Colxx>
+                  <Colxx xxs="12" xs="12" lg="6">
+                    <FormGroup className="error-l-175">
+                      <Label className="d-block">
+                        FOTO DE LA CATEGORIA (Opcional)
+                      </Label>
+                      <InputGroup className="mb-3">
+                        <Input
+                          type="file"
+                          name="foto"
+                          onChange={(event) => {
+                            setFieldValue('foto', event.target.files[0]);
+                          }}
+                        />
+                      </InputGroup>
+                    </FormGroup>
+                    {values.foto && <PreviewImage file={values.foto} />}
+                  </Colxx>
+                  <Colxx xxs="12" xs="12" lg="6">
+                    <FormGroup className="error-l-100">
+                      <Label>Recibir ordenes con servicio de DELIVERY</Label>
+                      <FormikSwitch
+                        name="switch"
+                        className="custom-switch custom-switch-primary"
+                        value={values.switch}
+                        onChange={setFieldValue}
+                        onBlur={setFieldTouched}
+                      />
+                      {errors.switch && touched.switch ? (
+                        <div className="invalid-feedback d-block">
+                          {errors.switch}
+                        </div>
+                      ) : null}
+                    </FormGroup>
+                  </Colxx>
+                  <Colxx xxs="12" xs="12" lg="12">
+                    <Button color="primary" type="submit" block>
+                      Guardar Cambios
+                    </Button>
+                  </Colxx>
+                </Row>
               </Form>
             )}
           </Formik>

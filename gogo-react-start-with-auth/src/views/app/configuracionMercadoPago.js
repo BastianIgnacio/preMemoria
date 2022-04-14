@@ -1,6 +1,6 @@
 /* eslint-disable no-shadow */
 /* eslint-disable no-unused-vars */
-import React, { Component } from 'react';
+import React, { Component, useState } from 'react';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { Row, Card, CardBody, FormGroup, Label, Button } from 'reactstrap';
@@ -18,70 +18,33 @@ import {
 } from '../../containers/form-validations/FormikFields';
 import { Colxx, Separator } from '../../components/common/CustomBootstrap';
 import BreadcrumbNoItems from '../../containers/navs/BreadcrumbNoItems';
-import IntlMessages from '../../helpers/IntlMessages';
-
-const SignupSchema = Yup.object().shape({
-  email: Yup.string()
-    .email('Invalid email address')
-    .required('Email is required!'),
-  select: Yup.string().required('A select option is required!'),
-  reactSelect: Yup.array()
-    .min(3, 'Pick at least 3 tags')
-    .of(
-      Yup.object().shape({
-        label: Yup.string().required(),
-        value: Yup.string().required(),
-      })
-    ),
-  checkboxSingle: Yup.bool().oneOf([true], 'Must agree to something'),
-  checkboxCustomSingle: Yup.bool().oneOf([true], 'Must agree to something'),
-  checkboxGroup: Yup.array()
-    .min(2, 'Pick at least 2 tags')
-    .required('At least one checkbox is required'),
-
-  customCheckGroup: Yup.array()
-    .min(2, 'Pick at least 2 tags')
-    .required('At least one checkbox is required'),
-
-  radioGroup: Yup.string().required('A radio option is required'),
-  customRadioGroup: Yup.string().required('A radio option is required'),
-  tags: Yup.array()
-    .min(3, 'Pick at least 3 tags')
-    .required('At least one checkbox is required'),
-  switch: Yup.bool().oneOf([true], 'Must agree to something'),
-  date: Yup.date().nullable().required('Date required'),
-});
-
-const options = [
-  { value: 'food', label: 'Food' },
-  { value: 'beingfabulous', label: 'Being Fabulous', disabled: true },
-  { value: 'reasonml', label: 'ReasonML' },
-  { value: 'unicorns', label: 'Unicorns' },
-  { value: 'kittens', label: 'Kittens' },
-];
 
 const ConfiguracionMercadoPago = () => {
-  const SignupSchema = Yup.object().shape({
-    firstName: Yup.string()
-      .min(2, 'Too Short!')
-      .max(50, 'Too Long!')
-      .required('Please enter your first name'),
-    lastName: Yup.string()
-      .min(2, 'Too Short!')
-      .max(50, 'Too Long!')
-      .required('Please enter your last name'),
-    email: Yup.string()
-      .email('Invalid email')
-      .required('Please enter your email address'),
-    details: Yup.string().required('Please provide the details'),
-  });
+  const [publicApiKey, setPublicApiKey] = useState('DSTRUHFDFBNHTYUIOLKJ');
+  const [privateApiKey, setPrivateApiKey] = useState('AJSKDLRUTIEOPSLAKSJD');
 
-  const onSubmit = (values) => {
-    console.log('asdasd');
-    console.log(values.switch);
-    console.log(values.publicApiKey);
-    console.log(values.privateApiKey);
+  const onSubmit = (values, { setSubmitting }) => {
+    const payload = {
+      ...values,
+    };
+    setTimeout(() => {
+      // Cuando no se ha seleccionado metodo de entrega
+      console.log(JSON.stringify(payload, null, 2));
+      setSubmitting(false);
+      // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
+    }, 500);
   };
+
+  const SignupSchema = Yup.object().shape({
+    publicApiKey: Yup.string()
+      .min(20, 'Error api key! Se requieren 20 digitos')
+      .max(20, 'Error Api Key! Se requieren 20 digitos')
+      .required('Please enter your first name'),
+    privateApiKey: Yup.string()
+      .min(20, 'Error api key!')
+      .max(20, 'Error Api Key!')
+      .required('Please enter your first name'),
+  });
 
   return (
     <Row>
@@ -94,20 +57,12 @@ const ConfiguracionMercadoPago = () => {
           <CardBody>
             <Formik
               initialValues={{
-                email: 'test@test.com',
-                select: '3',
-                reactSelect: [{ value: 'reasonml', label: 'ReasonML' }],
-                checkboxGroup: ['kittens'],
-                customCheckGroup: ['unicorns'],
-                checkboxSingle: true,
-                checkboxCustomSingle: false,
-                radioGroup: '',
-                customRadioGroup: '',
-                tags: ['cake', 'dessert'],
+                publicApiKey,
+                privateApiKey,
                 switch: false,
-                date: null,
               }}
               onSubmit={onSubmit}
+              validationSchema={SignupSchema}
             >
               {({
                 handleSubmit,
@@ -122,27 +77,25 @@ const ConfiguracionMercadoPago = () => {
               }) => (
                 <Form className="av-tooltip tooltip-label-right">
                   <FormGroup className="error-l-75">
-                    <Label>API Clave Publica</Label>
+                    <Label>API Clave Publica (20 digitos)</Label>
                     <Field className="form-control" name="publicApiKey" />
-                    {errors.firstName && touched.firstName ? (
+                    {errors.publicApiKey && touched.publicApiKey ? (
                       <div className="invalid-feedback d-block">
-                        {errors.firstName}
+                        {errors.publicApiKey}
                       </div>
                     ) : null}
                   </FormGroup>
                   <FormGroup className="error-l-75">
-                    <Label>API Clave Privada</Label>
+                    <Label>API Clave Privada (20 digitos)</Label>
                     <Field className="form-control" name="privateApiKey" />
-                    {errors.firstName && touched.firstName ? (
+                    {errors.privateApiKey && touched.privateApiKey ? (
                       <div className="invalid-feedback d-block">
-                        {errors.firstName}
+                        {errors.privateApiKey}
                       </div>
                     ) : null}
                   </FormGroup>
                   <FormGroup className="error-l-100">
-                    <Label>
-                      <IntlMessages id="MercadoPago" />
-                    </Label>
+                    <Label>MercadoPago</Label>
                     <FormikSwitch
                       name="switch"
                       className="custom-switch custom-switch-primary"

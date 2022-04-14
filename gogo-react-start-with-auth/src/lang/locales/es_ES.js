@@ -46,6 +46,13 @@ module.exports = {
   'menu.search': 'Búsqueda',
   'menu.docs': 'Docs',
   'menu.blank-page': 'Blank Page',
+  'menu.categorias': 'Categorias',
+  'menu.productos': 'Productos',
+  'menu.ventas': 'Ventas',
+  'menu.configuracion': 'Configuración',
+  'menu.mercadopago': 'MercadoPago',
+  'menu.locales': 'Locales',
+  'menu.admlocales': 'Adms. Locales',
   /* 04.Error  */
   'layouts.error-title': 'Vaya, parece que ha ocurrido un error!',
   'layouts.error-code': 'Código de error',

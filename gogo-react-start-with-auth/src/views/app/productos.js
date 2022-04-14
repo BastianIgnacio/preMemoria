@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 
 import axios from 'axios';
 import { servicePath } from '../../constants/defaultValues';
-import ListPageHeading from '../../containers/pages/ListPageHeading';
+import ListPageHeadingProductos from '../../containers/pages/ListPageHeadingProductos';
 import AddNewModalProducto from '../../containers/pages/AddNewModalProducto';
 
 import ListPageListing from '../../containers/pages/ListPageListing';
@@ -24,7 +24,7 @@ const orderOptions = [
   { column: 'category', label: 'Category' },
   { column: 'status', label: 'Status' },
 ];
-const pageSizes = [4, 8, 12, 20];
+const pageSizes = [5, 10, 15];
 
 const categories = [
   { label: 'Cakes', value: 'Cakes', key: 0 },
@@ -34,9 +34,9 @@ const categories = [
 
 const Productos = ({ match }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [displayMode, setDisplayMode] = useState('list');
+  const [displayMode, setDisplayMode] = useState('thumblist');
   const [currentPage, setCurrentPage] = useState(1);
-  const [selectedPageSize, setSelectedPageSize] = useState(8);
+  const [selectedPageSize, setSelectedPageSize] = useState(5);
   const [selectedOrderOption, setSelectedOrderOption] = useState({
     column: 'title',
     label: 'Product Name',
@@ -157,7 +157,7 @@ const Productos = ({ match }) => {
   ) : (
     <>
       <div className="disable-text-selection">
-        <ListPageHeading
+        <ListPageHeadingProductos
           heading="Productos"
           displayMode={displayMode}
           changeDisplayMode={setDisplayMode}
