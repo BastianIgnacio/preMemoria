@@ -14,9 +14,7 @@ import {
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import Select from 'react-select';
 import { Colxx } from '../../components/common/CustomBootstrap';
-import CustomSelectInput from '../../components/common/CustomSelectInput';
 
 const AddNewModalAdministradorLocalComercial = ({ modalOpen, toggleModal }) => {
 
@@ -37,10 +35,10 @@ const AddNewModalAdministradorLocalComercial = ({ modalOpen, toggleModal }) => {
   const SignupSchema = Yup.object().shape({
     nombresAdministrador: Yup.string().required('El nombre es requerido!'),
     apellidosAdministrador: Yup.string().required('El apellido es requerido!'),
-    runAdministrador: Yup.string().required('La RUN es requerido!'),
+    runAdministrador: Yup.string().min(8, 'Debe ser de 8 digitos').max(8, 'Debe ser de 8 digitos').required('La RUN es requerido!'),
     telefonoAdministrador: Yup.string().required('El telefono es requerido!'),
     emailAdministrador: Yup.string().email('Formato de email invalido !').required('El email es requerido!'),
-    passwordAdministrador: Yup.string().required('Una contraseña es requerida!'),
+    passwordAdministrador: Yup.string().min(8, 'La contraseña debe tener minimo 8 caracteres!').required('Una contraseña es requerida!'),
   });
   return (
     <Formik
@@ -104,8 +102,8 @@ const AddNewModalAdministradorLocalComercial = ({ modalOpen, toggleModal }) => {
                 </Colxx>
                 <Colxx xxs="12" xs="12" lg="12">
                   <FormGroup className="error-l-200">
-                    <Label>RUN</Label>
-                    <Field className="form-control" name="runAdministrador" />
+                    <Label>RUN sin digito verificador y sin puntos</Label>
+                    <Field mask="99.999.999" className="form-control" name="runAdministrador" />
                     {errors.runAdministrador &&
                       touched.runAdministrador ? (
                       <div className="invalid-feedback d-block">

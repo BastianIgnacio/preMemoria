@@ -34,7 +34,7 @@ const categories = [
 
 const AdmsLocalesComerciales = ({ match }) => {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [displayMode, setDisplayMode] = useState('list');
+  const [displayMode, setDisplayMode] = useState('thumblist');
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPageSize, setSelectedPageSize] = useState(8);
   const [selectedOrderOption, setSelectedOrderOption] = useState({
