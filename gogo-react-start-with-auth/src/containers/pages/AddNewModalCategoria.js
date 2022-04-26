@@ -14,10 +14,16 @@ import {
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
+import { FormikCustomRadioGroup } from '../form-validations/FormikFields';
 import { Colxx } from '../../components/common/CustomBootstrap';
 import PreviewImage from './previewImage';
 
 const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
+  const enLinea = [
+    { label: 'En Linea (Visible)', value: 1 },
+    { label: 'Fuera de Linea (No Visible)', value: 2 },
+  ];
+
   const onSubmit = (values, { setSubmitting }) => {
     const payload = {
       ...values,
@@ -41,6 +47,7 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
       initialValues={{
         nombreCategoria: '',
         foto: null,
+        enLineaRadio: 2,
       }}
       validationSchema={SignupSchema}
       onSubmit={onSubmit}
@@ -75,6 +82,26 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
                     {errors.nombreCategoria && touched.nombreCategoria ? (
                       <div className="invalid-feedback d-block">
                         {errors.nombreCategoria}
+                      </div>
+                    ) : null}
+                  </FormGroup>
+                </Colxx>
+                <Colxx xxs="12" xs="12" lg="12">
+                  <FormGroup className="error-l-175">
+                    <Label className="d-block">ESTADO DE LA CATEGORIA</Label>
+                    <FormikCustomRadioGroup
+                      inline
+                      name="enLineaRadio"
+                      id="enLineaRadio"
+                      label="Which of these?"
+                      value={values.enLineaRadio}
+                      onChange={setFieldValue}
+                      onBlur={setFieldTouched}
+                      options={enLinea}
+                    />
+                    {errors.enLineaRadio && touched.enLineaRadio ? (
+                      <div className="invalid-feedback d-block">
+                        {errors.enLineaRadio}
                       </div>
                     ) : null}
                   </FormGroup>

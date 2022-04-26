@@ -4,9 +4,8 @@ import axios from 'axios';
 import { servicePath } from '../../constants/defaultValues';
 import ListPageHeadingProductos from '../../containers/pages/ListPageHeadingProductos';
 import AddNewModalProducto from '../../containers/pages/AddNewModalProducto';
-
-import ListPageListing from '../../containers/pages/ListPageListing';
 import useMousetrap from '../../hooks/use-mousetrap';
+import ListPageListingProductos from '../../containers/pages/ListPageListing/ListPageListingProductos';
 
 const getIndex = (value, arr, prop) => {
   for (let i = 0; i < arr.length; i += 1) {
@@ -20,9 +19,8 @@ const getIndex = (value, arr, prop) => {
 const apiUrl = `${servicePath}/cakes/paging`;
 
 const orderOptions = [
-  { column: 'title', label: 'Product Name' },
-  { column: 'category', label: 'Category' },
-  { column: 'status', label: 'Status' },
+  { column: 'category', label: 'Categoria' },
+  { column: 'status', label: 'Estado' },
 ];
 const pageSizes = [5, 10, 15];
 
@@ -38,8 +36,8 @@ const Productos = ({ match }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedPageSize, setSelectedPageSize] = useState(5);
   const [selectedOrderOption, setSelectedOrderOption] = useState({
-    column: 'title',
-    label: 'Product Name',
+    column: 'category',
+    label: 'Categoria',
   });
 
   const [modalOpen, setModalOpen] = useState(false);
@@ -190,7 +188,7 @@ const Productos = ({ match }) => {
           toggleModal={() => setModalOpen(!modalOpen)}
           categories={categories}
         />
-        <ListPageListing
+        <ListPageListingProductos
           items={items}
           displayMode={displayMode}
           selectedItems={selectedItems}

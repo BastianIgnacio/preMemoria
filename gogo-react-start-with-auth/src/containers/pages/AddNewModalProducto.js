@@ -53,6 +53,7 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
       'El nombre del producto es requerido!'
     ),
     selectCategoria: Yup.string().required('Debe seleccionar la categoria !'),
+    descripcion: Yup.string().required('El producto debe tener una descipción'),
   });
 
 
@@ -61,10 +62,12 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
       initialValues={{
         nombreProducto: '',
         selectCategoria: "",
+        precio: 1,
+        descripcion: '',
         enLineaRadio: 2,
         foto: null,
       }}
-      // validationSchema={SignupSchema}
+      validationSchema={SignupSchema}
       onSubmit={onSubmit}
     >
       {({
@@ -125,6 +128,31 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
                   </FormGroup>
                 </Colxx>
                 <Colxx xxs="12" xs="12" lg="12">
+                  <FormGroup className="error-l-150">
+                    <Label>PRECIO DE VENTA </Label>
+                    <InputGroup className="mb-3">
+                      <InputGroupAddon addonType="prepend">$</InputGroupAddon>
+                      <Field className="form-control" type="number" min="1" step="10" name="precio" />
+                    </InputGroup>
+                  </FormGroup>
+                </Colxx>
+                <Colxx xxs="12" xs="12" lg="12">
+                  <FormGroup className="error-l-175">
+                    <Label>DESCRIPCIÓN  </Label>
+                    <Field
+                      as="textarea"
+                      rows="2"
+                      className="form-control"
+                      name="descripcion"
+                    />
+                    {errors.descripcion && touched.descripcion ? (
+                      <div className="invalid-feedback d-block">
+                        {errors.descripcion}
+                      </div>
+                    ) : null}
+                  </FormGroup>
+                </Colxx>
+                <Colxx xxs="12" xs="12" lg="12">
                   <FormGroup className="error-l-175">
                     <Label className="d-block">ESTADO DEL PRODUCTO</Label>
                     <FormikCustomRadioGroup
@@ -143,7 +171,6 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
                       </div>
                     ) : null}
                   </FormGroup>
-
                 </Colxx>
                 <Colxx xxs="12" xs="12" lg="12">
                   <FormGroup className="error-l-175">

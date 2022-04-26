@@ -4,8 +4,8 @@ import axios from 'axios';
 import { servicePath } from '../../constants/defaultValues';
 import ListPageHeadingVentas from '../../containers/pages/ListPageHeadingVentas';
 
-import ListPageListing from '../../containers/pages/ListPageListing';
 import useMousetrap from '../../hooks/use-mousetrap';
+import ListPageListingVentas from '../../containers/pages/ListPageListing/ListPageListingVentas';
 
 const getIndex = (value, arr, prop) => {
   for (let i = 0; i < arr.length; i += 1) {
@@ -178,7 +178,7 @@ const Ventas = ({ match }) => {
           pageSizes={pageSizes}
           toggleModal={() => setModalOpen(!modalOpen)}
         />
-        <ListPageListing
+        <ListPageListingVentas
           items={items}
           displayMode={displayMode}
           selectedItems={selectedItems}

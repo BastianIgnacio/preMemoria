@@ -25,7 +25,7 @@
   @include depth(1);
 
   .card-body {
-    padding: 1.75rem;
+    padding: 1.25rem;
 
     @include respond-below(xs) {
       padding: 1.25rem;
@@ -38,6 +38,7 @@
 
   .card-title {
     margin-bottom: 1.5rem;
+
     @include respond-below(sm) {
       margin-bottom: 1.25rem;
     }
@@ -46,6 +47,7 @@
 
 .card-title {
   font-size: 1.1rem;
+
   @include respond-below(sm) {
     font-size: 0.9rem;
   }
@@ -116,6 +118,7 @@
   background: initial;
   padding-top: 0;
 }
+
 .item-check {
   pointer-events: none;
 }
@@ -283,6 +286,7 @@
 }
 
 .rounded {
+
   .card-img,
   .card-img-fluid,
   .card-img-overlay {
@@ -331,12 +335,14 @@
     left: 10px;
     right: initial;
   }
+
   .card-top-buttons {
     right: initial;
     left: 0;
   }
 
   &.rounded {
+
     .card-img,
     .card-img-fluid,
     .card-img-overlay {
@@ -358,6 +364,7 @@
     }
   }
 }
+
 .card.active {
   @include depth(2);
 }

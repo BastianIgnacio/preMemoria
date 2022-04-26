@@ -5,7 +5,7 @@ import { servicePath } from '../../constants/defaultValues';
 import ListPageHeadingCategorias from '../../containers/pages/ListPageHeadingCategorias';
 import AddNewModalCategoria from '../../containers/pages/AddNewModalCategoria';
 
-import ListPageListing from '../../containers/pages/ListPageListing';
+import ListPageListingCategorias from '../../containers/pages/ListPageListing/ListPageListingCategorias';
 import useMousetrap from '../../hooks/use-mousetrap';
 
 const getIndex = (value, arr, prop) => {
@@ -190,7 +190,7 @@ const Categorias = ({ match }) => {
           toggleModal={() => setModalOpen(!modalOpen)}
           categories={categories}
         />
-        <ListPageListing
+        <ListPageListingCategorias
           items={items}
           displayMode={displayMode}
           selectedItems={selectedItems}

@@ -4,9 +4,9 @@ import axios from 'axios';
 import { servicePath } from '../../constants/defaultValues';
 import AddNewModalAdministradorLocalComercial from '../../containers/pages/AddNewModalAdministradorLocalComercial';
 
-import ListPageListing from '../../containers/pages/ListPageListing';
 import useMousetrap from '../../hooks/use-mousetrap';
 import ListPageHeadingAdministradorLocalComercial from '../../containers/pages/ListPageHeadingAdministradorLocalComercial';
+import ListPageListingAdminLocalComercial from '../../containers/pages/ListPageListing/ListPageListingAdminLocalComercial';
 
 const getIndex = (value, arr, prop) => {
   for (let i = 0; i < arr.length; i += 1) {
@@ -190,7 +190,7 @@ const AdmsLocalesComerciales = ({ match }) => {
           toggleModal={() => setModalOpen(!modalOpen)}
           categories={categories}
         />
-        <ListPageListing
+        <ListPageListingAdminLocalComercial
           items={items}
           displayMode={displayMode}
           selectedItems={selectedItems}

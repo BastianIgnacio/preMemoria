@@ -4,7 +4,7 @@ import axios from 'axios';
 import { servicePath } from '../../constants/defaultValues';
 import AddNewModalLocalComercial from '../../containers/pages/AddNewModalLocalComercial';
 
-import ListPageListing from '../../containers/pages/ListPageListing';
+import ListPageListingLocalesComerciales from '../../containers/pages/ListPageListing/ListPageListingLocalesComerciales';
 import useMousetrap from '../../hooks/use-mousetrap';
 import ListPageHeadingLocalesComerciales from '../../containers/pages/ListPageHeadingLocalesComerciales';
 
@@ -190,7 +190,7 @@ const LocalesComerciales = ({ match }) => {
           toggleModal={() => setModalOpen(!modalOpen)}
           categories={categories}
         />
-        <ListPageListing
+        <ListPageListingLocalesComerciales
           items={items}
           displayMode={displayMode}
           selectedItems={selectedItems}
