@@ -29,7 +29,7 @@ export const firebaseConfig = {
   messagingSenderId: '216495999563',
 };
 
-export const apiRestUrl = 'http://192.168.3.3:8000/api/';
+export const apiRestUrl = 'http://192.168.3.3:8000/api';
 
 export const adminRoot = '/app';
 export const superAdminRoot = '/app/localesComerciales';
@@ -39,7 +39,6 @@ export const tiendaRoot = '/tienda';
 export const buyUrl = 'https://1.envato.market/k4z0';
 export const searchPath = `${adminRoot}/#`;
 export const servicePath = 'https://api.coloredstrategies.com';
-
 export const currentUser = {
   id: 1,
   title: 'Saraasaah Korfgftney',

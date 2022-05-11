@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-unused-vars */
 import React from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Button,
   Modal,
@@ -16,7 +17,10 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { Colxx } from '../../components/common/CustomBootstrap';
 
+import { ADMINLOCALCOMERCIAL_ADD } from '../../redux/actions';
+
 const AddNewModalAdministradorLocalComercial = ({ modalOpen, toggleModal }) => {
+  const dispatch = useDispatch();
 
   const onSubmit = (values, { setSubmitting }) => {
     const payload = {
@@ -27,6 +31,17 @@ const AddNewModalAdministradorLocalComercial = ({ modalOpen, toggleModal }) => {
       console.log(JSON.stringify(payload, null, 2));
       setSubmitting(false);
       // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
+      const adminLocalComercial = {
+        email: payload.emailAdministrador,
+        password: payload.passwordAdministrador,
+        run: payload.runAdministrador,
+        telefono: payload.telefonoAdministrador,
+        username: "usernamedeprueba2",
+        first_name: payload.nombresAdministrador,
+        last_name: payload.apellidosAdministrador,
+        rol: "adminLocal"
+      }
+      dispatch({ type: ADMINLOCALCOMERCIAL_ADD, payload: adminLocalComercial });
     }, 500);
     toggleModal();
   };

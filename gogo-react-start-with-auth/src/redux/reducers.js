@@ -8,6 +8,8 @@ import surveyListApp from './surveyList/reducer';
 import surveyDetailApp from './surveyDetail/reducer';
 import tiendaApp from './tienda/reducer';
 import carroApp from './carrito/reducer';
+import localComercial from './localComercial/reducer';
+import administradorLocalComercial from './adminLocalComercial/reducer';
 
 const reducers = combineReducers({
   menu,
@@ -19,6 +21,8 @@ const reducers = combineReducers({
   surveyDetailApp,
   tiendaApp,
   carroApp,
+  localComercial,
+  administradorLocalComercial,
 });
 
 export default reducers;

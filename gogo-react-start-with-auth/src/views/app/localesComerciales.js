@@ -1,156 +1,132 @@
-import React, { useState, useEffect } from 'react';
-
+import React, { useEffect, useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import axios from 'axios';
-import { servicePath } from '../../constants/defaultValues';
+import { apiRestUrl } from '../../constants/defaultValues';
 import AddNewModalLocalComercial from '../../containers/pages/AddNewModalLocalComercial';
-
 import ListPageListingLocalesComerciales from '../../containers/pages/ListPageListing/ListPageListingLocalesComerciales';
-import useMousetrap from '../../hooks/use-mousetrap';
 import ListPageHeadingLocalesComerciales from '../../containers/pages/ListPageHeadingLocalesComerciales';
 
-const getIndex = (value, arr, prop) => {
-  for (let i = 0; i < arr.length; i += 1) {
-    if (arr[i][prop] === value) {
-      return i;
-    }
-  }
-  return -1;
-};
+import {
+  LOCALCOMERCIALS_CHANGEPAGE,
+  LOCALCOMERCIALS_CHANGEPAGESIZE,
+  LOCALCOMERCIALS_ISLOADED,
+} from '../../redux/actions';
 
-const apiUrl = `${servicePath}/cakes/paging`;
-
-const orderOptions = [
-  { column: 'title', label: 'Product Name' },
-  { column: 'category', label: 'Category' },
-  { column: 'status', label: 'Status' },
-];
 const pageSizes = [4, 8, 12, 20];
 
-const categories = [
-  { label: 'Cakes', value: 'Cakes', key: 0 },
-  { label: 'Cupcakes', value: 'Cupcakes', key: 1 },
-  { label: 'Desserts', value: 'Desserts', key: 2 },
-];
-
 const LocalesComerciales = ({ match }) => {
-  const [isLoaded, setIsLoaded] = useState(false);
+  const dispatch = useDispatch();
   const [displayMode, setDisplayMode] = useState('thumblist');
-  const [currentPage, setCurrentPage] = useState(1);
-  const [selectedPageSize, setSelectedPageSize] = useState(8);
-  const [selectedOrderOption, setSelectedOrderOption] = useState({
-    column: 'title',
-    label: 'Product Name',
-  });
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [totalItemCount, setTotalItemCount] = useState(0);
-  const [totalPage, setTotalPage] = useState(1);
-  const [search, setSearch] = useState('');
-  const [selectedItems, setSelectedItems] = useState([]);
+  const [startItem, setStartItem] = useState(0);
+  const [endItem, setEndItem] = useState(0);
+  // eslint-disable-next-line no-unused-vars
   const [items, setItems] = useState([]);
-  const [lastChecked, setLastChecked] = useState(null);
+  const paginaActual = useSelector(
+    (state) => state.localComercial.paginaActual
+  );
+  const [paginas, setPaginas] = useState(0);
+  const isLoaded = useSelector((state) => state.localComercial.isLoaded);
+  const [totalItems, setTotalItems] = useState(0);
+  const itemsPorPagina = useSelector(
+    (state) => state.localComercial.itemsPorPagina
+  );
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [selectedPageSize, selectedOrderOption]);
-
-  useEffect(() => {
-    async function fetchData() {
+    if (paginaActual === 1) {
+      axios
+        .get(`${apiRestUrl}/listLocalComercial/?limit=${itemsPorPagina}`)
+        .then((res) => {
+          return res.data;
+        })
+        .then((data) => {
+          setTotalItems(data.count);
+          // Aca validamos si es necesaria solo 1 pagina para mostrarlo
+          const valor = data.count / itemsPorPagina;
+          if (valor <= 1) {
+            setPaginas(1);
+            setStartItem(1);
+            setEndItem(data.count);
+          } else {
+            // Es necesario mostrar mas de 2 paginas
+            const resto = valor % 1;
+            let valorTruc = -1;
+            // El resto es cero, por ende son la cantidad justa que cabe en la ultima pagina
+            if (resto === 0) {
+              valorTruc = Math.trunc(valor);
+            }
+            // El resto es disitnto de cero, por ende se necesita una pagina mas
+            else {
+              valorTruc = Math.trunc(valor) + 1;
+            }
+            setPaginas(valorTruc);
+            setStartItem(1);
+            setEndItem(itemsPorPagina);
+          }
+          setItems(data.results);
+          dispatch({ type: LOCALCOMERCIALS_ISLOADED, payload: true });
+        });
+    } else {
+      const offset = itemsPorPagina * paginaActual - itemsPorPagina;
       axios
         .get(
-          `${apiUrl}?pageSize=${selectedPageSize}&currentPage=${currentPage}&orderBy=${selectedOrderOption.column}&search=${search}`
+          `${apiRestUrl}/listLocalComercial/?limit=${itemsPorPagina}&offset=${offset}`
         )
         .then((res) => {
           return res.data;
         })
         .then((data) => {
-          setTotalPage(data.totalPage);
-          setItems(
-            data.data.map((x) => {
-              return { ...x, img: x.img.replace('img/', 'img/products/') };
-            })
-          );
-          setSelectedItems([]);
-          setTotalItemCount(data.totalItem);
-          setIsLoaded(true);
+          setTotalItems(data.count);
+          const valor = data.count / itemsPorPagina;
+          // Es necesario mostrar solo 1 pagina
+          if (valor <= 1) {
+            setPaginas(1);
+            setStartItem(1);
+            setEndItem(data.count);
+          } else {
+            // Es necesario mostrar mas de 2 paginas
+            const resto = valor % 1;
+            let valorTruc = -1;
+            // El resto es cero, por ende son la cantidad justa que cabe en la ultima pagina
+            if (resto === 0) {
+              valorTruc = Math.trunc(valor);
+            }
+            // El resto es disitnto de cero, por ende se necesita una pagina mas
+            else {
+              valorTruc = Math.trunc(valor) + 1;
+            }
+            // Seteamos las paginas encesarias
+            setPaginas(valorTruc);
+            const valorInicio = paginaActual - 1;
+            const valorFinal = paginaActual;
+            const maxItemPagination = paginaActual * itemsPorPagina;
+
+            setStartItem(valorInicio * itemsPorPagina + 1);
+
+            if (maxItemPagination > data.count) {
+              setEndItem(data.count);
+            } else {
+              setEndItem(valorFinal * itemsPorPagina);
+            }
+          }
+          setItems(data.results);
+          dispatch({ type: LOCALCOMERCIALS_ISLOADED, payload: true });
         });
     }
-    fetchData();
-  }, [selectedPageSize, currentPage, selectedOrderOption, search]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [paginaActual, itemsPorPagina]);
 
-  const onCheckItem = (event, id) => {
-    if (
-      event.target.tagName === 'A' ||
-      (event.target.parentElement && event.target.parentElement.tagName === 'A')
-    ) {
-      return true;
-    }
-    if (lastChecked === null) {
-      setLastChecked(id);
-    }
-
-    let selectedList = [...selectedItems];
-    if (selectedList.includes(id)) {
-      selectedList = selectedList.filter((x) => x !== id);
-    } else {
-      selectedList.push(id);
-    }
-    setSelectedItems(selectedList);
-
-    if (event.shiftKey) {
-      let newItems = [...items];
-      const start = getIndex(id, newItems, 'id');
-      const end = getIndex(lastChecked, newItems, 'id');
-      newItems = newItems.slice(Math.min(start, end), Math.max(start, end) + 1);
-      selectedItems.push(
-        ...newItems.map((item) => {
-          return item.id;
-        })
-      );
-      selectedList = Array.from(new Set(selectedItems));
-      setSelectedItems(selectedList);
-    }
-    document.activeElement.blur();
-    return false;
+  const setPaginaActual = (pag) => {
+    // Aca debemos disparar la accion de cambiar la pag actual
+    dispatch({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: pag });
   };
 
-  const handleChangeSelectAll = (isToggle) => {
-    if (selectedItems.length >= items.length) {
-      if (isToggle) {
-        setSelectedItems([]);
-      }
-    } else {
-      setSelectedItems(items.map((x) => x.id));
-    }
-    document.activeElement.blur();
-    return false;
+  const setItemsPorPagina = (newPageSize) => {
+    // Aca debemos disparar la accion de items por pagina
+    dispatch({ type: LOCALCOMERCIALS_CHANGEPAGESIZE, payload: newPageSize });
+    dispatch({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: 1 });
   };
-
-  const onContextMenuClick = (e, data) => {
-    console.log('onContextMenuClick - selected items', selectedItems);
-    console.log('onContextMenuClick - action : ', data.action);
-  };
-
-  const onContextMenu = (e, data) => {
-    const clickedProductId = data.data;
-    if (!selectedItems.includes(clickedProductId)) {
-      setSelectedItems([clickedProductId]);
-    }
-
-    return true;
-  };
-
-  useMousetrap(['ctrl+a', 'command+a'], () => {
-    handleChangeSelectAll(false);
-  });
-
-  useMousetrap(['ctrl+d', 'command+d'], () => {
-    setSelectedItems([]);
-    return false;
-  });
-
-  const startIndex = (currentPage - 1) * selectedPageSize;
-  const endIndex = currentPage * selectedPageSize;
 
   return !isLoaded ? (
     <div className="loading" />
@@ -161,45 +137,26 @@ const LocalesComerciales = ({ match }) => {
           heading="Locales Comerciales"
           displayMode={displayMode}
           changeDisplayMode={setDisplayMode}
-          handleChangeSelectAll={handleChangeSelectAll}
-          changeOrderBy={(column) => {
-            setSelectedOrderOption(
-              orderOptions.find((x) => x.column === column)
-            );
-          }}
-          changePageSize={setSelectedPageSize}
-          selectedPageSize={selectedPageSize}
-          totalItemCount={totalItemCount}
-          selectedOrderOption={selectedOrderOption}
+          changePageSize={setItemsPorPagina}
+          selectedPageSize={itemsPorPagina}
+          totalItemCount={totalItems}
           match={match}
-          startIndex={startIndex}
-          endIndex={endIndex}
-          selectedItemsLength={selectedItems ? selectedItems.length : 0}
+          startIndex={startItem}
+          endIndex={endItem}
           itemsLength={items ? items.length : 0}
-          onSearchKey={(e) => {
-            if (e.key === 'Enter') {
-              setSearch(e.target.value.toLowerCase());
-            }
-          }}
-          orderOptions={orderOptions}
           pageSizes={pageSizes}
           toggleModal={() => setModalOpen(!modalOpen)}
         />
         <AddNewModalLocalComercial
           modalOpen={modalOpen}
           toggleModal={() => setModalOpen(!modalOpen)}
-          categories={categories}
         />
         <ListPageListingLocalesComerciales
           items={items}
           displayMode={displayMode}
-          selectedItems={selectedItems}
-          onCheckItem={onCheckItem}
-          currentPage={currentPage}
-          totalPage={totalPage}
-          onContextMenuClick={onContextMenuClick}
-          onContextMenu={onContextMenu}
-          onChangePage={setCurrentPage}
+          currentPage={paginaActual}
+          totalPage={paginas}
+          onChangePage={setPaginaActual}
         />
       </div>
     </>

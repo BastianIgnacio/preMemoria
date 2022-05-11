@@ -298,8 +298,6 @@ const Carrito = (props) => {
       // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
 
     }, 500);
-
-
   };
 
   // Validacion para el form que envia la orden

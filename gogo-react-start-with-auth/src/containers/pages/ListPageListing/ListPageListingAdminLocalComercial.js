@@ -1,7 +1,6 @@
 import React from 'react';
 import { Row } from 'reactstrap';
 import Pagination from '../Pagination';
-import ContextMenuContainer from '../ContextMenuContainer';
 import DataListView from '../DataListView';
 import ImageListView from '../ImageListView';
 import ThumbListViewAdminLocalComercial from './ThumbListViewAdminLocalComercial';
@@ -17,8 +16,6 @@ const ListPageListingAdminLocalComercial = ({
   onCheckItem,
   currentPage,
   totalPage,
-  onContextMenuClick,
-  onContextMenu,
   onChangePage,
 }) => {
   return (
@@ -39,8 +36,7 @@ const ListPageListingAdminLocalComercial = ({
           return (
             <ThumbListViewAdminLocalComercial
               key={product.id}
-              product={product}
-              isSelect={selectedItems.includes(product.id)}
+              administradorLocalComercial={product}
               collect={collect}
               onCheckItem={onCheckItem}
             />
@@ -60,10 +56,6 @@ const ListPageListingAdminLocalComercial = ({
         currentPage={currentPage}
         totalPage={totalPage}
         onChangePage={(i) => onChangePage(i)}
-      />
-      <ContextMenuContainer
-        onContextMenuClick={onContextMenuClick}
-        onContextMenu={onContextMenu}
       />
     </Row>
   );

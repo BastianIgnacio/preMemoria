@@ -2,8 +2,6 @@ import React from 'react';
 import { Row } from 'reactstrap';
 import Pagination from '../Pagination';
 import ContextMenuContainer from '../ContextMenuContainer';
-import DataListView from '../DataListView';
-import ImageListView from '../ImageListView';
 import ThumbListViewLocalesComerciales from './ThumbListViewLocalesComerciales';
 
 function collect(props) {
@@ -13,8 +11,6 @@ function collect(props) {
 const ListPageListingLocalesComerciales = ({
   items,
   displayMode,
-  selectedItems,
-  onCheckItem,
   currentPage,
   totalPage,
   onContextMenuClick,
@@ -23,38 +19,17 @@ const ListPageListingLocalesComerciales = ({
 }) => {
   return (
     <Row>
-      {items.map((product) => {
-        if (displayMode === 'imagelist') {
-          return (
-            <ImageListView
-              key={product.id}
-              product={product}
-              isSelect={selectedItems.includes(product.id)}
-              collect={collect}
-              onCheckItem={onCheckItem}
-            />
-          );
-        }
+      {items.map((localComercial) => {
         if (displayMode === 'thumblist') {
           return (
             <ThumbListViewLocalesComerciales
-              key={product.id}
-              product={product}
-              isSelect={selectedItems.includes(product.id)}
+              key={localComercial.id}
+              localComercial={localComercial}
               collect={collect}
-              onCheckItem={onCheckItem}
             />
           );
         }
-        return (
-          <DataListView
-            key={product.id}
-            product={product}
-            isSelect={selectedItems.includes(product.id)}
-            onCheckItem={onCheckItem}
-            collect={collect}
-          />
-        );
+        return <div key={localComercial.id} />;
       })}
       <Pagination
         currentPage={currentPage}

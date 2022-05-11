@@ -2,7 +2,7 @@ import React from 'react';
 import { connect } from 'react-redux';
 import { withRouter } from 'react-router-dom';
 
-import TopNav from '../containers/navs/Topnav';
+import TopNav from '../containers/navs/TopnavApp';
 import Sidebar from '../containers/navs/Sidebar';
 import Footer from '../containers/navs/Footer';
 

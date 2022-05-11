@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable no-unused-vars */
 import React from 'react';
+import { useDispatch } from 'react-redux';
 import {
   Button,
   Modal,
@@ -14,41 +15,53 @@ import {
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import Select from 'react-select';
 import { Colxx } from '../../components/common/CustomBootstrap';
-import CustomSelectInput from '../../components/common/CustomSelectInput';
+import {
+  LOCALCOMERCIAL_ADD,
+  LOCALCOMERCIALS_CHANGEPAGE,
+} from '../../redux/actions';
 
 const AddNewModalLocalComercial = ({ modalOpen, toggleModal }) => {
-  const admins = [
-    { label: 'Admin 1', value: '1', key: 0 },
-    { label: 'Admin 2', value: '2', key: 1 },
-    { label: 'Amin 3', value: '3', key: 2 },
-  ];
+  const dispatch = useDispatch();
 
   const onSubmit = (values, { setSubmitting }) => {
     const payload = {
       ...values,
     };
     setTimeout(() => {
-      // Cuando no se ha seleccionado metodo de entrega
       console.log(JSON.stringify(payload, null, 2));
       setSubmitting(false);
       // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
+
+      const nuevoLocalComercial = {
+        tittle: 'seteado',
+        nombre: payload.nombreLocalComercial,
+        direccion: payload.direccionLocalComercial,
+        link: payload.linkLocalComercial,
+        horarioAtencion: 'seteado',
+        tieneDelivery: false,
+        estado: 'Cerrado',
+        privateKeyMercadopago: 'NO',
+        publicKeyMercadopago: 'NO',
+        logo: 'deafult',
+      };
+      dispatch({ type: LOCALCOMERCIAL_ADD, payload: nuevoLocalComercial });
+      dispatch({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: 1 });
     }, 500);
     toggleModal();
   };
 
   // Validacion para el form que envia la orden
   const SignupSchema = Yup.object().shape({
-    selectAdministrador: Yup.string().required('El nombre es requerido!'),
     nombreLocalComercial: Yup.string().required('El nombre es requerido!'),
-    direccionLocalComercial: Yup.string().required('La direccion es requerida!'),
+    direccionLocalComercial: Yup.string().required(
+      'La direccion es requerida!'
+    ),
     linkLocalComercial: Yup.string().required('El LINK es requerido!'),
   });
   return (
     <Formik
       initialValues={{
-        selectAdministrador: admins[0].value,
         nombreLocalComercial: '',
         direccionLocalComercial: '',
         linkLocalComercial: '',
@@ -80,35 +93,14 @@ const AddNewModalLocalComercial = ({ modalOpen, toggleModal }) => {
             <ModalBody>
               <Row>
                 <Colxx xxs="12" xs="12" lg="12">
-                  <FormGroup className="error-l-150">
-                    <Label>ADMINISTRADOR DEL LOCAL COMERCIAL</Label>
-                    <select
-                      name="selectAdministrador"
-                      className="form-control"
-                      value={values.selectAdministrador}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                    >
-                      {admins.map((item, i) => {
-                        return (
-                          <option value={item.value} key={item.value}>
-                            {item.label}
-                          </option>
-                        );
-                      })}
-                    </select>
-                    {errors.selectCategoria && touched.selectCategoria ? (
-                      <div className="invalid-feedback d-block">
-                        {errors.selectCategoria}
-                      </div>
-                    ) : null}
-                  </FormGroup>
-                </Colxx>
-                <Colxx xxs="12" xs="12" lg="12">
                   <FormGroup className="error-l-100">
                     <Label>Nombre del local comercial </Label>
-                    <Field className="form-control" name="nombreLocalComercial" />
+                    <Field
+                      className="form-control"
+                      name="nombreLocalComercial"
+                    />
                     {errors.nombreLocalComercial &&
+                      // eslint-disable-next-line prettier/prettier
                       touched.nombreLocalComercial ? (
                       <div className="invalid-feedback d-block">
                         {errors.nombreLocalComercial}
@@ -119,8 +111,12 @@ const AddNewModalLocalComercial = ({ modalOpen, toggleModal }) => {
                 <Colxx xxs="12" xs="12" lg="12">
                   <FormGroup className="error-l-100">
                     <Label>Direccion Local Comercial </Label>
-                    <Field className="form-control" name="direccionLocalComercial" />
+                    <Field
+                      className="form-control"
+                      name="direccionLocalComercial"
+                    />
                     {errors.direccionLocalComercial &&
+                      // eslint-disable-next-line prettier/prettier
                       touched.direccionLocalComercial ? (
                       <div className="invalid-feedback d-block">
                         {errors.direccionLocalComercial}
@@ -132,8 +128,7 @@ const AddNewModalLocalComercial = ({ modalOpen, toggleModal }) => {
                   <FormGroup className="error-l-100">
                     <Label>LINK Local Comercial </Label>
                     <Field className="form-control" name="linkLocalComercial" />
-                    {errors.linkLocalComercial &&
-                      touched.linkLocalComercial ? (
+                    {errors.linkLocalComercial && touched.linkLocalComercial ? (
                       <div className="invalid-feedback d-block">
                         {errors.linkLocalComercial}
                       </div>
@@ -143,12 +138,12 @@ const AddNewModalLocalComercial = ({ modalOpen, toggleModal }) => {
               </Row>
             </ModalBody>
             <ModalFooter>
+              <Button color="primary" type="submit">
+                Agregar
+              </Button>
               <Button color="secondary" outline onClick={toggleModal}>
                 Cancelar
               </Button>
-              <Button color="primary" type="submit">
-                Agregar
-              </Button>{' '}
             </ModalFooter>
           </Form>
         </Modal>

@@ -39,11 +39,11 @@ const ConfiguracionMercadoPago = () => {
     publicApiKey: Yup.string()
       .min(20, 'Error api key! Se requieren 20 digitos')
       .max(20, 'Error Api Key! Se requieren 20 digitos')
-      .required('Please enter your first name'),
+      .required('Por favor ingresar la Public Key de MercadoPago'),
     privateApiKey: Yup.string()
       .min(20, 'Error api key!')
       .max(20, 'Error Api Key!')
-      .required('Please enter your first name'),
+      .required('Por favor ingresar la PrivateKey de MercadoPago'),
   });
 
   return (
