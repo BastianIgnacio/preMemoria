@@ -1,15 +1,15 @@
 import {
-  ADMINLOCALCOMERCIAL_ADD,
-  ADMINLOCALCOMERCIAL_ISLOADED,
-  ADMINLOCALCOMERCIAL_SET_ITEMS,
-  ADMINLOCALCOMERCIAL_SET_TOTAL_ITEMS,
-  ADMINLOCALCOMERCIAL_SET_START_ITEM,
-  ADMINLOCALCOMERCIAL_SET_END_ITEM,
-  ADMINLOCALCOMERCIAL_SET_PAGINA_ACTUAL,
-  ADMINLOCALCOMERCIAL_SET_PAGINAS,
-  ADMINLOCALCOMERCIAL_SET_ITEM_POR_PAGINA,
-  ADMINLOCALCOMERCIAL_SET_PRIMERA_CARGA,
-  ADMINLOCALCOMERCIAL_RESET,
+  CATEGORIA_ADD,
+  CATEGORIA_IS_LOADED,
+  CATEGORIA_SET_ITEMS,
+  CATEGORIA_SET_TOTAL_ITEMS,
+  CATEGORIA_SET_START_ITEM,
+  CATEGORIA_SET_END_ITEM,
+  CATEGORIA_SET_PAGINA_ACTUAL,
+  CATEGORIA_SET_ITEMS_POR_PAGINA,
+  CATEGORIA_SET_PRIMERA_CARGA,
+  CATEGORIA_SET_PAGINAS,
+  CATEGORIA_RESET,
 } from '../actions';
 
 const INIT_STATE = {
@@ -26,57 +26,56 @@ const INIT_STATE = {
 
 export default (state = INIT_STATE, action) => {
   switch (action.type) {
-    case ADMINLOCALCOMERCIAL_ADD:
-      // eslint-disable-next-line no-debugger
+    case CATEGORIA_ADD:
       return {
         ...state,
       };
-    case ADMINLOCALCOMERCIAL_ISLOADED:
+    case CATEGORIA_IS_LOADED:
       return {
         ...state,
         isLoaded: action.payload,
       };
-    case ADMINLOCALCOMERCIAL_SET_ITEMS:
+    case CATEGORIA_SET_ITEMS:
       return {
         ...state,
         items: action.payload,
       };
-    case ADMINLOCALCOMERCIAL_SET_TOTAL_ITEMS:
+    case CATEGORIA_SET_TOTAL_ITEMS:
       return {
         ...state,
         totalItems: action.payload,
       };
-    case ADMINLOCALCOMERCIAL_SET_START_ITEM:
+    case CATEGORIA_SET_START_ITEM:
       return {
         ...state,
         startItem: action.payload,
       };
-    case ADMINLOCALCOMERCIAL_SET_END_ITEM:
+    case CATEGORIA_SET_END_ITEM:
       return {
         ...state,
         endItem: action.payload,
       };
-    case ADMINLOCALCOMERCIAL_SET_PAGINA_ACTUAL:
+    case CATEGORIA_SET_PAGINA_ACTUAL:
       return {
         ...state,
         paginaActual: action.payload,
       };
-    case ADMINLOCALCOMERCIAL_SET_ITEM_POR_PAGINA:
+    case CATEGORIA_SET_ITEMS_POR_PAGINA:
       return {
         ...state,
         itemsPorPagina: action.payload,
       };
-    case ADMINLOCALCOMERCIAL_SET_PRIMERA_CARGA:
+    case CATEGORIA_SET_PRIMERA_CARGA:
       return {
         ...state,
         primeraCarga: action.payload,
       };
-    case ADMINLOCALCOMERCIAL_SET_PAGINAS:
+    case CATEGORIA_SET_PAGINAS:
       return {
         ...state,
         paginas: action.payload,
       };
-    case ADMINLOCALCOMERCIAL_RESET:
+    case CATEGORIA_RESET:
       return {
         ...state,
         paginas: 1,

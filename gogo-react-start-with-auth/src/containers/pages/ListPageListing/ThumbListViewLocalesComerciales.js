@@ -22,17 +22,28 @@ import * as Yup from 'yup';
 import { NavLink } from 'react-router-dom';
 import { ContextMenuTrigger } from 'react-contextmenu';
 import { Colxx } from '../../../components/common/CustomBootstrap';
+import { NotificationManager } from '../../../components/common/react-notifications';
 import {
   LOCALCOMERCIAL_UPDATE,
   LOCALCOMERCIALS_CHANGEPAGE,
   LOCALCOMERCIALS_CHANGEPAGESIZE,
   LOCALCOMERCIALS_GETADMINSDISPONIBLES,
   LOCALCOMERCIAL_ASIGNAR_ADMIN,
-  LOCALCOMERCIAL_DELETE
+  LOCALCOMERCIAL_DELETE,
+  LOCALCOMERCIALS_UPDATE_ITEMS,
+  LOCALCOMERCIAL_BEFORE_UPDATE,
+  LOCALCOMERCIAL_RESET_ITEMS,
+  LOCALCOMERCIALS_SET_PRIMERA_CARGA_ADMIN,
+  LOCALCOMERCIALS_SET_ADMIN_ASIGNAR,
 } from '../../../redux/actions';
 
 const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
   const dispatch = useDispatch();
+
+  // NOTIFICACIONES
+  const notificacionError = (titulo, subtitulo) => {
+    NotificationManager.error(titulo, subtitulo, 4000, null, null, 'filled');
+  };
 
   // Modals 
   const [modalEditar, setModalEditar] = useState(false);
@@ -42,21 +53,32 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
 
 
   // Variables para mostar el administrador de cada local comercial
-  const [nombreAsinar, setNombreAsignar] = useState('');
-  const [apellidosAsignar, setApellidosAsingar] = useState('');
-  const [runAsignar, setRunAsignar] = useState('');
-  const [telefonoAsignar, setTelefonoAsignar] = useState('');
+  const admins = useSelector((state) => state.localComercial.admins);
+
+  // console.log(admins);
+  const nombresAsignar = useSelector((state) => state.localComercial.nombresAsignar);
+  const apellidosAsignar = useSelector((state) => state.localComercial.apellidosAsignar);
+  const telefonoAsignar = useSelector((state) => state.localComercial.telefonoAsignar);
+  const refAdministradorAsignar = useSelector((state) => state.localComercial.refAdministradorAsignar);
+  const primeraCarga = useSelector((state) => state.localComercial.primeraCargaAdmins);
+  if (primeraCarga) {
+    dispatch({ type: LOCALCOMERCIALS_SET_PRIMERA_CARGA_ADMIN, payload: false });
+    dispatch({ type: LOCALCOMERCIALS_GETADMINSDISPONIBLES });
+  }
 
 
-  // Hace referencia al administrador que se va asignar al LocalComerciar
-  const [refAdministrador, setRefAdministrador] = useState('');
 
 
-
+  // Variables traidas desde redux
+  const paginaActual = useSelector((state) => state.localComercial.paginaActual);
+  const itemsPorPagina = useSelector((state) => state.localComercial.itemsPorPagina);
 
 
   const [mostrarMercadopago, setMostrarMercadopago] = useState(localComercial.tieneMercadopago);
+
+  // Mercadopago
   const largoKeyMercadopago = 20;
+  const [validatonSchemaMercadopago, setValidationSchemaMercadopago] = useState('');
   const results = JSON.parse(JSON.stringify(localComercial))
 
   const localState = useSelector(
@@ -77,7 +99,7 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
     { label: 'NO', value: false, key: 1 },
   ];
 
-  const admins = useSelector((state) => state.localComercial.admins);
+
 
   // Funcion para eliminar un local comercial
   const onSubmitEliminar = (idEliminar, refAdministradorEliminar) => {
@@ -88,6 +110,19 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
         refAdministradorEliminar
       }
     });
+
+    dispatch({ type: LOCALCOMERCIAL_BEFORE_UPDATE, payload: false });
+    dispatch({ type: LOCALCOMERCIAL_RESET_ITEMS, payload: [] });
+    setTimeout(() => {
+      dispatch({
+        type: LOCALCOMERCIALS_UPDATE_ITEMS,
+        payload: {
+          paginaActual: 1,
+          itemsPorPagina,
+          primeraCarga: false,
+        },
+      });
+    }, 200);
   }
 
   // Funcion para Enviar el put del mercadopago
@@ -138,23 +173,25 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
           idLocalComercialToUpdate
         }
       });
-      setModalMercadopago(!modalMercadopago);
 
-      dispatch({
-        type: LOCALCOMERCIALS_CHANGEPAGE,
-        payload: 1,
-      });
-      dispatch({
-        type: LOCALCOMERCIALS_CHANGEPAGESIZE,
-        payload: 8,
-      });
-      dispatch({
-        type: LOCALCOMERCIALS_CHANGEPAGESIZE,
-        payload: 4,
-      });
+      dispatch({ type: LOCALCOMERCIAL_BEFORE_UPDATE, payload: false });
+      dispatch({ type: LOCALCOMERCIAL_RESET_ITEMS, payload: [] });
+      setTimeout(() => {
+        dispatch({
+          type: LOCALCOMERCIALS_UPDATE_ITEMS,
+          payload: {
+            paginaActual,
+            itemsPorPagina,
+            primeraCarga: false,
+          },
+        });
+      }, 100);
+
+      setModalMercadopago(!modalMercadopago);
     }, 500);
   };
 
+  // EDITAR un LOCAL COMERCIAL
   // Funcion para Enviar El put del localComercial
   const onSubmit = (values, { setSubmitting }) => {
     const payload = {
@@ -188,23 +225,22 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
       });
       setModalEditar(!modalEditar);
 
-      dispatch({
-        type: LOCALCOMERCIALS_CHANGEPAGE,
-        payload: 1,
-      });
-      dispatch({
-        type: LOCALCOMERCIALS_CHANGEPAGESIZE,
-        payload: 8,
-      });
-      dispatch({
-        type: LOCALCOMERCIALS_CHANGEPAGESIZE,
-        payload: 4,
-      });
-
+      dispatch({ type: LOCALCOMERCIAL_BEFORE_UPDATE, payload: false });
+      dispatch({ type: LOCALCOMERCIAL_RESET_ITEMS, payload: [] });
+      setTimeout(() => {
+        dispatch({
+          type: LOCALCOMERCIALS_UPDATE_ITEMS,
+          payload: {
+            paginaActual,
+            itemsPorPagina,
+            primeraCarga: false,
+          },
+        });
+      }, 100);
     }, 500);
   };
 
-
+  // ASIGNAR ADMINISTRADOR (EDITAR) UN LOCAL COMERCIAL
   // Funcion para Enviar El put del localComercial
   const onSubmitAsignarAdministrador = (values, { setSubmitting }) => {
     const payload = {
@@ -212,7 +248,8 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
     };
     setTimeout(() => {
       console.log(JSON.stringify(payload, null, 2));
-      const idAdministrador = parseInt(refAdministrador, 10);
+
+      const idAdministrador = parseInt(payload.refAdministradorAsignar, 10);
       setSubmitting(false);
 
       // ACA ARMADOR Y DISPACHAMOS EL DISPAtch
@@ -235,7 +272,7 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
       console.log(idAntiguoAdministrador);
 
       console.log('Nuevo Administrador');
-      console.log(refAdministrador);
+      console.log(idAdministrador);
 
       dispatch({
         type: LOCALCOMERCIAL_ASIGNAR_ADMIN,
@@ -246,9 +283,7 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
           idAntiguoAdministrador
         }
       });
-
       setModalAsignarAdministrador(!modalAsignarAdministrador);
-
     }, 500);
   };
 
@@ -258,7 +293,7 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
   const SignupSchema = Yup.object().shape({
     nombre: Yup.string().required('El nombre es requerido!'),
     direccion: Yup.string().required('La direccíon es requerida!'),
-    link: Yup.string().required('El link es requerido!'),
+    link: Yup.string().required('El link es requerido!').matches(/^\S*$/, 'No son permitidos los espacios en blanco.'),
     horarioAtencion: Yup.string().required(
       'El horario de atencíon es requerido!'
     ),
@@ -266,16 +301,35 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
     selectEstado: Yup.string().required('Ingresar una opción'),
   });
 
-  const mostrarValores = (idAdmin) => {
-    const intAdm = parseInt(idAdmin, 10);
-    const adminLocal = admins.find(adm => adm.id === intAdm);
-    setNombreAsignar(adminLocal.first_name);
-    setApellidosAsingar(adminLocal.last_name);
-    setRunAsignar(adminLocal.run);
-    setTelefonoAsignar(adminLocal.telefono);
+  // Validacion para el form que edita las credenciales de Mercadopago
+  const SignupSchemaMercadopago = Yup.object().shape({
+    publicKeyMercadopago: Yup.string().required('Requerido!')
+      .min(largoKeyMercadopago, `El largo debe ser de ${largoKeyMercadopago} caracteres`)
+      .max(largoKeyMercadopago, `El largo debe ser de ${largoKeyMercadopago} caracteres`)
+      .matches(/^\S*$/, 'No son permitidos los espacios en blanco.'),
+    privateKeyMercadopago: Yup.string().required('Requerido!')
+      .min(largoKeyMercadopago, `El largo debe ser de ${largoKeyMercadopago} caracteres`)
+      .max(largoKeyMercadopago, `El largo debe ser de ${largoKeyMercadopago} caracteres`)
+      .matches(/^\S*$/, 'No son permitidos los espacios en blanco.'),
+  });
 
-  };
 
+
+  const abrirModalAsignar = () => {
+    dispatch({ type: LOCALCOMERCIALS_GETADMINSDISPONIBLES });
+    console.log(admins.length);
+    if (admins.length === 0) {
+      // Notificacion de que no es posible abrir
+      console.log('NO HAY ADMS DISPONIBLES');
+      notificacionError('ERROR', 'No hay administradores disponibles');
+    } else {
+      setModalAsignarAdministrador(!modalAsignarAdministrador);
+    }
+  }
+
+
+  console.log("localState");
+  console.log(localState);
   return (
     <Colxx xxs="12" key={localComercial.id} className="mb-3">
       <ContextMenuTrigger
@@ -326,10 +380,7 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
                     Editar
                   </Button>{' '}
                   <Button
-                    onClick={() => {
-                      dispatch({ type: LOCALCOMERCIALS_GETADMINSDISPONIBLES });
-                      setModalAsignarAdministrador(!modalAsignarAdministrador);
-                    }}
+                    onClick={abrirModalAsignar}
                     color="primary"
                     className="m-1"
                   >
@@ -494,6 +545,8 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
               privateKeyMercadopago: results.privateKeyMercadopago,
             }}
             onSubmit={onSubmitMercadopago}
+            validationSchema={validatonSchemaMercadopago}
+
           >
             {({
               handleSubmit,
@@ -519,10 +572,12 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
                           if (event.target.value === 'true') {
                             setFieldValue('selectMercadopago', 'true');
                             setMostrarMercadopago(true);
+                            setValidationSchemaMercadopago(SignupSchemaMercadopago);
                           }
                           else {
                             setFieldValue('selectMercadopago', 'false');
                             setMostrarMercadopago(false);
+                            setValidationSchemaMercadopago('');
                           }
                         }}
                         onBlur={handleBlur}
@@ -591,7 +646,10 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
         <ModalBody>
           <Formik
             initialValues={{
-              idAdministrador: '',
+              refAdministradorAsignar,
+              nombresAsignar,
+              apellidosAsignar,
+              telefonoAsignar
             }}
             onSubmit={onSubmitAsignarAdministrador}
           >
@@ -614,12 +672,14 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
                       <select
                         name="selectAdministrador"
                         className="form-control"
-                        value={values.idAdministrador}
+                        value={values.refAdministradorAsignar}
                         onChange={(event) => {
-                          setFieldValue('idAdministrador', event.target.value);
-                          console.log(event.target.value);
-                          mostrarValores(event.target.value);
-                          setRefAdministrador(event.target.value);
+                          setFieldValue('refAdministradorAsignar', event.target.value);
+                          const idInt = parseInt(event.target.value, 10);
+                          const adminSelect = admins.filter(item => item.id === idInt);
+                          setFieldValue('nombresAsignar', adminSelect[0].first_name);
+                          setFieldValue('apellidosAsignar', adminSelect[0].last_name);
+                          setFieldValue('telefonoAsignar', adminSelect[0].telefono);
                         }}
                         onBlur={handleBlur}
                       >
@@ -641,25 +701,19 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
                   <Colxx xxs="12" xs="12" lg="12">
                     <FormGroup className="form-group has-top-label error-l-100 tooltip-label-right">
                       <Label>NOMBRES</Label>
-                      <Field disabled className="form-control" value={nombreAsinar} />
+                      <Field disabled className="form-control" name="nombresAsignar" />
                     </FormGroup>
                   </Colxx>
                   <Colxx xxs="12" xs="12" lg="12">
                     <FormGroup className="form-group has-top-label error-l-100 tooltip-label-right">
                       <Label>APELLIDOS</Label>
-                      <Field disabled className="form-control" value={apellidosAsignar} />
-                    </FormGroup>
-                  </Colxx>
-                  <Colxx xxs="12" xs="12" lg="12">
-                    <FormGroup className="form-group has-top-label error-l-100 tooltip-label-right">
-                      <Label>RUN</Label>
-                      <Field disabled className="form-control" value={runAsignar} />
+                      <Field disabled className="form-control" name="apellidosAsignar" />
                     </FormGroup>
                   </Colxx>
                   <Colxx xxs="12" xs="12" lg="12">
                     <FormGroup className="form-group has-top-label error-l-100 tooltip-label-right">
                       <Label>TELEFONO</Label>
-                      <Field disabled className="form-control" value={telefonoAsignar} />
+                      <Field disabled className="form-control" name="telefonoAsignar" />
                     </FormGroup>
                   </Colxx>
                   <Colxx xxs="12" xs="12" lg="12">

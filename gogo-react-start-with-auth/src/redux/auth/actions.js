@@ -13,6 +13,7 @@ import {
   RESET_PASSWORD,
   RESET_PASSWORD_SUCCESS,
   RESET_PASSWORD_ERROR,
+  LOGIN_TIENDA_SUCCESS,
 } from '../actions';
 
 export const loginUser = (user, history) => ({
@@ -70,4 +71,10 @@ export const registerUserError = (message) => ({
 export const logoutUser = (history) => ({
   type: LOGOUT_USER,
   payload: { history },
+});
+
+// Tienda action
+export const loginTiendaSuccess = (tienda) => ({
+  type: LOGIN_TIENDA_SUCCESS,
+  payload: tienda,
 });

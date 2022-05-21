@@ -20,6 +20,7 @@ const ListPageListingCategorias = ({
   onContextMenuClick,
   onContextMenu,
   onChangePage,
+  refLocalComercial,
 }) => {
   return (
     <Row>
@@ -39,10 +40,10 @@ const ListPageListingCategorias = ({
           return (
             <ThumbListViewCategorias
               key={product.id}
-              product={product}
-              isSelect={selectedItems.includes(product.id)}
+              categoria={product}
               collect={collect}
               onCheckItem={onCheckItem}
+              refLocalComercial={refLocalComercial}
             />
           );
         }

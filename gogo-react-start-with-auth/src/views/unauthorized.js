@@ -16,7 +16,7 @@ const Unauthorized = () => {
       // Role de AdminLocalComercial
       return history.push('/app/categorias');
     }
-    return null;
+    return history.push('/user/login');
   };
   useEffect(() => {
     document.body.classList.add('background');

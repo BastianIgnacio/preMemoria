@@ -17,7 +17,7 @@ import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { Colxx } from '../../components/common/CustomBootstrap';
 
-import { ADMINLOCALCOMERCIAL_ADD } from '../../redux/actions';
+import { ADMINLOCALCOMERCIAL_ADD, ADMINLOCALCOMERCIAL_RESET, ADMINLOCALCOMERCIAL_UPDATE_ITEMS } from '../../redux/actions';
 
 const AddNewModalAdministradorLocalComercial = ({ modalOpen, toggleModal }) => {
   const dispatch = useDispatch();
@@ -42,6 +42,18 @@ const AddNewModalAdministradorLocalComercial = ({ modalOpen, toggleModal }) => {
         rol: "adminLocal"
       }
       dispatch({ type: ADMINLOCALCOMERCIAL_ADD, payload: adminLocalComercial });
+      setTimeout(() => {
+        console.log('despachando update');
+        dispatch({ type: ADMINLOCALCOMERCIAL_RESET });
+        dispatch({
+          type: ADMINLOCALCOMERCIAL_UPDATE_ITEMS,
+          payload: {
+            primeraCarga: false,
+            paginaActual: 1,
+            itemsPorPagina: 4,
+          },
+        });
+      }, 200);
     }, 500);
     toggleModal();
   };
@@ -50,7 +62,6 @@ const AddNewModalAdministradorLocalComercial = ({ modalOpen, toggleModal }) => {
   const SignupSchema = Yup.object().shape({
     nombresAdministrador: Yup.string().required('El nombre es requerido!'),
     apellidosAdministrador: Yup.string().required('El apellido es requerido!'),
-    runAdministrador: Yup.string().min(8, 'Debe ser de 8 digitos').max(8, 'Debe ser de 8 digitos').required('La RUN es requerido!'),
     telefonoAdministrador: Yup.string().required('El telefono es requerido!'),
     emailAdministrador: Yup.string().email('Formato de email invalido !').required('El email es requerido!'),
     passwordAdministrador: Yup.string().min(8, 'La contraseña debe tener minimo 8 caracteres!').required('Una contraseña es requerida!'),
@@ -60,7 +71,6 @@ const AddNewModalAdministradorLocalComercial = ({ modalOpen, toggleModal }) => {
       initialValues={{
         nombresAdministrador: '',
         apellidosAdministrador: '',
-        runAdministrador: '',
         telefonoAdministrador: '',
         emailAdministrador: '',
         passwordAdministrador: '',
@@ -111,18 +121,6 @@ const AddNewModalAdministradorLocalComercial = ({ modalOpen, toggleModal }) => {
                       touched.apellidosAdministrador ? (
                       <div className="invalid-feedback d-block">
                         {errors.apellidosAdministrador}
-                      </div>
-                    ) : null}
-                  </FormGroup>
-                </Colxx>
-                <Colxx xxs="12" xs="12" lg="12">
-                  <FormGroup className="error-l-200">
-                    <Label>RUN sin digito verificador y sin puntos</Label>
-                    <Field mask="99.999.999" className="form-control" name="runAdministrador" />
-                    {errors.runAdministrador &&
-                      touched.runAdministrador ? (
-                      <div className="invalid-feedback d-block">
-                        {errors.runAdministrador}
                       </div>
                     ) : null}
                   </FormGroup>

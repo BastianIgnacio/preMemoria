@@ -21,29 +21,24 @@ import {
   LOCALCOMERCIAL_REMOVE_ADMIN,
   LOCALCOMERCIAL_DELETE,
   ADMINLOCALCOMERCIAL_REMOVE,
+  LOCALCOMERCIALS_UPDATE_ITEMS,
+  LOCALCOMERCIALS_SET_ITEMS,
+  LOCALCOMERCIAL_SET_TOTAL_PAGINAS,
+  LOCALCOMERCIAL_SET_START_ITEM,
+  LOCALCOMERCIAL_SET_END_ITEM,
+  LOCALCOMERCIALS_SET_TOTAL_ITEMS,
+  LOCALCOMERCIALS_CHANGEPAGE,
+  LOCALCOMERCIAL_AFTER_UPDATE,
+  LOCALCOMERCIALS_SET_ADMIN_ASIGNAR,
 } from '../actions';
 
-const notificacionAddLocalComercial = () => {
-  NotificationManager.success(
-    'LOCAL COMERCIAL',
-    'AGREGADO CORRECTAMENTE',
-    4000,
-    null,
-    null,
-    'filled'
-  );
-};
-const notificacionErrorAddLocalComercial = () => {
-  NotificationManager.error(
-    'LOCAL COMERCIAL',
-    'NO ES POSIBLE AGREGAR',
-    4000,
-    null,
-    null,
-    'filled'
-  );
+const notificacionSuccess = (titulo, subtitulo) => {
+  NotificationManager.success(titulo, subtitulo, 4000, null, null, 'filled');
 };
 
+const notificacionError = (titulo, subtitulo) => {
+  NotificationManager.error(titulo, subtitulo, 4000, null, null, 'filled');
+};
 // Post para agregar un local comercial
 const addLocalComercialAsync = async (localComercial) =>
   axios.post(`${apiRestUrl}/localComercials/`, localComercial);
@@ -108,6 +103,23 @@ const getLocalComercialPorAdministradorAsync = async (refAdministrador) => {
     });
 };
 
+// eslint-disable-next-line no-unused-vars
+const getLocalesLimit = async (limit) => {
+  return axios
+    .get(`${apiRestUrl}/listLocalComercial/?limit=${limit}`)
+    .then((res) => {
+      return res.data;
+    });
+};
+
+// eslint-disable-next-line no-unused-vars
+const getLocalesLimitOffset = async (limit, offset) => {
+  return axios
+    .get(`${apiRestUrl}/listLocalComercial/?limit=${limit}&offset=${offset}`)
+    .then((res) => {
+      return res.data;
+    });
+};
 //----------------------------------------------------------------
 //----------------------------------------------------------------
 //----------------------------------------------------------------
@@ -120,9 +132,9 @@ function* addLocalComercial({ payload }) {
     yield call(addLocalComercialAsync, payload);
     // eslint-disable-next-line no-unused-vars
     // Aca se deberia llamar a la notificacion
-    notificacionAddLocalComercial();
+    notificacionSuccess('Local Comercial', 'Añadido correctamente');
   } catch (error) {
-    notificacionErrorAddLocalComercial();
+    notificacionError('Error', 'Error al añadir Administrador');
   }
 }
 
@@ -139,9 +151,9 @@ function* updateLocalComercial({ payload }) {
       idLocalComercialToUpdate
     );
     // Aca se deberia llamar a la notificacion
-    notificacionAddLocalComercial();
+    notificacionSuccess('Local Comercial', 'Actualizado correctamente');
   } catch (error) {
-    notificacionErrorAddLocalComercial();
+    notificacionError('Error', 'Error al editar un Local Comercial');
   }
 }
 
@@ -151,12 +163,30 @@ function* getAdministradoresDisponibles() {
     const adminsDisponibles = yield call(
       getAdministradoresLocalesComercialesDisponiblesAsync
     );
-    yield put({
-      type: LOCALCOMERCIALS_SETADMINSDISPONIBLES,
-      payload: adminsDisponibles.results,
-    });
+    if (adminsDisponibles.count > 0) {
+      yield put({
+        type: LOCALCOMERCIALS_SETADMINSDISPONIBLES,
+        payload: adminsDisponibles.results,
+      });
+      // Seteamos en redux el primer administrador
+      yield put({
+        type: LOCALCOMERCIALS_SET_ADMIN_ASIGNAR,
+        payload: {
+          refAdministradorAsignar: adminsDisponibles.results[0].id,
+          nombresAsignar: adminsDisponibles.results[0].first_name,
+          apellidosAsignar: adminsDisponibles.results[0].last_name,
+          telefonoAsignar: adminsDisponibles.results[0].telefono,
+        },
+      });
+    } else {
+      yield put({
+        type: LOCALCOMERCIALS_SETADMINSDISPONIBLES,
+        payload: [],
+      });
+    }
   } catch (error) {
-    console.log('Error al cargar los admins');
+    console.log(error);
+    notificacionError('Error', 'Error al cargar los administradores');
   }
 }
 
@@ -200,6 +230,7 @@ function* localComercialAsignarAdmin({ payload }) {
         idAdministrador,
         adminLocalComercial
       );
+      notificacionSuccess('Local Comercial', 'Asignador correctamente');
     } else {
       // ACTUALIZAMOS LA REFERENCIA EN EL LOCAL COMERCIAL
       // eslint-disable-next-line no-unused-vars
@@ -245,9 +276,11 @@ function* localComercialAsignarAdmin({ payload }) {
         idAntiguoAdministrador,
         antiguoAdminLocalComercial
       );
+      notificacionSuccess('Local Comercial', 'Asignador correctamente');
     }
   } catch (error) {
-    console.log('Error');
+    console.log(error);
+    notificacionError('Error', 'Error al Asignar Administrador');
   }
 }
 function* deleteLocalComercial({ payload }) {
@@ -274,8 +307,9 @@ function* deleteLocalComercial({ payload }) {
     }
     // yield call(deleteLocalComercialAsync, idLocalComercial);
     yield call(getAdministradoresLocalesComercialesDisponiblesAsync);
+    notificacionSuccess('Local Comercial', 'Eliminado correctamente');
   } catch (error) {
-    console.log('Error');
+    notificacionError('Error', 'Error al eliminar Local Comercial');
   }
 }
 
@@ -310,8 +344,140 @@ function* localComercialRemoveAdmin({ payload }) {
       localComercialToUpdate,
       idLocalComercialToUpdate
     );
+    notificacionSuccess('Local Comercial', 'Eliminado correctamente');
   } catch (error) {
-    console.log('Error');
+    notificacionError('Error', 'Error al eliminar Administrador');
+  }
+}
+
+function* updateItems({ payload }) {
+  // eslint-disable-next-line prefer-destructuring
+  const paginaActual = payload.paginaActual;
+  console.log('pagina actual');
+  console.log(paginaActual);
+  // eslint-disable-next-line prefer-destructuring
+  const itemsPorPagina = payload.itemsPorPagina;
+  console.log('items x pagina');
+  console.log(itemsPorPagina);
+  try {
+    if (paginaActual === 1) {
+      const limit = itemsPorPagina;
+      const data = yield call(getLocalesLimit, limit);
+      // Ya tenemos los items a mostar
+      const totalItems = data.count;
+      // Aca validamos si es necesaria solo 1 pagina para mostrarlo
+      const valor = data.count / limit;
+      if (valor <= 1) {
+        // Es necesario solo mostrar 1 pagina
+        const paginas = 1;
+        yield put({ type: LOCALCOMERCIAL_SET_TOTAL_PAGINAS, payload: paginas });
+        // Debemos despachar la accion para mostar la pagina actual == 1
+        yield put({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: paginaActual });
+
+        // Aca debemos despachar que el startItem es 1
+        const startItem = 1;
+        yield put({ type: LOCALCOMERCIAL_SET_START_ITEM, payload: startItem });
+
+        // Aca debemos despacha que el end item es data.count
+        const endItem = data.count;
+        yield put({ type: LOCALCOMERCIAL_SET_END_ITEM, payload: endItem });
+      } else {
+        // Es necesario mostrar mas de 2 paginas
+        const resto = valor % 1;
+        let valorTruc = -1;
+        if (resto === 0) {
+          // Se necesita una cantidad de pagina cerrada
+          valorTruc = Math.trunc(valor);
+        } else {
+          // El resto es distinto de cero, se necesita mas de una pagina
+          valorTruc = Math.trunc(valor) + 1;
+        }
+        // Debemos despachar la accion para mostar la pagina actual == 1
+        yield put({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: paginaActual });
+        const paginas = valorTruc;
+        // Debemos despachar la cantidad de paginas
+        yield put({ type: LOCALCOMERCIAL_SET_TOTAL_PAGINAS, payload: paginas });
+
+        // Aca debemos despachar que el startItem es 1
+        const startItem = 1;
+        yield put({ type: LOCALCOMERCIAL_SET_START_ITEM, payload: startItem });
+
+        // Aca debemos despacha que el end item es items x pagina
+        const endItem = itemsPorPagina;
+        yield put({ type: LOCALCOMERCIAL_SET_END_ITEM, payload: endItem });
+      }
+      // Aca desppachamos una accion con los items(Locales comerciales)
+      const items = data.results;
+      yield put({ type: LOCALCOMERCIALS_SET_ITEMS, payload: items });
+      yield put({ type: LOCALCOMERCIALS_SET_TOTAL_ITEMS, payload: totalItems });
+    } else {
+      // Cuando la pagina actual NO ES LA PRIMERA
+      const limit = itemsPorPagina;
+      const offset = itemsPorPagina * paginaActual - itemsPorPagina;
+      const data = yield call(getLocalesLimitOffset, limit, offset);
+      // Ya tenemos los items a mostrar
+      const totalItems = data.count;
+      console.log(totalItems);
+      const valor = data.count / limit;
+      if (valor <= 1) {
+        // Es necesario solo mostrar 1 pagina
+        const paginas = 1;
+        yield put({ type: LOCALCOMERCIAL_SET_TOTAL_PAGINAS, payload: paginas });
+        // Debemos despachar la accion para mostar la pagina actual == 1
+        yield put({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: 1 });
+
+        // Aca debemos despachar que el startItem es 1
+        const startItem = 1;
+        yield put({ type: LOCALCOMERCIAL_SET_START_ITEM, payload: startItem });
+
+        // Aca debemos despacha que el end item es data.count
+        const endItem = data.count;
+        yield put({ type: LOCALCOMERCIAL_SET_END_ITEM, payload: endItem });
+      } else {
+        // Es necesario mostrar mas de 2 paginas
+        const resto = valor % 1;
+        let valorTruc = -1;
+        // El resto es cero, por ende son la cantidad justa que cabe en la ultima pagina
+        if (resto === 0) {
+          valorTruc = Math.trunc(valor);
+        }
+        // El resto es disitnto de cero, por ende se necesita una pagina mas
+        else {
+          valorTruc = Math.trunc(valor) + 1;
+        }
+        // Debemos despachar la cantidad de paginas
+        const paginas = valorTruc;
+        yield put({ type: LOCALCOMERCIAL_SET_TOTAL_PAGINAS, payload: paginas });
+
+        // Debemos despachar la accion para mostar la pagina actual == 1
+        yield put({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: paginaActual });
+
+        const valorInicio = paginaActual - 1;
+        const valorFinal = paginaActual;
+        const startItem = valorInicio * itemsPorPagina + 1;
+        // Aca debemos despachar el startItem
+        yield put({ type: LOCALCOMERCIAL_SET_START_ITEM, payload: startItem });
+
+        let endItem = -1;
+        const maxItemPagination = paginaActual * itemsPorPagina;
+        if (maxItemPagination > data.count) {
+          endItem = data.count;
+        } else {
+          endItem = valorFinal * itemsPorPagina;
+        }
+        // Aca debemos despachar el endItem
+        yield put({ type: LOCALCOMERCIAL_SET_END_ITEM, payload: endItem });
+      }
+      // Aca desppachamos una accion con los items(Locales comerciales)
+      const items = data.results;
+      yield put({ type: LOCALCOMERCIALS_SET_ITEMS, payload: items });
+      yield put({ type: LOCALCOMERCIALS_SET_TOTAL_ITEMS, payload: totalItems });
+    }
+    yield put({ type: LOCALCOMERCIAL_AFTER_UPDATE, payload: true });
+  } catch (error) {
+    console.log('error');
+    // Notificaion de error
+    // Poner a cargar
   }
 }
 //----------------------------------------------------------------
@@ -344,6 +510,9 @@ export function* watchDeleteLocalComercial() {
 export function* watchRemoveAdministrador() {
   yield takeEvery(LOCALCOMERCIAL_REMOVE_ADMIN, localComercialRemoveAdmin);
 }
+export function* watchUpdateItems() {
+  yield takeEvery(LOCALCOMERCIALS_UPDATE_ITEMS, updateItems);
+}
 //----------------------------------------------------------------
 //----------------------------------------------------------------
 //----------------------------------------------------------------
@@ -358,5 +527,6 @@ export default function* rootSaga() {
     fork(watchAsignarAdministrador),
     fork(watchDeleteLocalComercial),
     fork(watchRemoveAdministrador),
+    fork(watchUpdateItems),
   ]);
 }

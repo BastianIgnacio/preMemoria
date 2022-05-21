@@ -57,7 +57,8 @@ const AddNewModalLocalComercial = ({ modalOpen, toggleModal }) => {
     direccionLocalComercial: Yup.string().required(
       'La direccion es requerida!'
     ),
-    linkLocalComercial: Yup.string().required('El LINK es requerido!'),
+    // eslint-disable-next-line no-useless-escape
+    linkLocalComercial: Yup.string().required('El LINK es requerido!').matches(/^\S*$/, 'No son permitidos los espacios en blanco.'),
   });
   return (
     <Formik
@@ -138,11 +139,11 @@ const AddNewModalLocalComercial = ({ modalOpen, toggleModal }) => {
               </Row>
             </ModalBody>
             <ModalFooter>
-              <Button color="primary" type="submit">
-                Agregar
-              </Button>
               <Button color="secondary" outline onClick={toggleModal}>
                 Cancelar
+              </Button>
+              <Button color="primary" type="submit">
+                Agregar
               </Button>
             </ModalFooter>
           </Form>

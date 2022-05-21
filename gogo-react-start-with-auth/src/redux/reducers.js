@@ -10,6 +10,7 @@ import tiendaApp from './tienda/reducer';
 import carroApp from './carrito/reducer';
 import localComercial from './localComercial/reducer';
 import administradorLocalComercial from './adminLocalComercial/reducer';
+import categorias from './categorias/reducer';
 
 const reducers = combineReducers({
   menu,
@@ -23,6 +24,7 @@ const reducers = combineReducers({
   carroApp,
   localComercial,
   administradorLocalComercial,
+  categorias,
 });
 
 export default reducers;

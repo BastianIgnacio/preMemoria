@@ -12,12 +12,13 @@ import {
   RESET_PASSWORD,
   RESET_PASSWORD_SUCCESS,
   RESET_PASSWORD_ERROR,
+  LOGIN_TIENDA_SUCCESS,
 } from '../actions';
-import { getCurrentUser } from '../../helpers/Utils';
-import { isAuthGuardActive, currentUser } from '../../constants/defaultValues';
+import { getCurrentUser, getCurrentTienda } from '../../helpers/Utils';
 
 const INIT_STATE = {
-  currentUser: isAuthGuardActive ? currentUser : getCurrentUser(),
+  currentUser: getCurrentUser(),
+  tienda: getCurrentTienda(),
   forgotUserMail: '',
   newPassword: '',
   resetPasswordCode: '',
@@ -95,6 +96,13 @@ export default (state = INIT_STATE, action) => {
       };
     case LOGOUT_USER:
       return { ...state, currentUser: null, error: '' };
+    case LOGIN_TIENDA_SUCCESS:
+      return {
+        ...state,
+        loading: false,
+        tienda: action.payload,
+        error: '',
+      };
     default:
       return { ...state };
   }

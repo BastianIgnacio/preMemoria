@@ -1,15 +1,14 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import axios from 'axios';
-import { apiRestUrl } from '../../constants/defaultValues';
 import AddNewModalLocalComercial from '../../containers/pages/AddNewModalLocalComercial';
 import ListPageListingLocalesComerciales from '../../containers/pages/ListPageListing/ListPageListingLocalesComerciales';
 import ListPageHeadingLocalesComerciales from '../../containers/pages/ListPageHeadingLocalesComerciales';
 
 import {
-  LOCALCOMERCIALS_CHANGEPAGE,
-  LOCALCOMERCIALS_CHANGEPAGESIZE,
-  LOCALCOMERCIALS_ISLOADED,
+  // LOCALCOMERCIALS_ISLOADED,
+  LOCALCOMERCIALS_UPDATE_ITEMS,
+  LOCALCOMERCIAL_BEFORE_UPDATE,
+  LOCALCOMERCIAL_RESET_ITEMS,
 } from '../../redux/actions';
 
 const pageSizes = [4, 8, 12, 20];
@@ -19,113 +18,72 @@ const LocalesComerciales = ({ match }) => {
   const [displayMode, setDisplayMode] = useState('thumblist');
 
   const [modalOpen, setModalOpen] = useState(false);
-  const [startItem, setStartItem] = useState(0);
-  const [endItem, setEndItem] = useState(0);
-  // eslint-disable-next-line no-unused-vars
-  const [items, setItems] = useState([]);
+
   const paginaActual = useSelector(
     (state) => state.localComercial.paginaActual
   );
-  const [paginas, setPaginas] = useState(0);
+  const paginas = useSelector((state) => state.localComercial.paginas);
   const isLoaded = useSelector((state) => state.localComercial.isLoaded);
-  const [totalItems, setTotalItems] = useState(0);
+  const items = useSelector((state) => state.localComercial.items);
+  console.log('items redux');
+  console.log(items);
+  const totalItems = useSelector((state) => state.localComercial.totalItems);
   const itemsPorPagina = useSelector(
     (state) => state.localComercial.itemsPorPagina
   );
+  const primeraCarga = useSelector(
+    (state) => state.localComercial.primeraCarga
+  );
+  const endItem = useSelector((state) => state.localComercial.endItem);
+  const startItem = useSelector((state) => state.localComercial.startItem);
+  // const stateLocal = useSelector((state) => state.localComercial);
 
-  useEffect(() => {
-    if (paginaActual === 1) {
-      axios
-        .get(`${apiRestUrl}/listLocalComercial/?limit=${itemsPorPagina}`)
-        .then((res) => {
-          return res.data;
-        })
-        .then((data) => {
-          setTotalItems(data.count);
-          // Aca validamos si es necesaria solo 1 pagina para mostrarlo
-          const valor = data.count / itemsPorPagina;
-          if (valor <= 1) {
-            setPaginas(1);
-            setStartItem(1);
-            setEndItem(data.count);
-          } else {
-            // Es necesario mostrar mas de 2 paginas
-            const resto = valor % 1;
-            let valorTruc = -1;
-            // El resto es cero, por ende son la cantidad justa que cabe en la ultima pagina
-            if (resto === 0) {
-              valorTruc = Math.trunc(valor);
-            }
-            // El resto es disitnto de cero, por ende se necesita una pagina mas
-            else {
-              valorTruc = Math.trunc(valor) + 1;
-            }
-            setPaginas(valorTruc);
-            setStartItem(1);
-            setEndItem(itemsPorPagina);
-          }
-          setItems(data.results);
-          dispatch({ type: LOCALCOMERCIALS_ISLOADED, payload: true });
-        });
-    } else {
-      const offset = itemsPorPagina * paginaActual - itemsPorPagina;
-      axios
-        .get(
-          `${apiRestUrl}/listLocalComercial/?limit=${itemsPorPagina}&offset=${offset}`
-        )
-        .then((res) => {
-          return res.data;
-        })
-        .then((data) => {
-          setTotalItems(data.count);
-          const valor = data.count / itemsPorPagina;
-          // Es necesario mostrar solo 1 pagina
-          if (valor <= 1) {
-            setPaginas(1);
-            setStartItem(1);
-            setEndItem(data.count);
-          } else {
-            // Es necesario mostrar mas de 2 paginas
-            const resto = valor % 1;
-            let valorTruc = -1;
-            // El resto es cero, por ende son la cantidad justa que cabe en la ultima pagina
-            if (resto === 0) {
-              valorTruc = Math.trunc(valor);
-            }
-            // El resto es disitnto de cero, por ende se necesita una pagina mas
-            else {
-              valorTruc = Math.trunc(valor) + 1;
-            }
-            // Seteamos las paginas encesarias
-            setPaginas(valorTruc);
-            const valorInicio = paginaActual - 1;
-            const valorFinal = paginaActual;
-            const maxItemPagination = paginaActual * itemsPorPagina;
-
-            setStartItem(valorInicio * itemsPorPagina + 1);
-
-            if (maxItemPagination > data.count) {
-              setEndItem(data.count);
-            } else {
-              setEndItem(valorFinal * itemsPorPagina);
-            }
-          }
-          setItems(data.results);
-          dispatch({ type: LOCALCOMERCIALS_ISLOADED, payload: true });
-        });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paginaActual, itemsPorPagina]);
+  if (primeraCarga) {
+    // En el middleware se debe interceptar la accion
+    // Accion de changepagesize o changepage
+    // y llamar a get items en redux
+    // Hay que hacer una accion de getItems Init
+    dispatch({ type: LOCALCOMERCIAL_BEFORE_UPDATE, payload: false });
+    dispatch({ type: LOCALCOMERCIAL_RESET_ITEMS, payload: [] });
+    dispatch({
+      type: LOCALCOMERCIALS_UPDATE_ITEMS,
+      payload: {
+        paginaActual: 1,
+        itemsPorPagina: 4,
+        primeraCarga: false,
+      },
+    });
+  }
 
   const setPaginaActual = (pag) => {
-    // Aca debemos disparar la accion de cambiar la pag actual
-    dispatch({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: pag });
+    dispatch({ type: LOCALCOMERCIAL_BEFORE_UPDATE, payload: false });
+    dispatch({ type: LOCALCOMERCIAL_RESET_ITEMS, payload: [] });
+    setTimeout(() => {
+      dispatch({
+        type: LOCALCOMERCIALS_UPDATE_ITEMS,
+        payload: {
+          paginaActual: pag,
+          itemsPorPagina,
+          primeraCarga: false,
+        },
+      });
+    }, 10);
   };
 
   const setItemsPorPagina = (newPageSize) => {
     // Aca debemos disparar la accion de items por pagina
-    dispatch({ type: LOCALCOMERCIALS_CHANGEPAGESIZE, payload: newPageSize });
-    dispatch({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: 1 });
+    dispatch({ type: LOCALCOMERCIAL_BEFORE_UPDATE, payload: false });
+    dispatch({ type: LOCALCOMERCIAL_RESET_ITEMS, payload: [] });
+    setTimeout(() => {
+      dispatch({
+        type: LOCALCOMERCIALS_UPDATE_ITEMS,
+        payload: {
+          paginaActual: 1,
+          itemsPorPagina: newPageSize,
+          primeraCarga: false,
+        },
+      });
+    }, 10);
   };
 
   return !isLoaded ? (

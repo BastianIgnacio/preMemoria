@@ -21,7 +21,6 @@ const ListPageHeadingCategorias = ({
   totalItemCount,
   startIndex,
   endIndex,
-  onSearchKey,
   pageSizes,
   toggleModal,
   heading,
@@ -63,17 +62,6 @@ const ListPageHeadingCategorias = ({
             className="d-md-block"
             id="displayOptions"
           >
-            <div className="d-block d-md-inline-block pt-1">
-              <div className="search-sm d-inline-block float-md-left mr-1 mb-1 align-top">
-                <input
-                  type="text"
-                  name="keyword"
-                  id="search"
-                  placeholder="Buscar"
-                  onKeyPress={(e) => onSearchKey(e)}
-                />
-              </div>
-            </div>
             <div className="float-md-right pt-1">
               <span className="text-muted text-small mr-1">{`${startIndex}-${endIndex} of ${totalItemCount} `}</span>
               <UncontrolledDropdown className="d-inline-block">

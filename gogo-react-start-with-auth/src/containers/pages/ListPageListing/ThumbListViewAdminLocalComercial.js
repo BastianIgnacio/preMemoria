@@ -18,12 +18,12 @@ import { NavLink } from 'react-router-dom';
 import { ContextMenuTrigger } from 'react-contextmenu';
 import { Colxx } from '../../../components/common/CustomBootstrap';
 import {
-  ADMINLOCALCOMERCIAL_CHANGEPAGE,
-  ADMINLOCALCOMERCIAL_CHANGEPAGESIZE,
   ADMINLOCALCOMERCIAL_REMOVE,
   ADMINLOCALCOMERCIAL_UPDATE,
   ADMINLOCALCOMERCIAL_UPDATE_CREDENTIAL,
   LOCALCOMERCIAL_REMOVE_ADMIN,
+  ADMINLOCALCOMERCIAL_RESET,
+  ADMINLOCALCOMERCIAL_UPDATE_ITEMS,
 } from '../../../redux/actions';
 
 const ThumbListViewAdminLocalComercial = ({
@@ -39,27 +39,37 @@ const ThumbListViewAdminLocalComercial = ({
   const dispatch = useDispatch();
   const results = JSON.parse(JSON.stringify(administradorLocalComercial));
 
+  const update = () => {
+    setTimeout(() => {
+      console.log('despachando update');
+      dispatch({ type: ADMINLOCALCOMERCIAL_RESET });
+      dispatch({
+        type: ADMINLOCALCOMERCIAL_UPDATE_ITEMS,
+        payload: {
+          primeraCarga: false,
+          paginaActual: 1,
+          itemsPorPagina: 4,
+        },
+      });
+    }, 200);
+  };
+
   const onSubmitEliminar = (idAdministrador, isDisponible) => {
-    console.log(idAdministrador);
-    console.log(isDisponible);
     if (isDisponible) {
       // Solo se elimina el USUARIO ADMINISTRADOR
-      // console.log('Solo se elimina el administrador');
       dispatch({
         type: ADMINLOCALCOMERCIAL_REMOVE,
         payload: idAdministrador,
       });
     } else {
       // Se elimina el administrador y se modifica de refAdministrador del local comercial
-      console.log(
-        ' Se elimina el administrador y se modifica de refAdministrador del local comercial'
-      );
       dispatch({
         type: ADMINLOCALCOMERCIAL_REMOVE,
         payload: idAdministrador,
       });
       dispatch({ type: LOCALCOMERCIAL_REMOVE_ADMIN, payload: idAdministrador });
     }
+    update();
   };
 
   // Funcion PARA EDITAR UN ADMINISTRADOR DE LOCAL COMERCIAL
@@ -74,7 +84,6 @@ const ThumbListViewAdminLocalComercial = ({
 
       const adminLocalComercial = {
         email: payload.email,
-        run: payload.run,
         telefono: payload.telefono,
         first_name: payload.first_name,
         last_name: payload.last_name,
@@ -86,18 +95,7 @@ const ThumbListViewAdminLocalComercial = ({
         payload: { idAdminLocalComercial, adminLocalComercial },
       });
       setModalAdminLocalComercial(!modalAdminLocalComercial);
-      dispatch({
-        type: ADMINLOCALCOMERCIAL_CHANGEPAGE,
-        payload: 1,
-      });
-      dispatch({
-        type: ADMINLOCALCOMERCIAL_CHANGEPAGESIZE,
-        payload: 8,
-      });
-      dispatch({
-        type: ADMINLOCALCOMERCIAL_CHANGEPAGESIZE,
-        payload: 4,
-      });
+      update();
     }, 500);
   };
 
@@ -114,7 +112,6 @@ const ThumbListViewAdminLocalComercial = ({
       const adminLocalComercial = {
         email: payload.email,
         password: payload.password,
-        run: payload.run,
         telefono: payload.telefono,
         first_name: payload.first_name,
         last_name: payload.last_name,
@@ -126,6 +123,7 @@ const ThumbListViewAdminLocalComercial = ({
         payload: { idAdminLocalComercial, adminLocalComercial },
       });
       setModalCredenciales(!modalCredenciales);
+      update();
     }, 500);
   };
 
@@ -203,7 +201,6 @@ const ThumbListViewAdminLocalComercial = ({
               last_name: results.last_name,
               email: results.email,
               telefono: results.telefono,
-              run: results.run,
               rol: results.rol,
             }}
             onSubmit={onSubmitEditar}
@@ -260,17 +257,6 @@ const ThumbListViewAdminLocalComercial = ({
                   </Colxx>
                   <Colxx xxs="12" xs="12" lg="12">
                     <FormGroup className="form-group has-top-label error-l-100 tooltip-label-right">
-                      <Label>RUN</Label>
-                      <Field className="form-control" name="run" />
-                      {errors.horarioAtencion && touched.horarioAtencion ? (
-                        <div className="invalid-feedback d-block ">
-                          {errors.horarioAtencion}
-                        </div>
-                      ) : null}
-                    </FormGroup>
-                  </Colxx>
-                  <Colxx xxs="12" xs="12" lg="12">
-                    <FormGroup className="form-group has-top-label error-l-100 tooltip-label-right">
                       <Label>ROL</Label>
                       <Field disabled className="form-control" name="rol" />
                       {errors.horarioAtencion && touched.horarioAtencion ? (
@@ -313,7 +299,6 @@ const ThumbListViewAdminLocalComercial = ({
               first_name: results.first_name,
               last_name: results.last_name,
               telefono: results.telefono,
-              run: results.run,
               rol: results.rol,
             }}
             onSubmit={onSubmitCredenciales}

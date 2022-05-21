@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 import {
   defaultDirection,
   defaultLocale,
@@ -123,9 +124,7 @@ export const getCurrentLanguage = () => {
   try {
     language =
       localStorage.getItem('currentLanguage') &&
-      localeOptions.filter(
-        (x) => x.id === localStorage.getItem('currentLanguage')
-      ).length > 0
+        localeOptions.filter((x) => x.id === localStorage.getItem('currentLanguage')).length > 0
         ? localStorage.getItem('currentLanguage')
         : defaultLocale;
   } catch (error) {
@@ -171,5 +170,30 @@ export const setCurrentUser = (user) => {
     }
   } catch (error) {
     console.log('>>>>: src/helpers/Utils.js : setCurrentUser -> error', error);
+  }
+};
+export const getCurrentTienda = () => {
+  let tienda = null;
+  try {
+    tienda =
+      localStorage.getItem('tienda') != null
+        ? JSON.parse(localStorage.getItem('tienda'))
+        : null;
+  } catch (error) {
+    console.log('>>>>: src/helpers/Utils.js  : getTienda -> error', error);
+    tienda = null;
+  }
+  return tienda;
+};
+
+export const setCurrentTienda = (tienda) => {
+  try {
+    if (tienda) {
+      localStorage.setItem('tienda', JSON.stringify(tienda));
+    } else {
+      localStorage.removeItem('tienda');
+    }
+  } catch (error) {
+    console.log('>>>>: src/helpers/Utils.js : setTienda -> error', error);
   }
 };

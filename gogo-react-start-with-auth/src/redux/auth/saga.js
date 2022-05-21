@@ -1,4 +1,7 @@
+/* eslint-disable no-unused-vars */
 import { all, call, fork, put, takeEvery } from 'redux-saga/effects';
+
+import axios from 'axios';
 import { auth } from '../../helpers/Firebase';
 import {
   LOGIN_USER,
@@ -17,61 +20,123 @@ import {
   forgotPasswordError,
   resetPasswordSuccess,
   resetPasswordError,
+  loginTiendaSuccess,
 } from './actions';
 
 import {
   adminRoot,
-  currentUser,
   adminLocalComercialRoot,
   superAdminRoot,
+  errorRoot,
+  loginRoot,
+  apiRestUrl,
+  themeColorStorageKey,
+  UserRole,
 } from '../../constants/defaultValues';
-import { setCurrentUser, getCurrentUser } from '../../helpers/Utils';
+// ACA SE GUARDA EL EN LOCALSTORAGE
+// eslint-disable-next-line no-unused-vars
+import { setCurrentUser, setCurrentTienda } from '../../helpers/Utils';
 
 export function* watchLoginUser() {
   // eslint-disable-next-line no-use-before-define
   yield takeEvery(LOGIN_USER, loginWithEmailPassword);
 }
 
-const loginWithEmailPasswordAsync = async (email, password) =>
+const loginWithEmailPasswordAsync = async (user) =>
   // eslint-disable-next-line no-return-await
-  await auth
-    .signInWithEmailAndPassword(email, password)
-    .then((user) => user)
-    .catch((error) => error);
+  await axios.post(`${apiRestUrl}/auth/login`, user);
+
+const getTiendaAsync = async (refAdministrador) => {
+  return axios
+    .get(
+      `${apiRestUrl}/listLocalComercial/?refAdministrador=${refAdministrador}`
+    )
+    .then((res) => {
+      return res.data;
+    });
+};
 
 function* loginWithEmailPassword({ payload }) {
   const { email, password } = payload.user;
+  console.log('email');
+  console.log(email);
+  console.log('password');
+  console.log(password);
   const { history } = payload;
+  let user = {
+    email,
+    password,
+  };
   try {
-    const loginUser = yield call(loginWithEmailPasswordAsync, email, password);
-    if (!loginUser.message) {
-      const item = { uid: loginUser.user.uid, ...currentUser };
-      setCurrentUser(item);
-      yield put(loginUserSuccess(item));
-      //* ACA VAMOS A HARCODEAR EL LOGIN */
-      const parche = getCurrentUser();
-      if (parche.role === 1) {
-        // Role de super admin
-        history.push(superAdminRoot);
-      }
-      if (parche.role === 2) {
-        // Role de AdminLocalComercial
-        history.push(adminLocalComercialRoot);
-      }
-      // history.push(adminRoot);
-    } else {
-      yield put(loginUserError(loginUser.message));
+    const data = yield call(loginWithEmailPasswordAsync, user); // Aca debemos llamar a la api nuestra
+    // console.log('user log');
+    console.log(data);
+    const { message, refresh, access } = data.data;
+    console.log('access');
+    console.log(access);
+    console.log('refresh');
+    console.log(refresh);
+    console.log('message');
+    console.log(message);
+    user = data.data.user;
+    console.log('Usuario');
+    console.log(user);
+    const { rol } = data.data.user;
+    console.log(rol);
+    if (rol === 'SuperAdmin') {
+      console.log('Es super admin');
+      user = {
+        role: UserRole.SuperAdmin,
+        id: data.data.user.id,
+        first_name: data.data.user.first_name,
+        last_name: data.data.user.last_name,
+        telefono: data.data.user.telefono,
+        access: data.data.access,
+        refresh: data.data.refresh,
+        superAdmin: true,
+        img: '/assets/img/profiles/l-1.jpg',
+        date: 'Last seen today 15:24',
+      };
+      console.log(user);
+      setCurrentUser(user);
+      yield put(loginUserSuccess(user));
+      history.push(superAdminRoot);
+    }
+    if (rol === 'adminLocal') {
+      console.log('Es admin de local Comercial');
+      user = {
+        role: UserRole.AdminLocalComercial,
+        id: data.data.user.id,
+        first_name: data.data.user.first_name,
+        last_name: data.data.user.last_name,
+        telefono: data.data.user.telefono,
+        access: data.data.access,
+        refresh: data.data.refresh,
+        superAdmin: false,
+        img: '/assets/img/profiles/l-1.jpg',
+        date: 'Last seen today 15:24',
+      };
+      setCurrentUser(user);
+      const getTienda = yield call(getTiendaAsync, data.data.user.id);
+      const tienda = getTienda.results[0];
+      setCurrentTienda(tienda);
+      yield put(loginUserSuccess(user));
+      yield put(loginTiendaSuccess(tienda));
+      history.push(adminLocalComercialRoot);
     }
   } catch (error) {
-    yield put(loginUserError(error));
+    const message = 'Email o contraseña incorrectos';
+    history.push(loginRoot);
+    console.log('Notificacion de error');
+    yield put(loginUserError(message));
   }
 }
-
+/*
 export function* watchRegisterUser() {
   // eslint-disable-next-line no-use-before-define
   yield takeEvery(REGISTER_USER, registerWithEmailPassword);
 }
-
+*/
 const registerWithEmailPasswordAsync = async (email, password) =>
   // eslint-disable-next-line no-return-await
   await auth
@@ -79,6 +144,7 @@ const registerWithEmailPasswordAsync = async (email, password) =>
     .then((user) => user)
     .catch((error) => error);
 
+/*   
 function* registerWithEmailPassword({ payload }) {
   const { email, password } = payload.user;
   const { history } = payload;
@@ -100,23 +166,20 @@ function* registerWithEmailPassword({ payload }) {
     yield put(registerUserError(error));
   }
 }
-
+*/
 export function* watchLogoutUser() {
   // eslint-disable-next-line no-use-before-define
   yield takeEvery(LOGOUT_USER, logout);
 }
 
 const logoutAsync = async (history) => {
-  await auth
-    .signOut()
-    .then((user) => user)
-    .catch((error) => error);
   history.push(adminRoot);
 };
 
 function* logout({ payload }) {
   const { history } = payload;
-  setCurrentUser();
+  setCurrentUser(); // Eliminamos el usuario del localStorage
+  setCurrentTienda(); // Eliminamos la tienda del localStorage
   yield call(logoutAsync, history);
 }
 
@@ -182,7 +245,7 @@ export default function* rootSaga() {
   yield all([
     fork(watchLoginUser),
     fork(watchLogoutUser),
-    fork(watchRegisterUser),
+    // fork(watchRegisterUser),
     fork(watchForgotPassword),
     fork(watchResetPassword),
   ]);

@@ -1,133 +1,76 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
-import axios from 'axios';
-import { apiRestUrl } from '../../constants/defaultValues';
 import AddNewModalAdministradorLocalComercial from '../../containers/pages/AddNewModalAdministradorLocalComercial';
 
 import ListPageHeadingAdministradorLocalComercial from '../../containers/pages/ListPageHeadingAdministradorLocalComercial';
 import ListPageListingAdminLocalComercial from '../../containers/pages/ListPageListing/ListPageListingAdminLocalComercial';
-
-import {
-  ADMINLOCALCOMERCIAL_CHANGEPAGE,
-  ADMINLOCALCOMERCIAL_CHANGEPAGESIZE,
-  //  ADMINLOCALCOMERCIAL_ISLOADED,
-} from '../../redux/actions';
-
-const pageSizes = [4, 8, 12, 20];
+import { ADMINLOCALCOMERCIAL_UPDATE_ITEMS } from '../../redux/actions';
 
 const AdmsLocalesComerciales = ({ match }) => {
   const dispatch = useDispatch();
-  // eslint-disable-next-line no-unused-vars
-  const [isLoaded, setIsLoaded] = useState(true);
+  console.log('asdasd');
+  const pageSizes = [4, 8, 12, 20];
+  const [modalOpen, setModalOpen] = useState(false);
   const [displayMode, setDisplayMode] = useState('thumblist');
+  // eslint-disable-next-line no-unused-vars
+  const isLoaded = useSelector(
+    (state) => state.administradorLocalComercial.isLoaded
+  );
   const paginaActual = useSelector(
     (state) => state.administradorLocalComercial.paginaActual
   );
   const itemsPorPagina = useSelector(
     (state) => state.administradorLocalComercial.itemsPorPagina
   );
+  const paginas = useSelector(
+    (state) => state.administradorLocalComercial.paginas
+  );
+  const items = useSelector((state) => state.administradorLocalComercial.items);
+  const startItem = useSelector(
+    (state) => state.administradorLocalComercial.startItem
+  );
+  const endItem = useSelector(
+    (state) => state.administradorLocalComercial.endItem
+  );
+  const totalItems = useSelector(
+    (state) => state.administradorLocalComercial.totalItems
+  );
+  const primeraCarga = useSelector(
+    (state) => state.administradorLocalComercial.primeraCarga
+  );
+  console.log('xacac');
+  // Debemos preguntar si es la primera carga
+  if (primeraCarga) {
+    // Despachamos la action para MOSTRAR LA PRIMERA PAGINA
+    dispatch({
+      type: ADMINLOCALCOMERCIAL_UPDATE_ITEMS,
+      payload: {
+        primeraCarga: false,
+        paginaActual,
+        itemsPorPagina,
+      },
+    });
+  }
 
-  const [paginas, setPaginas] = useState(0);
-
-  const [modalOpen, setModalOpen] = useState(false);
-  const [items, setItems] = useState([]);
-
-  const [startItem, setStartItem] = useState(0);
-  const [endItem, setEndItem] = useState(0);
-  const [totalItems, setTotalItems] = useState(0);
-
-  useEffect(() => {
-    if (paginaActual === 1) {
-      axios
-        .get(`${apiRestUrl}/listAdministradores/?limit=${itemsPorPagina}`)
-        .then((res) => {
-          return res.data;
-        })
-        .then((data) => {
-          setTotalItems(data.count);
-          // Aca validamos si es necesaria solo 1 pagina para mostrarlo
-          const valor = data.count / itemsPorPagina;
-          if (valor <= 1) {
-            setPaginas(1);
-            setStartItem(1);
-            setEndItem(data.count);
-          } else {
-            // Es necesario mostrar mas de 2 paginas
-            const resto = valor % 1;
-            let valorTruc = -1;
-            // El resto es cero, por ende son la cantidad justa que cabe en la ultima pagina
-            if (resto === 0) {
-              valorTruc = Math.trunc(valor);
-            }
-            // El resto es disitnto de cero, por ende se necesita una pagina mas
-            else {
-              valorTruc = Math.trunc(valor) + 1;
-            }
-            setPaginas(valorTruc);
-            setStartItem(1);
-            setEndItem(itemsPorPagina);
-          }
-          setItems(data.results);
-          // dispatch({ type: LOCALCOMERCIALS_ISLOADED, payload: true });
-        });
-    } else {
-      const offset = itemsPorPagina * paginaActual - itemsPorPagina;
-      axios
-        .get(
-          `${apiRestUrl}/listAdministradores/?limit=${itemsPorPagina}&offset=${offset}`
-        )
-        .then((res) => {
-          return res.data;
-        })
-        .then((data) => {
-          setTotalItems(data.count);
-          const valor = data.count / itemsPorPagina;
-          // Es necesario mostrar solo 1 pagina
-          if (valor <= 1) {
-            setPaginas(1);
-            setStartItem(1);
-            setEndItem(data.count);
-          } else {
-            // Es necesario mostrar mas de 2 paginas
-            const resto = valor % 1;
-            let valorTruc = -1;
-            // El resto es cero, por ende son la cantidad justa que cabe en la ultima pagina
-            if (resto === 0) {
-              valorTruc = Math.trunc(valor);
-            }
-            // El resto es disitnto de cero, por ende se necesita una pagina mas
-            else {
-              valorTruc = Math.trunc(valor) + 1;
-            }
-            // Seteamos las paginas encesarias
-            setPaginas(valorTruc);
-            const valorInicio = paginaActual - 1;
-            const valorFinal = paginaActual;
-            const maxItemPagination = paginaActual * itemsPorPagina;
-
-            setStartItem(valorInicio * itemsPorPagina + 1);
-
-            if (maxItemPagination > data.count) {
-              setEndItem(data.count);
-            } else {
-              setEndItem(valorFinal * itemsPorPagina);
-            }
-          }
-          setItems(data.results);
-          // dispatch({ type: LOCALCOMERCIALS_ISLOADED, payload: true });
-        });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paginaActual, itemsPorPagina]);
   const setPaginaActual = (pag) => {
-    // Aca debemos disparar la accion de cambiar la pag actual
-    dispatch({ type: ADMINLOCALCOMERCIAL_CHANGEPAGE, payload: pag });
+    dispatch({
+      type: ADMINLOCALCOMERCIAL_UPDATE_ITEMS,
+      payload: {
+        primeraCarga: false,
+        paginaActual: pag,
+        itemsPorPagina,
+      },
+    });
   };
 
   const setItemsPorPagina = (nuevosItemsPorPagina) => {
     dispatch({
-      type: ADMINLOCALCOMERCIAL_CHANGEPAGESIZE,
-      payload: nuevosItemsPorPagina,
+      type: ADMINLOCALCOMERCIAL_UPDATE_ITEMS,
+      payload: {
+        primeraCarga: false,
+        paginaActual: 1,
+        itemsPorPagina: nuevosItemsPorPagina,
+      },
     });
   };
   return !isLoaded ? (

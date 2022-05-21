@@ -34,11 +34,14 @@ export const apiRestUrl = 'http://192.168.3.3:8000/api';
 export const adminRoot = '/app';
 export const superAdminRoot = '/app/localesComerciales';
 export const adminLocalComercialRoot = '/app/categorias';
+export const errorRoot = '/error';
+export const loginRoot = '/user/login';
 export const carritoRoot = '/carrito';
 export const tiendaRoot = '/tienda';
 export const buyUrl = 'https://1.envato.market/k4z0';
 export const searchPath = `${adminRoot}/#`;
 export const servicePath = 'https://api.coloredstrategies.com';
+/*
 export const currentUser = {
   id: 1,
   title: 'Saraasaah Korfgftney',
@@ -46,7 +49,7 @@ export const currentUser = {
   date: 'Last seen today 15:24',
   role: UserRole.SuperAdmin,
 };
-
+*/
 export const themeColorStorageKey = '__theme_selected_color';
 export const isMultiColorActive = true;
 export const defaultColor = 'light.purplemonster';
