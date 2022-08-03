@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
-import React, { useState, useSelector } from 'react';
-import { useDispatch } from 'react-redux';
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
 import {
   Button,
   Modal,
@@ -15,14 +15,16 @@ import {
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { CATEGORIA_ADD, CATEGORIA_UPDATE_ITEMS } from '../../redux/actions';
-import { FormikCustomRadioGroup } from '../form-validations/FormikFields';
-import { Colxx } from '../../components/common/CustomBootstrap';
-import PreviewImage from './previewImage';
-import { NotificationManager } from '../../components/common/react-notifications';
+import { CATEGORIA_ADD } from '../../../../redux/actions';
+import { FormikCustomRadioGroup } from '../../../form-validations/FormikFields';
+import { Colxx } from '../../../../components/common/CustomBootstrap';
+import PreviewImage from '../../previewImage';
+import { NotificationManager } from '../../../../components/common/react-notifications';
 
-const AddNewModalCategoria = ({ modalOpen, toggleModal, idTienda }) => {
+const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
   const dispatch = useDispatch();
+  const idTienda = useSelector((state) => state.authUser.tienda.id);
+
   const [base64img, setBase64img] = useState('asd');
   const notificacionWarning = (titulo, subtitulo) => {
     NotificationManager.warning(titulo, subtitulo, 4000, null, null, 'filled');

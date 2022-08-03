@@ -18,28 +18,15 @@ import { useDispatch } from 'react-redux';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { ContextMenuTrigger } from 'react-contextmenu';
-import { FormikSwitch } from '../../form-validations/FormikFields';
-import { Colxx } from '../../../components/common/CustomBootstrap';
-import PreviewImage from '../previewImage';
-import { NotificationManager } from '../../../components/common/react-notifications';
-import { CATEGORIA_DETELE, CATEGORIA_UPDATE } from '../../../redux/actions';
+import { FormikSwitch } from '../../../form-validations/FormikFields';
+import { Colxx } from '../../../../components/common/CustomBootstrap';
+import PreviewImage from '../../previewImage';
+import { apiMediaUrl } from '../../../../constants/defaultValues';
 
-const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
+const ThumbListViewProductos = ({ productoCategoria }) => {
   const dispatch = useDispatch();
-
   const [modalEditar, setModalEditar] = useState(false);
   const [modalEliminar, setModalEliminar] = useState(false);
-  // Promise para obtener el base64 de una imagen
-  const toBase64 = (file, setFunction) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
-  const notificacionWarning = (titulo, subtitulo) => {
-    NotificationManager.warning(titulo, subtitulo, 4000, null, null, 'filled');
-  };
 
   // Validacion para el form que edita los datos de un local comercial
   const SignupSchema = Yup.object().shape({
@@ -47,17 +34,11 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
   });
 
   const onSubmitEliminar = () => {
-    dispatch({
-      type: CATEGORIA_DETELE,
-      payload: {
-        categoria: categoria.id,
-        refLocalComercial,
-      },
-    });
     setModalEliminar(false);
   };
-  // Funcion para Enviar El put de una categoria
-  const onSubmit = (values, { setSubmitting }) => {
+
+  // Funcion para Enviar El put de unn ProductoCategoria
+  const onSubmitEditar = (values, { setSubmitting }) => {
     const payload = {
       ...values,
     };
@@ -65,22 +46,11 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
       console.log(JSON.stringify(payload, null, 2));
       setSubmitting(false);
       // Consultamos si el PUT tiene foto
-      if (payload.rutaFoto === null || payload.rutaFoto === undefined) {
+      if (payload.imagen === null || payload.imagen === undefined) {
         // El PUT no tiene foto
-        const putCategoria = {
-          nombre: payload.nombre,
-          esVisible: payload.esVisible,
-          esNuevo: payload.esNuevo,
-          refLocalComercial,
-        };
+
         // despachamos la action y hacemos el return
-        dispatch({
-          type: CATEGORIA_UPDATE,
-          payload: {
-            idCategoria: categoria.id,
-            categoria: putCategoria,
-          },
-        });
+
         setModalEditar(!modalEditar);
         return;
       }
@@ -91,101 +61,60 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
       // Validamos la foto
       if (type === 'image/jpeg' || type === 'image/png') {
         // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
-        let b64;
-        const { rutaFoto } = payload;
-        toBase64(rutaFoto).then((value) => {
-          b64 = value;
-          return value;
-        });
-        setTimeout(() => {
-          const putCategoria = {
-            nombre: payload.nombre,
-            esVisible: payload.esVisible,
-            esNuevo: payload.esNuevo,
-            rutaFoto: b64,
-            refLocalComercial,
-          };
-          dispatch({
-            type: CATEGORIA_UPDATE,
-            payload: {
-              idCategoria: categoria.id,
-              categoria: putCategoria,
-            },
-          });
-          setModalEditar(!modalEditar);
-        }, 1000);
-      } else {
-        // Enviamos la aleta de que la foto no corresponde
-        console.log('Debe ser una imgen tipo png ');
-        notificacionWarning(
-          'La imagen seleccionada debe ser .PNG O .JPEG',
-          'IMAGEN'
-        );
       }
-      // Ahora hay que validar el type de la foto
     }, 500);
   };
 
   return (
-    <Colxx xxs="12" key={categoria.id} className="mb-3">
-      <ContextMenuTrigger id="menu_id" data={categoria.id} collect={collect}>
-        <Card className="d-flex flex-row">
-          <div className="d-flex">
-            <img
-              alt={categoria.nombre}
-              src={categoria.rutaFoto}
-              className="list-thumbnail responsive border-0 card-img-left"
-            />
-          </div>
+    <Colxx xxs="12" key={productoCategoria.id} className="mb-3">
+      <ContextMenuTrigger id="menu_id" data={productoCategoria.id}>
+        <Card>
           <div className="pl-2 d-flex flex-grow-1 min-width-zero">
             <div className="card-body align-self-center d-flex flex-column flex-lg-row justify-content-between min-width-zero align-items-lg-center">
-              <p className="mb-1 list-item-heading mb-1 truncate w-100 w-sm-100">
-                {categoria.nombre}
+              <p className="list-item-heading mb-1 truncate">
+                {productoCategoria.nombre}
               </p>
-              {categoria.esNuevo && (
-                <Badge color="secondary" className="m-1" pill>
-                  NUEVO
+              <div className="w-5 w-sm-10 mb-1">
+                <Badge color={productoCategoria.statusColor} pill>
+                  ACTIVO
                 </Badge>
-              )}
-              {categoria.esVisible ? (
-                <Badge color="primary" className="m-1" pill>
-                  VISIBLE
-                </Badge>
-              ) : (
-                <Badge color="warning" className="m-1" pill>
-                  NO VISIBLE
-                </Badge>
-              )}
-              <Button
-                onClick={() => setModalEliminar(!modalEliminar)}
-                color="danger"
-                className="m-1"
-              >
-                Eliminar
-              </Button>{' '}
-              <Button
-                onClick={() => setModalEditar(!modalEditar)}
-                color="primary"
-                className="m-1"
-              >
-                Editar
-              </Button>{' '}
+              </div>
+              <div className="w-5 w-sm-10 mb-1">
+                <Button
+                  onClick={() => setModalEliminar(!modalEliminar)}
+                  color="danger"
+                  className="mb-2"
+                >
+                  Eliminar
+                </Button>{' '}
+              </div>
+              <div className="w-5 w-sm-10 mb-1">
+                <Button
+                  onClick={() => setModalEditar(!modalEditar)}
+                  color="primary"
+                  className="mb-2"
+                >
+                  Editar
+                </Button>{' '}
+              </div>
             </div>
           </div>
         </Card>
       </ContextMenuTrigger>
       <Modal isOpen={modalEditar} toggle={() => setModalEditar(!modalEditar)}>
-        <ModalHeader>{categoria.nombre}</ModalHeader>
+        <ModalHeader>{productoCategoria.nombre}</ModalHeader>
         <ModalBody>
           <Formik
             initialValues={{
-              nombre: categoria.nombre,
-              esVisible: categoria.esVisible,
-              esNuevo: categoria.esNuevo,
-              rutaFoto: null,
+              nombre: productoCategoria.nombre,
+              descripcion: productoCategoria.descripcion,
+              esVisible: productoCategoria.esVisible,
+              esNuevo: productoCategoria.esNuevo,
+              isBestProduct: productoCategoria.isBestProduct,
+              imagen: productoCategoria.imagen,
             }}
             validationSchema={SignupSchema}
-            onSubmit={onSubmit}
+            onSubmit={onSubmitEditar}
           >
             {({
               handleSubmit,
@@ -212,7 +141,24 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
                       ) : null}
                     </FormGroup>
                   </Colxx>
-                  <Colxx xxs="12" xs="12" lg="6">
+                  <Colxx xxs="12" xs="12" lg="4">
+                    <FormGroup className="error-l-100">
+                      <Label className="d-block">BEST PRODUCT</Label>
+                      <FormikSwitch
+                        name="isBestProduct"
+                        className="custom-switch custom-switch-primary"
+                        value={values.isBestProduct}
+                        onChange={setFieldValue}
+                        onBlur={setFieldTouched}
+                      />
+                      {errors.esVisible && touched.esVisible ? (
+                        <div className="invalid-feedback d-block">
+                          {errors.esVisible}
+                        </div>
+                      ) : null}
+                    </FormGroup>
+                  </Colxx>
+                  <Colxx xxs="12" xs="12" lg="4">
                     <FormGroup className="error-l-100">
                       <Label className="d-block">Es visible</Label>
                       <FormikSwitch
@@ -229,7 +175,7 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
                       ) : null}
                     </FormGroup>
                   </Colxx>
-                  <Colxx xxs="12" xs="12" lg="6">
+                  <Colxx xxs="12" xs="12" lg="4">
                     <FormGroup className="error-l-100">
                       <Label className="d-block">Es nuevo</Label>
                       <FormikSwitch
@@ -255,14 +201,16 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
                         <Input
                           className="form-control"
                           type="file"
-                          name="rutaFoto"
+                          name="imagen"
                           onChange={(event) => {
-                            setFieldValue('rutaFoto', event.target.files[0]);
+                            setFieldValue('imagen', event.target.files[0]);
                           }}
                         />
                       </InputGroup>
                     </FormGroup>
-                    {values.rutaFoto && <PreviewImage file={values.rutaFoto} />}
+                    {values.imagen && (
+                      <PreviewImage file={apiMediaUrl + values.imagen} />
+                    )}
                   </Colxx>
                   <Colxx xxs="12" xs="12" lg="12" className="mt-1">
                     <Button block color="primary" type="submit">
@@ -288,7 +236,10 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
       >
         <ModalHeader>Eliminar</ModalHeader>
         <ModalBody>
-          <p>Está seguro que desea eliminar la categoria {categoria.nombre}?</p>
+          <p>
+            Está seguro que desea eliminar la categoria{' '}
+            {productoCategoria.nombre}?
+          </p>
           <p>Todos los productos asociados serán eliminados.</p>
         </ModalBody>
         <ModalFooter>
@@ -305,4 +256,4 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
 };
 
 /* React.memo detail : https://reactjs.org/docs/react-api.html#reactpurecomponent  */
-export default React.memo(ThumbListViewCategorias);
+export default React.memo(ThumbListViewProductos);

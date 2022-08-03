@@ -1,6 +1,7 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react/no-array-index-key */
 import React, { useState } from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import {
   Row,
   Button,
@@ -11,25 +12,34 @@ import {
   Collapse,
 } from 'reactstrap';
 import { injectIntl } from 'react-intl';
+import { Colxx, Separator } from '../../../../components/common/CustomBootstrap';
+import { CATEGORIA_CHANGE_PAGE_SIZE } from '../../../../redux/actions';
 
-import { Colxx, Separator } from '../../components/common/CustomBootstrap';
-
-
-const ListPageHeadingProductos = ({
-  changeOrderBy,
-  changePageSize,
-  selectedPageSize,
-  totalItemCount,
-  selectedOrderOption,
-  startIndex,
-  endIndex,
-  onSearchKey,
-  orderOptions,
+const ListPageHeadingCategorias = ({
   pageSizes,
   toggleModal,
   heading,
 }) => {
   const [displayOptionsIsOpen, setDisplayOptionsIsOpen] = useState(false);
+  const dispatch = useDispatch();
+  const totalItems = useSelector((state) => state.categorias.totalItems);
+  const startItem = useSelector((state) => state.categorias.startItem);
+  const endItem = useSelector((state) => state.categorias.endItem);
+  const itemsPorPagina = useSelector(
+    (state) => state.categorias.itemsPorPagina
+  );
+  const idTienda = useSelector((state) => state.authUser.tienda.id);
+
+  const changePageSize = (nuevosItemsPorPagina) => {
+    dispatch({
+      type: CATEGORIA_CHANGE_PAGE_SIZE,
+      payload: {
+        paginaActual: 1,
+        itemsPorPagina: nuevosItemsPorPagina,
+        refLocalComercial: idTienda,
+      },
+    });
+  }
 
   return (
     <Row>
@@ -38,7 +48,6 @@ const ListPageHeadingProductos = ({
           <h1>
             {heading}
           </h1>
-
           <div className="text-zero top-right-button-container">
             <Button
               color="primary"
@@ -46,7 +55,7 @@ const ListPageHeadingProductos = ({
               className="top-right-button"
               onClick={() => toggleModal()}
             >
-              Nuevo Producto
+              Nueva Categoria
             </Button>
             {'  '}
           </div>
@@ -66,40 +75,11 @@ const ListPageHeadingProductos = ({
             className="d-md-block"
             id="displayOptions"
           >
-            <div className="d-block d-md-inline-block pt-1">
-              <UncontrolledDropdown className="mr-1 float-md-left btn-group mb-1">
-                <DropdownToggle caret color="outline-dark" size="xs">
-                  Ordenar por {'  '}
-                  {selectedOrderOption.label}
-                </DropdownToggle>
-                <DropdownMenu>
-                  {orderOptions.map((order, index) => {
-                    return (
-                      <DropdownItem
-                        key={index}
-                        onClick={() => changeOrderBy(order.column)}
-                      >
-                        {order.label}
-                      </DropdownItem>
-                    );
-                  })}
-                </DropdownMenu>
-              </UncontrolledDropdown>
-              <div className="search-sm d-inline-block float-md-left mr-1 mb-1 align-top">
-                <input
-                  type="text"
-                  name="keyword"
-                  id="search"
-                  placeholder="Buscar"
-                  onKeyPress={(e) => onSearchKey(e)}
-                />
-              </div>
-            </div>
             <div className="float-md-right pt-1">
-              <span className="text-muted text-small mr-1">{`${startIndex}-${endIndex} of ${totalItemCount} `}</span>
+              <span className="text-muted text-small mr-1">{`${startItem}-${endItem} of ${totalItems} `}</span>
               <UncontrolledDropdown className="d-inline-block">
                 <DropdownToggle caret color="outline-dark" size="xs">
-                  {selectedPageSize}
+                  {itemsPorPagina}
                 </DropdownToggle>
                 <DropdownMenu right>
                   {pageSizes.map((size, index) => {
@@ -123,4 +103,4 @@ const ListPageHeadingProductos = ({
   );
 };
 
-export default injectIntl(ListPageHeadingProductos);
+export default injectIntl(ListPageHeadingCategorias);

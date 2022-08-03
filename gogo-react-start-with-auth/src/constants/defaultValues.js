@@ -29,7 +29,8 @@ export const firebaseConfig = {
   messagingSenderId: '216495999563',
 };
 
-export const apiRestUrl = 'http://192.168.3.3:8000/api';
+export const apiRestUrl = 'http://127.0.0.1:8000/api';
+export const apiMediaUrl = 'http://127.0.0.1:8000';
 
 export const adminRoot = '/app';
 export const superAdminRoot = '/app/localesComerciales';

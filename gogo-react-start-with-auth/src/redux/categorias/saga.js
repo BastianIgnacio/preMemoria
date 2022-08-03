@@ -12,11 +12,13 @@ import {
   CATEGORIA_SET_START_ITEM,
   CATEGORIA_SET_TOTAL_ITEMS,
   CATEGORIA_UPDATE_ITEMS,
-  CATEGORIA_SET_PRIMERA_CARGA,
   CATEGORIA_SET_ITEMS_POR_PAGINA,
   CATEGORIA_IS_LOADED,
   CATEGORIA_UPDATE,
-  CATEGORIA_DETELE,
+  CATEGORIA_DELETE,
+  CATEGORIA_CHANGE_PAGE,
+  CATEGORIA_CHANGE_PAGE_SIZE,
+  CATEGORIA_CARGAR_CATEGORIAS,
 } from '../actions';
 
 const notificacionError = (titulo, subtitulo) => {
@@ -32,8 +34,8 @@ const addCategoriaAsync = async (categoria) =>
   axios.post(`${apiRestUrl}/categorias/`, categoria);
 
 // DELETE para eliminar una categoria de un local comercial
-const deleteCategoriaAsync = async (idLocalComercial) =>
-  axios.delete(`${apiRestUrl}/categorias/${idLocalComercial}`);
+const deleteCategoriaAsync = async (idCategoria) =>
+  axios.delete(`${apiRestUrl}/categorias/${idCategoria}`);
 
 // PUT para editar una categoria
 const putCategoriaAsync = async (idCategoria, categoria) =>
@@ -43,7 +45,7 @@ const putCategoriaAsync = async (idCategoria, categoria) =>
 const getCategoriasLimitAsync = async (refLocalComercial, limit) => {
   return axios
     .get(
-      `${apiRestUrl}/listCategoria/?limit=${limit}&refLocalComercial=${refLocalComercial}`
+      `${apiRestUrl}/categorias/?limit=${limit}&refLocalComercial=${refLocalComercial}`
     )
     .then((res) => {
       return res.data;
@@ -57,7 +59,7 @@ const getCategoriasLimitOffsetAsync = async (
 ) => {
   return axios
     .get(
-      `${apiRestUrl}/listCategoria/?limit=${limit}&offset=${offset}&refLocalComercial=${refLocalComercial}`
+      `${apiRestUrl}/categorias/?limit=${limit}&offset=${offset}&refLocalComercial=${refLocalComercial}`
     )
     .then((res) => {
       return res.data;
@@ -87,10 +89,8 @@ function* addCategoria({ payload }) {
 }
 
 function* updateItems(payload) {
-  const { primeraCarga } = payload.payload;
-  const { paginaActual } = payload.payload;
-  const { itemsPorPagina } = payload.payload;
-  const { refLocalComercial } = payload.payload;
+  console.log('actualizaldo');
+  const { paginaActual, itemsPorPagina, refLocalComercial } = payload.payload;
   try {
     if (paginaActual === 1) {
       // Obtenemos el limit (cuantos vamos a mostar)
@@ -100,7 +100,6 @@ function* updateItems(payload) {
         refLocalComercial,
         limit
       );
-      console.log(data);
       // tenemos el total de los items
       const totalItems = data.count;
       // Aca validamos si es necesaria solo 1 pagina para mostrarlo
@@ -243,11 +242,6 @@ function* updateItems(payload) {
         payload: totalItems,
       });
     }
-    // Despachamos la primera carga
-    yield put({
-      type: CATEGORIA_SET_PRIMERA_CARGA,
-      payload: primeraCarga,
-    });
     yield put({
       type: CATEGORIA_SET_ITEMS_POR_PAGINA,
       payload: itemsPorPagina,
@@ -259,21 +253,15 @@ function* updateItems(payload) {
   }
 }
 function* updateCategoria({ payload }) {
-  const { idCategoria } = payload;
-  const { categoria } = payload;
-  console.log('payload');
-  console.log(idCategoria);
-  console.log(categoria);
+  const { idCategoria, categoria, refLocalComercial } = payload;
   try {
     yield call(putCategoriaAsync, idCategoria, categoria);
-    // SIDE EFECTS
     yield put({
       type: CATEGORIA_UPDATE_ITEMS,
       payload: {
-        primeraCarga: false,
         paginaActual: 1,
         itemsPorPagina: 4,
-        refLocalComercial: payload.categoria.refLocalComercial,
+        refLocalComercial,
       },
     });
     notificacionSuccess('Categoria', 'Editada correctamente');
@@ -284,15 +272,15 @@ function* updateCategoria({ payload }) {
 }
 
 function* deleteCategoria({ payload }) {
+  const { idCategoria, refLocalComercial } = payload;
   try {
-    yield call(deleteCategoriaAsync, payload.categoria);
+    yield call(deleteCategoriaAsync, idCategoria);
     yield put({
       type: CATEGORIA_UPDATE_ITEMS,
       payload: {
-        primeraCarga: false,
         paginaActual: 1,
         itemsPorPagina: 4,
-        refLocalComercial: payload.refLocalComercial,
+        refLocalComercial,
       },
     });
     notificacionSuccess('Categoria', 'Elimada correctamente');
@@ -302,23 +290,87 @@ function* deleteCategoria({ payload }) {
   }
 }
 
+function* changePage({ payload }) {
+  const { refLocalComercial, paginaActual, itemsPorPagina } = payload;
+  try {
+    yield put({
+      type: CATEGORIA_UPDATE_ITEMS,
+      payload: {
+        paginaActual,
+        itemsPorPagina,
+        refLocalComercial,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    notificacionError('Error', 'Error al cambiar pagina');
+  }
+}
+
+function* changePageSize({ payload }) {
+  const { refLocalComercial, itemsPorPagina } = payload;
+  try {
+    yield put({
+      type: CATEGORIA_UPDATE_ITEMS,
+      payload: {
+        paginaActual: 1,
+        itemsPorPagina,
+        refLocalComercial,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    notificacionError('Error', 'Error al cambiar PAGE SIZE');
+  }
+}
+
+function* cargarCategorias({ payload }) {
+  const refLocalComercial = payload;
+  try {
+    yield put({
+      type: CATEGORIA_UPDATE_ITEMS,
+      payload: {
+        paginaActual: 1,
+        itemsPorPagina: 4,
+        refLocalComercial,
+      },
+    });
+  } catch (error) {
+    console.log(error);
+    notificacionError('Error', 'Error al cargar categorias');
+  }
+}
+
+export function* watchUpdateItemsCategoria() {
+  yield takeEvery(CATEGORIA_UPDATE_ITEMS, updateItems);
+}
 export function* watchAddCategoria() {
   yield takeEvery(CATEGORIA_ADD, addCategoria);
 }
-export function* watchUpdateItems() {
-  yield takeEvery(CATEGORIA_UPDATE_ITEMS, updateItems);
+export function* watchDeleteCategoria() {
+  yield takeEvery(CATEGORIA_DELETE, deleteCategoria);
 }
 export function* watchUpdateCategoria() {
   yield takeEvery(CATEGORIA_UPDATE, updateCategoria);
 }
-export function* watchDeleteCategoria() {
-  yield takeEvery(CATEGORIA_DETELE, deleteCategoria);
+export function* watchChangePageCategoria() {
+  yield takeEvery(CATEGORIA_CHANGE_PAGE, changePage);
 }
+export function* watchChangePageSizeCategoria() {
+  yield takeEvery(CATEGORIA_CHANGE_PAGE_SIZE, changePageSize);
+}
+export function* watchCargarCategorias() {
+  yield takeEvery(CATEGORIA_CARGAR_CATEGORIAS, cargarCategorias);
+}
+
 export default function* rootSaga() {
   yield all([
+    fork(watchCargarCategorias),
     fork(watchAddCategoria),
-    fork(watchUpdateItems),
     fork(watchUpdateCategoria),
     fork(watchDeleteCategoria),
+    fork(watchChangePageCategoria),
+    fork(watchChangePageSizeCategoria),
+    fork(watchUpdateItemsCategoria),
   ]);
 }

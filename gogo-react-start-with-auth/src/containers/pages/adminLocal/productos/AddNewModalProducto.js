@@ -17,11 +17,11 @@ import {
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-import { FormikCustomRadioGroup } from '../form-validations/FormikFields';
-import { Colxx } from '../../components/common/CustomBootstrap';
-import PreviewImage from './previewImage';
+import { FormikCustomRadioGroup } from '../../../form-validations/FormikFields';
+import { Colxx } from '../../../../components/common/CustomBootstrap';
+import PreviewImage from '../../previewImage';
 
-const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
+const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
   const categorias = [
     { value: "", label: 'Selecciona una opción' },
     { value: "1", label: 'Cateogia 1' },
@@ -202,4 +202,4 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
     </Formik>
   );
 };
-export default AddNewModalCategoria;
+export default AddNewModalProducto;

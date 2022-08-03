@@ -42,26 +42,19 @@ export function* watchLoginUser() {
   yield takeEvery(LOGIN_USER, loginWithEmailPassword);
 }
 
+//* Llamada post para hacer el login de usuario  */
 const loginWithEmailPasswordAsync = async (user) =>
   // eslint-disable-next-line no-return-await
   await axios.post(`${apiRestUrl}/auth/login`, user);
 
-const getTiendaAsync = async (refAdministrador) => {
-  return axios
-    .get(
-      `${apiRestUrl}/listLocalComercial/?refAdministrador=${refAdministrador}`
-    )
-    .then((res) => {
-      return res.data;
-    });
+const getTiendaAsync = async (idTienda) => {
+  return axios.get(`${apiRestUrl}/localComercials/${idTienda}/`).then((res) => {
+    return res.data;
+  });
 };
 
 function* loginWithEmailPassword({ payload }) {
   const { email, password } = payload.user;
-  console.log('email');
-  console.log(email);
-  console.log('password');
-  console.log(password);
   const { history } = payload;
   let user = {
     email,
@@ -69,20 +62,20 @@ function* loginWithEmailPassword({ payload }) {
   };
   try {
     const data = yield call(loginWithEmailPasswordAsync, user); // Aca debemos llamar a la api nuestra
-    // console.log('user log');
+    console.log('Imprimiendo data');
     console.log(data);
-    const { message, refresh, access } = data.data;
-    console.log('access');
-    console.log(access);
-    console.log('refresh');
-    console.log(refresh);
-    console.log('message');
-    console.log(message);
-    user = data.data.user;
-    console.log('Usuario');
-    console.log(user);
-    const { rol } = data.data.user;
-    console.log(rol);
+    const { message, refresh, access } = data.data; // Sabemos los datos del JWT
+    user = data.data.user; // Sabemos los datos del usuario
+    const { rol, refTienda } = data.data.user; // Sabemos el rol y la tienda
+
+    // Si EL USUARIO NO TIENE TIENDA NO ES POSIBLE MOSTRAR UNA TIENDA
+    if (refTienda === -1) {
+      const error = 'Email o contraseña incorrectos';
+      history.push(loginRoot);
+      yield put(loginUserError(error));
+      return;
+    }
+    /*
     if (rol === 'SuperAdmin') {
       console.log('Es super admin');
       user = {
@@ -102,13 +95,13 @@ function* loginWithEmailPassword({ payload }) {
       yield put(loginUserSuccess(user));
       history.push(superAdminRoot);
     }
+    */
     if (rol === 'adminLocal') {
-      console.log('Es admin de local Comercial');
       user = {
         role: UserRole.AdminLocalComercial,
         id: data.data.user.id,
-        first_name: data.data.user.first_name,
-        last_name: data.data.user.last_name,
+        nombre: data.data.user.nombre,
+        apellido: data.data.user.apellido,
         telefono: data.data.user.telefono,
         access: data.data.access,
         refresh: data.data.refresh,
@@ -116,9 +109,8 @@ function* loginWithEmailPassword({ payload }) {
         img: '/assets/img/profiles/l-1.jpg',
         date: 'Last seen today 15:24',
       };
-      setCurrentUser(user);
-      const getTienda = yield call(getTiendaAsync, data.data.user.id);
-      const tienda = getTienda.results[0];
+      setCurrentUser(user); // Guardamos el usuario en la memoria LOCAL STORAGE
+      const tienda = yield call(getTiendaAsync, refTienda); // Obtenemos los datos de la tienda
       setCurrentTienda(tienda);
       yield put(loginUserSuccess(user));
       yield put(loginTiendaSuccess(tienda));
@@ -127,16 +119,11 @@ function* loginWithEmailPassword({ payload }) {
   } catch (error) {
     const message = 'Email o contraseña incorrectos';
     history.push(loginRoot);
-    console.log('Notificacion de error');
+    console.log(error);
     yield put(loginUserError(message));
   }
 }
-/*
-export function* watchRegisterUser() {
-  // eslint-disable-next-line no-use-before-define
-  yield takeEvery(REGISTER_USER, registerWithEmailPassword);
-}
-*/
+
 const registerWithEmailPasswordAsync = async (email, password) =>
   // eslint-disable-next-line no-return-await
   await auth
