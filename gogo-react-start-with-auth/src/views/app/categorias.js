@@ -14,7 +14,6 @@ const Categorias = () => {
   const idTienda = useSelector((state) => state.authUser.tienda.id);
 
   useEffect(() => {
-    console.log('useEffect');
     dispatch({
       type: CATEGORIA_CARGAR_CATEGORIAS,
       payload: idTienda,

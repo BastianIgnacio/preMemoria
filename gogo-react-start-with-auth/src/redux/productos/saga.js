@@ -13,7 +13,7 @@ import {
   PRODUCTO_SET_PAGINA_ACTUAL,
   PRODUCTO_SET_ITEMS_POR_PAGINA,
   PRODUCTO_SET_PAGINAS,
-  PRODUCTO_DETELE,
+  PRODUCTO_DELETE,
   PRODUCTO_UPDATE,
   PRODUCTO_UPDATE_ITEMS,
   PRODUCTO_CARGAR_CATEGORIAS,
@@ -24,26 +24,24 @@ import {
   PRODUCTO_CHANGE_PAGE,
 } from '../actions';
 
+/** NOTIFICACIONES  */
 const notificacionError = (titulo, subtitulo) => {
   NotificationManager.error(titulo, subtitulo, 4000, null, null, 'filled');
 };
-
 const notificacionSuccess = (titulo, subtitulo) => {
   NotificationManager.success(titulo, subtitulo, 4000, null, null, 'filled');
 };
 
+//* * LLAMADAS AXIOS POST, DELETE, PUT, GET */
 // Post para agregar un producto a una categoria
 const addProductoAsync = async (producto) =>
   axios.post(`${apiRestUrl}/productoCategorias/`, producto);
-
 // DELETE para eliminar un producto de una categoria
 const deleteProductoAsync = async (idProducto) =>
-  axios.delete(`${apiRestUrl}/productoCategorias/${idProducto}`);
-
+  axios.delete(`${apiRestUrl}/productoCategorias/${idProducto}/`);
 // PUT para editar una categoria
 const putProductoAsync = async (idProducto, producto) =>
   axios.put(`${apiRestUrl}/productoCategorias/${idProducto}/`, producto);
-
 // GET para obtener los productos de una categoria Async
 const getProductosLimitAsync = async (refCategoria, limit) => {
   return axios
@@ -64,7 +62,6 @@ const getProductosLimitOffsetAsync = async (refCategoria, limit, offset) => {
       return res.data;
     });
 };
-
 // GET para obtener las categorias de un Local Comercial
 const getCategoriasAsync = async (refLocalComercial) => {
   return axios
@@ -74,27 +71,52 @@ const getCategoriasAsync = async (refLocalComercial) => {
     });
 };
 
+//* * FUNCIONES */
 function* cargarCategorias({ payload }) {
-  const refLocalComercial = payload;
+  const { refLocalComercial } = payload;
+  console.log('refLocal comercial');
+  console.log(refLocalComercial);
   try {
     // eslint-disable-next-line no-unused-vars
     const llamada = yield call(getCategoriasAsync, refLocalComercial);
     const categorias = llamada.results;
+    // Ya tenemos todas las categorias
 
-    yield put({ type: PRODUCTO_SET_CATEGORIAS, payload: categorias });
-    yield put({
-      type: PRODUCTO_SET_SELECTED_CATEGORIA,
-      payload: categorias[0],
-    });
-    const refCategoria = categorias[0].id;
-    yield put({
-      type: PRODUCTO_UPDATE_ITEMS,
-      payload: {
-        paginaActual: 1,
-        itemsPorPagina: 4,
-        refCategoria,
-      },
-    });
+    if (categorias.length === 0) {
+      // No hay categorias en esta tienda
+      yield put({
+        type: PRODUCTO_SET_CATEGORIAS,
+        payload: {
+          categoriasTienda: [],
+          existenCategorias: false,
+        },
+      });
+      yield put({
+        type: PRODUCTO_SET_SELECTED_CATEGORIA,
+        payload: [],
+      });
+    } else {
+      yield put({
+        type: PRODUCTO_SET_CATEGORIAS,
+        payload: {
+          categoriasTienda: categorias,
+          existenCategorias: true,
+        },
+      });
+      const categoria = categorias[0];
+      yield put({
+        type: PRODUCTO_SET_SELECTED_CATEGORIA,
+        payload: categoria,
+      });
+      yield put({
+        type: PRODUCTO_UPDATE_ITEMS,
+        payload: {
+          paginaActual: 1,
+          itemsPorPagina: 4,
+          refCategoria: categoria.id,
+        },
+      });
+    }
   } catch (error) {
     notificacionError('Problema al cargar las categorias', 'Error');
   }
@@ -105,6 +127,14 @@ function* addProducto({ payload }) {
   try {
     // eslint-disable-next-line no-unused-vars
     yield call(addProductoAsync, producto);
+    yield put({
+      type: PRODUCTO_UPDATE_ITEMS,
+      payload: {
+        paginaActual: 1,
+        itemsPorPagina: 4,
+        refCategoria: producto.refCategoria,
+      },
+    });
 
     // Aca se deberia llamar a la notificacion
     notificacionSuccess('Producto', 'Añadido Correctamente');
@@ -112,7 +142,7 @@ function* addProducto({ payload }) {
     notificacionError('No es posible añadir el producto', 'Error');
   }
 }
-
+// Funcion para actualizar los items que se muestran
 function* updateItems(payload) {
   const { paginaActual } = payload.payload;
   const { itemsPorPagina } = payload.payload;
@@ -151,9 +181,7 @@ function* updateItems(payload) {
           valorTruc = Math.trunc(valor);
         } else {
           // El resto es distinto de cero, se necesita mas de una pagina
-          console.log('akii');
           valorTruc = Math.trunc(valor) + 1;
-          console.log(valorTruc);
         }
 
         // Despachar las acciones
@@ -176,7 +204,6 @@ function* updateItems(payload) {
       }
       // Aca desppachamos una accion con los items(ADMINISTRADORES LOCALES COMERCIALES)
       const items = data.results;
-      console.log(data);
       // DESPACHAMOS LA ACCION DE LOS ITEMS
       yield put({ type: PRODUCTO_SET_ITEMS, payload: items });
       // DESPACHAMOS LA ACCION PARA LA CANTIDAD DE LOS ITEMS
@@ -272,30 +299,38 @@ function* updateItems(payload) {
     console.log(error);
   }
 }
+// Funcion para editar un producto
 function* updateProducto({ payload }) {
   const { idProducto } = payload;
   const { producto } = payload;
   try {
     yield call(putProductoAsync, idProducto, producto);
     // SIDE EFECTS
+    yield put({
+      type: PRODUCTO_UPDATE_ITEMS,
+      payload: {
+        paginaActual: 1,
+        itemsPorPagina: 4,
+        refCategoria: producto.refCategoria,
+      },
+    });
     notificacionSuccess('Producto', 'Editada correctamente');
   } catch (error) {
     console.log(error);
     notificacionError('Producto', 'Error al editar');
   }
 }
-
+// Funcion para eliminar un producto
 function* deleteProducto({ payload }) {
-  const { idProducto } = payload;
+  const { idProducto, refCategoria } = payload;
   try {
     yield call(deleteProductoAsync, idProducto);
     yield put({
       type: PRODUCTO_UPDATE_ITEMS,
       payload: {
-        primeraCarga: false,
         paginaActual: 1,
         itemsPorPagina: 4,
-        refLocalComercial: payload.refLocalComercial,
+        refCategoria,
       },
     });
     notificacionSuccess('Producto', 'Elimada correctamente');
@@ -304,7 +339,7 @@ function* deleteProducto({ payload }) {
     notificacionError('Producto', 'Error al eliminar');
   }
 }
-
+// Funcion para cambiar categoria
 function* changeCategoria({ payload }) {
   const categoria = payload;
   try {
@@ -325,7 +360,7 @@ function* changeCategoria({ payload }) {
     notificacionError('Error', 'Al cargar productos de la categoria');
   }
 }
-
+// Funcion para cambiar el tamaño de la pagina que se muestra
 function* changePageSize({ payload }) {
   const { itemsPorPagina } = payload;
   const { refCategoria } = payload;
@@ -344,7 +379,7 @@ function* changePageSize({ payload }) {
     notificacionError('Error', 'Al cargar productos de la categoria');
   }
 }
-
+// Funcion para cambiar el numero de pagina
 function* changePage({ payload }) {
   const { itemsPorPagina } = payload;
   const { refCategoria } = payload;
@@ -370,7 +405,7 @@ export function* watchUpdateProducto() {
   yield takeEvery(PRODUCTO_UPDATE, updateProducto);
 }
 export function* watchDeleteProducto() {
-  yield takeEvery(PRODUCTO_DETELE, deleteProducto);
+  yield takeEvery(PRODUCTO_DELETE, deleteProducto);
 }
 export function* watchProductoCargarCategorias() {
   yield takeEvery(PRODUCTO_CARGAR_CATEGORIAS, cargarCategorias);

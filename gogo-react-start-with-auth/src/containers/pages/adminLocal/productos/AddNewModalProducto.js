@@ -1,6 +1,6 @@
-/* eslint-disable prettier/prettier */
-/* eslint-disable no-unused-vars */
 import React from 'react';
+// eslint-disable-next-line no-unused-vars
+import { useSelector, useDispatch } from 'react-redux';
 import {
   Button,
   Modal,
@@ -12,8 +12,7 @@ import {
   Row,
   InputGroup,
   InputGroupAddon,
-  CustomInput,
-  Input
+  Input,
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
@@ -21,30 +20,75 @@ import { FormikCustomRadioGroup } from '../../../form-validations/FormikFields';
 import { Colxx } from '../../../../components/common/CustomBootstrap';
 import PreviewImage from '../../previewImage';
 
+import { NotificationManager } from '../../../../components/common/react-notifications';
+import { PRODUCTO_ADD } from '../../../../redux/actions';
+
 const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
-  const categorias = [
-    { value: "", label: 'Selecciona una opción' },
-    { value: "1", label: 'Cateogia 1' },
-    { value: "2", label: 'Categoria 2' },
-    { value: "3", label: 'Categoria 3' },
-  ];
+  const dispatch = useDispatch();
+  const categoriaSeleccionada = useSelector(
+    (state) => state.productos.categoriaSeleccionada
+  );
+  const notificacionWarning = (titulo, subtitulo) => {
+    NotificationManager.warning(titulo, subtitulo, 4000, null, null, 'filled');
+  };
   const enLinea = [
     { label: 'En Linea (Visible)', value: 1 },
     { label: 'Fuera de Linea (No Visible)', value: 2 },
   ];
 
-  const onSubmit = (values, { setSubmitting }) => {
+  const toBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+
+  const onSubmit = (values, { setSubmitting, resetForm }) => {
     const payload = {
       ...values,
     };
     setTimeout(() => {
       // Cuando no se ha seleccionado metodo de entrega
-      console.log(values.foto);
       console.log(JSON.stringify(payload, null, 2));
       setSubmitting(false);
       // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
+      if (payload.imagen === null || payload.imagen === undefined) {
+        notificacionWarning(
+          'Debes seleccionar una imagen a la categoria PNG O JPEG',
+          'IMAGEN'
+        );
+        return;
+      }
+      const { type } = payload.imagen;
+      if (type === 'image/jpeg' || type === 'image/png') {
+        let { imagen } = payload;
+        let esVisible = null;
+        if (payload.enLineaRadio === 1) {
+          esVisible = true;
+        } else {
+          esVisible = false;
+        }
+        toBase64(imagen).then((value) => {
+          imagen = value;
+          const producto = {
+            nombre: payload.nombreProducto,
+            descripcion: payload.descripcion,
+            esVisible,
+            esNuevo: true,
+            imagen,
+            refCategoria: categoriaSeleccionada.id,
+          };
+          dispatch({ type: PRODUCTO_ADD, payload: producto });
+          toggleModal();
+          resetForm();
+        });
+      } else {
+        // Aca deberiamos mostrar una notificacion
+        notificacionWarning('Debe ser JPEG O PNG', 'IMAGEN');
+      }
+      setSubmitting(false);
     }, 500);
-    toggleModal();
   };
 
   // Validacion para el form que envia la orden
@@ -52,34 +96,29 @@ const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
     nombreProducto: Yup.string().required(
       'El nombre del producto es requerido!'
     ),
-    selectCategoria: Yup.string().required('Debe seleccionar la categoria !'),
     descripcion: Yup.string().required('El producto debe tener una descipción'),
   });
-
 
   return (
     <Formik
       initialValues={{
         nombreProducto: '',
-        selectCategoria: "",
         precio: 1,
         descripcion: '',
         enLineaRadio: 2,
-        foto: null,
+        imagen: null,
       }}
       validationSchema={SignupSchema}
       onSubmit={onSubmit}
     >
       {({
-        handleSubmit,
         setFieldValue,
         setFieldTouched,
-        handleChange,
-        handleBlur,
+        // handleChange,
+        // handleBlur,
         values,
         errors,
         touched,
-        isSubmitting,
       }) => (
         <Modal
           isOpen={modalOpen}
@@ -88,7 +127,9 @@ const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
           backdrop="static"
         >
           <Form className="av-tooltip tooltip-label-bottom">
-            <ModalHeader toggle={toggleModal}>Añadir Producto</ModalHeader>
+            <ModalHeader toggle={toggleModal}>
+              Añadir Producto a {categoriaSeleccionada.nombre}
+            </ModalHeader>
             <ModalBody>
               <Row>
                 <Colxx xxs="12" xs="12" lg="12">
@@ -104,41 +145,21 @@ const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
                 </Colxx>
                 <Colxx xxs="12" xs="12" lg="12">
                   <FormGroup className="error-l-150">
-                    <Label>CATEGORIA QUE PERTENECE </Label>
-                    <select
-                      name="selectCategoria"
-                      className="form-control"
-                      value={values.selectCategoria}
-                      onChange={handleChange}
-                      onBlur={handleBlur}
-                    >
-                      {categorias.map((item, i) => {
-                        return (
-                          <option value={item.value} key={item.value}>
-                            {item.label}
-                          </option>
-                        );
-                      })}
-                    </select>
-                    {errors.selectCategoria && touched.selectCategoria ? (
-                      <div className="invalid-feedback d-block">
-                        {errors.selectCategoria}
-                      </div>
-                    ) : null}
-                  </FormGroup>
-                </Colxx>
-                <Colxx xxs="12" xs="12" lg="12">
-                  <FormGroup className="error-l-150">
                     <Label>PRECIO DE VENTA </Label>
                     <InputGroup className="mb-3">
                       <InputGroupAddon addonType="prepend">$</InputGroupAddon>
-                      <Field className="form-control" type="number" min="1" step="10" name="precio" />
+                      <Field
+                        className="form-control"
+                        type="number"
+                        min="1"
+                        name="precio"
+                      />
                     </InputGroup>
                   </FormGroup>
                 </Colxx>
                 <Colxx xxs="12" xs="12" lg="12">
                   <FormGroup className="error-l-175">
-                    <Label>DESCRIPCIÓN  </Label>
+                    <Label>DESCRIPCIÓN </Label>
                     <Field
                       as="textarea"
                       rows="2"
@@ -174,17 +195,20 @@ const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
                 </Colxx>
                 <Colxx xxs="12" xs="12" lg="12">
                   <FormGroup className="error-l-175">
-                    <Label className="d-block">FOTO DEL PRODUCTO (Opcional)</Label>
+                    <Label className="d-block">
+                      FOTO DEL PRODUCTO (Opcional)
+                    </Label>
                     <InputGroup className="mb-3">
                       <Input
                         type="file"
-                        name="foto"
+                        name="imagen"
                         onChange={(event) => {
-                          setFieldValue("foto", event.target.files[0]);
-                        }} />
+                          setFieldValue('imagen', event.target.files[0]);
+                        }}
+                      />
                     </InputGroup>
                   </FormGroup>
-                  {values.foto && <PreviewImage file={values.foto} />}
+                  {values.imagen && <PreviewImage file={values.imagen} />}
                 </Colxx>
               </Row>
             </ModalBody>

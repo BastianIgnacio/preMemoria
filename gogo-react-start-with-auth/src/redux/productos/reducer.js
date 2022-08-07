@@ -10,6 +10,7 @@ import {
   PRODUCTO_SET_PAGINAS,
   PRODUCTO_SET_SELECTED_CATEGORIA,
   PRODUCTO_SET_CATEGORIAS,
+  PRODUCTO_SET_CATEGORIA_ID,
 } from '../actions';
 
 const INIT_STATE = {
@@ -18,7 +19,8 @@ const INIT_STATE = {
   itemsPorPagina: 4,
   items: [],
   categoriasTienda: [],
-  categoriaSeleccionada: '',
+  existenCategorias: false,
+  categoriaSeleccionada: null,
   paginas: 1,
   startItem: 0,
   endItem: 0,
@@ -79,7 +81,13 @@ export default (state = INIT_STATE, action) => {
     case PRODUCTO_SET_CATEGORIAS:
       return {
         ...state,
-        categoriasTienda: action.payload,
+        categoriasTienda: action.payload.categoriasTienda,
+        existenCategorias: action.payload.existenCategorias,
+      };
+    case PRODUCTO_SET_CATEGORIA_ID:
+      return {
+        ...state,
+        categoriaSeleccionadaId: action.payload,
       };
     default:
       return { ...state };

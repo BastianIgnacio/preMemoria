@@ -21,19 +21,40 @@ import { ContextMenuTrigger } from 'react-contextmenu';
 import { FormikSwitch } from '../../../form-validations/FormikFields';
 import { Colxx } from '../../../../components/common/CustomBootstrap';
 import PreviewImage from '../../previewImage';
+import { NotificationManager } from '../../../../components/common/react-notifications';
 import { apiMediaUrl } from '../../../../constants/defaultValues';
+import { PRODUCTO_DELETE, PRODUCTO_UPDATE } from '../../../../redux/actions';
 
 const ThumbListViewProductos = ({ productoCategoria }) => {
   const dispatch = useDispatch();
   const [modalEditar, setModalEditar] = useState(false);
   const [modalEliminar, setModalEliminar] = useState(false);
 
+  const toBase64 = (file) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+
+  const notificacionWarning = (titulo, subtitulo) => {
+    NotificationManager.warning(titulo, subtitulo, 4000, null, null, 'filled');
+  };
   // Validacion para el form que edita los datos de un local comercial
   const SignupSchema = Yup.object().shape({
     nombre: Yup.string().required('El nombre es requerido!'),
+    desc: Yup.string().required('La descripcion es requerida!'),
   });
 
   const onSubmitEliminar = () => {
+    dispatch({
+      type: PRODUCTO_DELETE,
+      payload: {
+        idProducto: productoCategoria.id,
+        refCategoria: productoCategoria.refCategoria,
+      },
+    });
     setModalEliminar(false);
   };
 
@@ -45,22 +66,57 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
     setTimeout(() => {
       console.log(JSON.stringify(payload, null, 2));
       setSubmitting(false);
-      // Consultamos si el PUT tiene foto
-      if (payload.imagen === null || payload.imagen === undefined) {
-        // El PUT no tiene foto
-
-        // despachamos la action y hacemos el return
-
+      // No se ha editado la imagen, por ende no se debe enviar en el PUT
+      if (payload.webPreview) {
+        const putProducto = {
+          nombre: payload.nombre,
+          descripcion: payload.desc,
+          esVisible: payload.esVisible,
+          esNuevo: payload.esNuevo,
+          isBestProduct: payload.isBestProduct,
+          refCategoria: productoCategoria.refCategoria,
+        };
+        dispatch({
+          type: PRODUCTO_UPDATE,
+          payload: {
+            idProducto: productoCategoria.id,
+            producto: putProducto,
+          },
+        });
         setModalEditar(!modalEditar);
-        return;
-      }
-      // .............................................
-      // .............................................
-      // El put si tiene foto
-      const { type } = payload.rutaFoto;
-      // Validamos la foto
-      if (type === 'image/jpeg' || type === 'image/png') {
-        // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
+      } else {
+        // El put si tiene foto
+        const { type } = payload.fileMediaImagen;
+        const { fileMediaImagen } = payload;
+        if (type === 'image/jpeg' || type === 'image/png') {
+          toBase64(fileMediaImagen).then((value) => {
+            const imagen = value;
+            const putProducto = {
+              nombre: payload.nombre,
+              descripcion: payload.desc,
+              esVisible: payload.esVisible,
+              esNuevo: payload.esNuevo,
+              isBestProduct: payload.isBestProduct,
+              refCategoria: productoCategoria.refCategoria,
+              imagen,
+            };
+            dispatch({
+              type: PRODUCTO_UPDATE,
+              payload: {
+                idProducto: productoCategoria.id,
+                producto: putProducto,
+              },
+            });
+            setModalEditar(!modalEditar);
+          });
+        } else {
+          // Enviamos la aleta de que la foto no corresponde
+          console.log('Debe ser una imgen tipo png ');
+          notificacionWarning(
+            'La imagen seleccionada debe ser .PNG O .JPEG',
+            'IMAGEN'
+          );
+        }
       }
     }, 500);
   };
@@ -68,35 +124,52 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
   return (
     <Colxx xxs="12" key={productoCategoria.id} className="mb-3">
       <ContextMenuTrigger id="menu_id" data={productoCategoria.id}>
-        <Card>
+        <Card className="d-flex flex-row">
+          <div className="d-flex">
+            <img
+              alt={apiMediaUrl}
+              src={apiMediaUrl + productoCategoria.imagen}
+              className="list-thumbnail responsive border-0 card-img-left"
+            />
+          </div>
           <div className="pl-2 d-flex flex-grow-1 min-width-zero">
             <div className="card-body align-self-center d-flex flex-column flex-lg-row justify-content-between min-width-zero align-items-lg-center">
-              <p className="list-item-heading mb-1 truncate">
+              <p className="mb-1 list-item-heading mb-1 truncate w-100 w-sm-100">
                 {productoCategoria.nombre}
               </p>
-              <div className="w-5 w-sm-10 mb-1">
-                <Badge color={productoCategoria.statusColor} pill>
-                  ACTIVO
+              {productoCategoria.esNuevo && (
+                <Badge color="secondary" className="m-1" pill>
+                  NUEVO
                 </Badge>
-              </div>
-              <div className="w-5 w-sm-10 mb-1">
-                <Button
-                  onClick={() => setModalEliminar(!modalEliminar)}
-                  color="danger"
-                  className="mb-2"
-                >
-                  Eliminar
-                </Button>{' '}
-              </div>
-              <div className="w-5 w-sm-10 mb-1">
-                <Button
-                  onClick={() => setModalEditar(!modalEditar)}
-                  color="primary"
-                  className="mb-2"
-                >
-                  Editar
-                </Button>{' '}
-              </div>
+              )}
+              {productoCategoria.isBestProduct && (
+                <Badge color="secondary" className="m-1" pill>
+                  BEST PRODUCT
+                </Badge>
+              )}
+              {productoCategoria.esVisible ? (
+                <Badge color="primary" className="m-1" pill>
+                  VISIBLE
+                </Badge>
+              ) : (
+                <Badge color="warning" className="m-1" pill>
+                  NO VISIBLE
+                </Badge>
+              )}
+              <Button
+                onClick={() => setModalEliminar(!modalEliminar)}
+                color="danger"
+                className="m-1"
+              >
+                Eliminar
+              </Button>{' '}
+              <Button
+                onClick={() => setModalEditar(!modalEditar)}
+                color="primary"
+                className="m-1"
+              >
+                Editar
+              </Button>{' '}
             </div>
           </div>
         </Card>
@@ -107,11 +180,13 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
           <Formik
             initialValues={{
               nombre: productoCategoria.nombre,
-              descripcion: productoCategoria.descripcion,
+              desc: productoCategoria.descripcion,
               esVisible: productoCategoria.esVisible,
               esNuevo: productoCategoria.esNuevo,
               isBestProduct: productoCategoria.isBestProduct,
-              imagen: productoCategoria.imagen,
+              webPreview: true,
+              urlMediaImagen: productoCategoria.imagen,
+              fileMediaImagen: null,
             }}
             validationSchema={SignupSchema}
             onSubmit={onSubmitEditar}
@@ -137,6 +212,21 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
                       {errors.nombre && touched.nombre ? (
                         <div className="invalid-feedback d-block ">
                           {errors.nombre}
+                        </div>
+                      ) : null}
+                    </FormGroup>
+                  </Colxx>
+                  <Colxx xxs="12" xs="12" lg="12">
+                    <FormGroup className="form-group has-top-label error-l-100 tooltip-label-right">
+                      <Label>DESCRIPCION</Label>
+                      <Field
+                        className="form-control"
+                        name="desc"
+                        component="textarea"
+                      />
+                      {errors.desc && touched.desc ? (
+                        <div className="invalid-feedback d-block ">
+                          {errors.desc}
                         </div>
                       ) : null}
                     </FormGroup>
@@ -195,21 +285,34 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
                   <Colxx xxs="12" xs="12" lg="12">
                     <FormGroup className="error-l-175">
                       <Label className="d-block">
-                        NUEVA FOTO DE LA CATEGORIA (Opcional)
+                        NUEVA FOTO DEL PRODUCTO (Opcional)
                       </Label>
                       <InputGroup className="mb-3">
                         <Input
                           className="form-control"
                           type="file"
-                          name="imagen"
+                          name="rutaFoto"
                           onChange={(event) => {
-                            setFieldValue('imagen', event.target.files[0]);
+                            setFieldValue(
+                              'fileMediaImagen',
+                              event.target.files[0]
+                            );
+                            setFieldValue('webPreview', false);
                           }}
                         />
                       </InputGroup>
                     </FormGroup>
-                    {values.imagen && (
-                      <PreviewImage file={apiMediaUrl + values.imagen} />
+                    {values.webPreview ? (
+                      <div>
+                        <img
+                          src={apiMediaUrl + values.urlMediaImagen}
+                          alt="preview"
+                          width="250px"
+                          height="250px"
+                        />
+                      </div>
+                    ) : (
+                      <PreviewImage file={values.fileMediaImagen} />
                     )}
                   </Colxx>
                   <Colxx xxs="12" xs="12" lg="12" className="mt-1">

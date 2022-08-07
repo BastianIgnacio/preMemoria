@@ -15,13 +15,21 @@ const Productos = () => {
   const dispatch = useDispatch();
   const [modalOpen, setModalOpen] = useState(false);
   const isLoaded = useSelector((state) => state.productos.isLoaded);
+  const categoriaSeleccionada = useSelector(
+    (state) => state.productos.categoriaSeleccionada
+  );
   const idTienda = useSelector((state) => state.authUser.tienda.id);
 
   useEffect(() => {
-    dispatch({
-      type: PRODUCTO_CARGAR_CATEGORIAS,
-      payload: idTienda,
-    });
+    if (categoriaSeleccionada === null) {
+      console.log('Categoria null');
+      dispatch({
+        type: PRODUCTO_CARGAR_CATEGORIAS,
+        payload: {
+          refLocalComercial: idTienda,
+        },
+      });
+    }
   });
   return !isLoaded ? (
     <div className="loading" />

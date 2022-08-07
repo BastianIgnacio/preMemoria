@@ -25,7 +25,6 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
   const dispatch = useDispatch();
   const idTienda = useSelector((state) => state.authUser.tienda.id);
 
-  const [base64img, setBase64img] = useState('asd');
   const notificacionWarning = (titulo, subtitulo) => {
     NotificationManager.warning(titulo, subtitulo, 4000, null, null, 'filled');
   };
@@ -43,45 +42,43 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
     });
 
   // Enviamos la nueva categoria
-  const onSubmit = (values, { setSubmitting }) => {
+  const onSubmit = (values, { setSubmitting, resetForm }) => {
     const payload = {
       ...values,
     };
     setTimeout(() => {
       // Cuando no se ha seleccionado metodo de entrega
       console.log(JSON.stringify(payload, null, 2));
-      if (payload.foto === null || payload.foto === undefined) {
+      if (payload.imagen === null || payload.imagen === undefined) {
         notificacionWarning(
           'Debes seleccionar una imagen a la categoria PNG O JPEG',
           'IMAGEN'
         );
         return;
       }
-      const { type } = payload.foto;
-      let rutaFoto;
+      const { type } = payload.imagen;
       if (type === 'image/jpeg' || type === 'image/png') {
-        const { foto } = payload;
-        toBase64(foto).then((value) => {
-          rutaFoto = value;
-          return value;
-        });
+        let { imagen } = payload;
         let esVisible = null;
         if (payload.enLineaRadio === 1) {
           esVisible = true;
         } else {
           esVisible = false;
         }
-        setTimeout(() => {
+        toBase64(imagen).then((value) => {
+          imagen = value;
           const categoria = {
             nombre: payload.nombreCategoria,
+            descripcion: payload.desCategoria,
             esVisible,
             esNuevo: true,
-            rutaFoto,
+            imagen,
             refLocalComercial: idTienda,
           };
           dispatch({ type: CATEGORIA_ADD, payload: categoria });
-        }, 1000);
-        toggleModal();
+          toggleModal();
+          resetForm();
+        });
       } else {
         // Aca deberiamos mostrar una notificacion
         notificacionWarning('Debe ser JPEG O PNG', 'IMAGEN');
@@ -93,13 +90,15 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
   // Validacion para el form que envia la orden
   const SignupSchema = Yup.object().shape({
     nombreCategoria: Yup.string().required('El nombre es requerido!'),
+    desCategoria: Yup.string().required('La descripción es requerida!'),
   });
 
   return (
     <Formik
       initialValues={{
         nombreCategoria: '',
-        foto: null,
+        desCategoria: '',
+        imagen: null,
         enLineaRadio: 2,
       }}
       validationSchema={SignupSchema}
@@ -107,6 +106,7 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
     >
       {({
         handleSubmit,
+        handleReset,
         setFieldValue,
         setFieldTouched,
         handleChange,
@@ -140,6 +140,17 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
                   </FormGroup>
                 </Colxx>
                 <Colxx xxs="12" xs="12" lg="12">
+                  <FormGroup className="error-l-100">
+                    <Label>Descripcion de la categoria </Label>
+                    <Field className="form-control" name="desCategoria" />
+                    {errors.desCategoria && touched.desCategoria ? (
+                      <div className="invalid-feedback d-block">
+                        {errors.desCategoria}
+                      </div>
+                    ) : null}
+                  </FormGroup>
+                </Colxx>
+                <Colxx xxs="12" xs="12" lg="12">
                   <FormGroup className="error-l-175">
                     <Label className="d-block">ESTADO DE LA CATEGORIA</Label>
                     <FormikCustomRadioGroup
@@ -166,14 +177,14 @@ const AddNewModalCategoria = ({ modalOpen, toggleModal }) => {
                       <Input
                         className="form-control"
                         type="file"
-                        name="foto"
+                        name="imagen"
                         onChange={(event) => {
-                          setFieldValue('foto', event.target.files[0]);
+                          setFieldValue('imagen', event.target.files[0]);
                         }}
                       />
                     </InputGroup>
                   </FormGroup>
-                  {values.foto && <PreviewImage file={values.foto} />}
+                  {values.imagen && <PreviewImage file={values.imagen} />}
                 </Colxx>
               </Row>
             </ModalBody>

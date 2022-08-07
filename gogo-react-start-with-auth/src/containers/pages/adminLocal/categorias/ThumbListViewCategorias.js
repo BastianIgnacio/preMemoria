@@ -22,13 +22,13 @@ import { FormikSwitch } from '../../../form-validations/FormikFields';
 import { Colxx } from '../../../../components/common/CustomBootstrap';
 import PreviewImage from '../../previewImage';
 import { NotificationManager } from '../../../../components/common/react-notifications';
-import { CATEGORIA_DETELE, CATEGORIA_UPDATE } from '../../../../redux/actions';
+import { CATEGORIA_DELETE, CATEGORIA_UPDATE } from '../../../../redux/actions';
 import { apiMediaUrl } from '../../../../constants/defaultValues';
 
 const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
   const dispatch = useDispatch();
-
   const [modalEditar, setModalEditar] = useState(false);
+  const [urlPreview, setUrlPreview] = useState(true);
   const [modalEliminar, setModalEliminar] = useState(false);
   // Promise para obtener el base64 de una imagen
   const toBase64 = (file, setFunction) =>
@@ -45,11 +45,12 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
   // Validacion para el form que edita los datos de un local comercial
   const SignupSchema = Yup.object().shape({
     nombre: Yup.string().required('El nombre es requerido!'),
+    desc: Yup.string().required('La descripcion es requerida!'),
   });
 
   const onSubmitEliminar = () => {
     dispatch({
-      type: CATEGORIA_DETELE,
+      type: CATEGORIA_DELETE,
       payload: {
         categoria: categoria.id,
         refLocalComercial,
@@ -58,72 +59,66 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
     setModalEliminar(false);
   };
   // Funcion para Enviar El put de una categoria
-  const onSubmit = (values, { setSubmitting }) => {
+  const onSubmitPut = (values, { setSubmitting }) => {
     const payload = {
       ...values,
     };
     setTimeout(() => {
       console.log(JSON.stringify(payload, null, 2));
       setSubmitting(false);
-      // Consultamos si el PUT tiene foto
-      if (payload.rutaFoto === null || payload.rutaFoto === undefined) {
-        // El PUT no tiene foto
+      // No se ha editado la imagen, por ende no se debe enviar en el PUT
+      if (payload.webPreview) {
+        // PASAMOS HACER EL BASE64
         const putCategoria = {
           nombre: payload.nombre,
+          descripcion: payload.desc,
           esVisible: payload.esVisible,
           esNuevo: payload.esNuevo,
           refLocalComercial,
         };
-        // despachamos la action y hacemos el return
         dispatch({
           type: CATEGORIA_UPDATE,
           payload: {
             idCategoria: categoria.id,
             categoria: putCategoria,
+            refLocalComercial,
           },
         });
         setModalEditar(!modalEditar);
-        return;
-      }
-      // .............................................
-      // .............................................
-      // El put si tiene foto
-      const { type } = payload.rutaFoto;
-      // Validamos la foto
-      if (type === 'image/jpeg' || type === 'image/png') {
-        // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
-        let b64;
-        const { rutaFoto } = payload;
-        toBase64(rutaFoto).then((value) => {
-          b64 = value;
-          return value;
-        });
-        setTimeout(() => {
-          const putCategoria = {
-            nombre: payload.nombre,
-            esVisible: payload.esVisible,
-            esNuevo: payload.esNuevo,
-            rutaFoto: b64,
-            refLocalComercial,
-          };
-          dispatch({
-            type: CATEGORIA_UPDATE,
-            payload: {
-              idCategoria: categoria.id,
-              categoria: putCategoria,
-            },
-          });
-          setModalEditar(!modalEditar);
-        }, 1000);
       } else {
-        // Enviamos la aleta de que la foto no corresponde
-        console.log('Debe ser una imgen tipo png ');
-        notificacionWarning(
-          'La imagen seleccionada debe ser .PNG O .JPEG',
-          'IMAGEN'
-        );
+        // El put si tiene foto
+        const { type } = payload.fileMediaImagen;
+        const { fileMediaImagen } = payload;
+        if (type === 'image/jpeg' || type === 'image/png') {
+          toBase64(fileMediaImagen).then((value) => {
+            const imagen = value;
+            const putCategoria = {
+              nombre: payload.nombre,
+              descripcion: payload.desc,
+              esVisible: payload.esVisible,
+              esNuevo: payload.esNuevo,
+              imagen,
+              refLocalComercial,
+            };
+            dispatch({
+              type: CATEGORIA_UPDATE,
+              payload: {
+                idCategoria: categoria.id,
+                categoria: putCategoria,
+                refLocalComercial,
+              },
+            });
+            setModalEditar(!modalEditar);
+          });
+        } else {
+          // Enviamos la aleta de que la foto no corresponde
+          console.log('Debe ser una imgen tipo png ');
+          notificacionWarning(
+            'La imagen seleccionada debe ser .PNG O .JPEG',
+            'IMAGEN'
+          );
+        }
       }
-      // Ahora hay que validar el type de la foto
     }, 500);
   };
 
@@ -181,12 +176,15 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
           <Formik
             initialValues={{
               nombre: categoria.nombre,
+              desc: categoria.descripcion,
               esVisible: categoria.esVisible,
               esNuevo: categoria.esNuevo,
-              rutaFoto: null,
+              webPreview: true,
+              urlMediaImagen: categoria.imagen,
+              fileMediaImagen: null,
             }}
             validationSchema={SignupSchema}
-            onSubmit={onSubmit}
+            onSubmit={onSubmitPut}
           >
             {({
               handleSubmit,
@@ -209,6 +207,21 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
                       {errors.nombre && touched.nombre ? (
                         <div className="invalid-feedback d-block ">
                           {errors.nombre}
+                        </div>
+                      ) : null}
+                    </FormGroup>
+                  </Colxx>
+                  <Colxx xxs="12" xs="12" lg="12">
+                    <FormGroup className="form-group has-top-label error-l-100 tooltip-label-right">
+                      <Label>DESCRIPCION</Label>
+                      <Field
+                        className="form-control"
+                        name="desc"
+                        component="textarea"
+                      />
+                      {errors.desc && touched.desc ? (
+                        <div className="invalid-feedback d-block ">
+                          {errors.desc}
                         </div>
                       ) : null}
                     </FormGroup>
@@ -258,12 +271,27 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
                           type="file"
                           name="rutaFoto"
                           onChange={(event) => {
-                            setFieldValue('rutaFoto', event.target.files[0]);
+                            setFieldValue(
+                              'fileMediaImagen',
+                              event.target.files[0]
+                            );
+                            setFieldValue('webPreview', false);
                           }}
                         />
                       </InputGroup>
                     </FormGroup>
-                    {values.rutaFoto && <PreviewImage file={values.rutaFoto} />}
+                    {values.webPreview ? (
+                      <div>
+                        <img
+                          src={apiMediaUrl + values.urlMediaImagen}
+                          alt="preview"
+                          width="250px"
+                          height="250px"
+                        />
+                      </div>
+                    ) : (
+                      <PreviewImage file={values.fileMediaImagen} />
+                    )}
                   </Colxx>
                   <Colxx xxs="12" xs="12" lg="12" className="mt-1">
                     <Button block color="primary" type="submit">
