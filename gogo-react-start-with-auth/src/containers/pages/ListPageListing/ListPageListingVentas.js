@@ -1,71 +1,63 @@
 import React from 'react';
+import { useSelector, useDispatch } from 'react-redux';
 import { Row } from 'reactstrap';
 import Pagination from '../Pagination';
-import ContextMenuContainer from '../ContextMenuContainer';
-import DataListView from '../DataListView';
-import ImageListView from '../ImageListView';
 import ThumbListViewVentas from './ThumbListViewVentas';
+import ThumbListViewEmpty from './ThumbListViewEmpty';
+import { VENTA_CHANGE_PAGE } from '../../../redux/actions';
 
-function collect(props) {
-  return { data: props.data };
-}
+const ListPageListingVentas = () => {
+  // eslint-disable-next-line no-unused-vars
+  const dispatch = useDispatch();
+  const paginas = useSelector((state) => state.ventas.paginas);
+  const paginaActual = useSelector((state) => state.ventas.paginaActual);
+  const items = useSelector((state) => state.ventas.items);
+  const itemsPorPagina = useSelector((state) => state.ventas.itemsPorPagina);
+  const idTienda = useSelector((state) => state.authUser.tienda.id);
+  const fecha = useSelector((state) => state.ventas.fecha);
 
-const ListPageListingVentas = ({
-  items,
-  displayMode,
-  selectedItems,
-  onCheckItem,
-  currentPage,
-  totalPage,
-  onContextMenuClick,
-  onContextMenu,
-  onChangePage,
-}) => {
+  const formatDate = (date) => {
+    const d = new Date(date);
+    let month = `${d.getMonth() + 1}`;
+    let day = `${d.getDate()}`;
+    const year = d.getFullYear();
+    if (month.length < 2) month = `0${month}`;
+    if (day.length < 2) day = `0${day}`;
+
+    return [year, month, day].join('-');
+  };
+
+  const onChangePage = (nuevaPagActual) => {
+    const formattedDate = formatDate(fecha);
+    dispatch({
+      type: VENTA_CHANGE_PAGE,
+      payload: {
+        paginaActual: nuevaPagActual,
+        itemsPorPagina,
+        formattedDate,
+        refLocalComercial: idTienda,
+      },
+    });
+  };
   return (
-    <Row>
-      {items.map((product) => {
-        if (displayMode === 'imagelist') {
-          return (
-            <ImageListView
-              key={product.id}
-              product={product}
-              isSelect={selectedItems.includes(product.id)}
-              collect={collect}
-              onCheckItem={onCheckItem}
-            />
-          );
-        }
-        if (displayMode === 'thumblist') {
-          return (
-            <ThumbListViewVentas
-              key={product.id}
-              product={product}
-              isSelect={selectedItems.includes(product.id)}
-              collect={collect}
-              onCheckItem={onCheckItem}
-            />
-          );
-        }
-        return (
-          <DataListView
-            key={product.id}
-            product={product}
-            isSelect={selectedItems.includes(product.id)}
-            onCheckItem={onCheckItem}
-            collect={collect}
+    <div>
+      {items.length === 0 ? (
+        <Row>
+          <ThumbListViewEmpty />
+        </Row>
+      ) : (
+        <Row>
+          {items.map((venta) => {
+            return <ThumbListViewVentas key={venta.id} venta={venta} />;
+          })}
+          <Pagination
+            currentPage={paginaActual}
+            totalPage={paginas}
+            onChangePage={(i) => onChangePage(i)}
           />
-        );
-      })}
-      <Pagination
-        currentPage={currentPage}
-        totalPage={totalPage}
-        onChangePage={(i) => onChangePage(i)}
-      />
-      <ContextMenuContainer
-        onContextMenuClick={onContextMenuClick}
-        onContextMenu={onContextMenu}
-      />
-    </Row>
+        </Row>
+      )}
+    </div>
   );
 };
 

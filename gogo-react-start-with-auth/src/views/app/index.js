@@ -17,6 +17,9 @@ const Productos = React.lazy(() =>
 const Ventas = React.lazy(() =>
   import(/* webpackChunkName: "viwes-blank-page" */ './ventas')
 );
+const Ordenes = React.lazy(() =>
+  import(/* webpackChunkName: "viwes-blank-page" */ './ordenes')
+);
 const ConfiguracionTienda = React.lazy(() =>
   import(/* webpackChunkName: "viwes-blank-page" */ './configuracionTienda')
 );
@@ -66,6 +69,11 @@ const App = ({ match }) => {
             <ProtectedRoute
               path={`${match.url}/ventas`}
               component={(props) => <Ventas {...props} />}
+              roles={[UserRole.AdminLocalComercial]}
+            />
+            <ProtectedRoute
+              path={`${match.url}/ordenes`}
+              component={(props) => <Ordenes {...props} />}
               roles={[UserRole.AdminLocalComercial]}
             />
             <ProtectedRoute

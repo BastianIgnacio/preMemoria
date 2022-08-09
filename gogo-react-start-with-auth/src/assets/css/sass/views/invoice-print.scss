@@ -1,7 +1,6 @@
 .invoice-react {
   .invoice-contents {
     background-color: $foreground-color;
-    height: 1200px;
     max-width: 830px;
     position: relative;
   }
@@ -42,7 +41,6 @@
     .invoice-contents {
       width: 100%;
       max-width: 100% !important;
-      height: 1370px !important;
     }
   }
 }

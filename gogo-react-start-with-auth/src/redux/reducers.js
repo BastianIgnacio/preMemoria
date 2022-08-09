@@ -12,6 +12,7 @@ import localComercial from './localComercial/reducer';
 import administradorLocalComercial from './adminLocalComercial/reducer';
 import categorias from './categorias/reducer';
 import productos from './productos/reducer';
+import ventas from './ventas/reducer';
 
 const reducers = combineReducers({
   menu,
@@ -27,6 +28,7 @@ const reducers = combineReducers({
   administradorLocalComercial,
   categorias,
   productos,
+  ventas,
 });
 
 export default reducers;

@@ -37,6 +37,13 @@ const data = [
     roles: [UserRole.AdminLocalComercial],
   },
   {
+    id: 'ordenes',
+    icon: 'iconsminds-check',
+    label: 'menu.ordenes',
+    to: `${adminRoot}/ordenes`,
+    roles: [UserRole.AdminLocalComercial],
+  },
+  {
     id: 'configuracionTienda',
     icon: 'iconsminds-gear',
     label: 'menu.configuracion',

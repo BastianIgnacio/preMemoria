@@ -49,6 +49,7 @@ module.exports = {
   'menu.categorias': 'Categorias',
   'menu.productos': 'Productos',
   'menu.ventas': 'Ventas',
+  'menu.ordenes': 'Ordenes',
   'menu.configuracion': 'Configuración',
   'menu.mercadopago': 'MercadoPago',
   'menu.locales': 'Locales',

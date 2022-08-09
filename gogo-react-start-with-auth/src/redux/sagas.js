@@ -8,6 +8,7 @@ import localComercialSagas from './localComercial/saga';
 import adminLocalComercialSagas from './adminLocalComercial/saga';
 import categoriasSaga from './categorias/saga';
 import productosSaga from './productos/saga';
+import ventasSaga from './ventas/saga';
 
 export default function* rootSaga() {
   yield all([
@@ -20,5 +21,6 @@ export default function* rootSaga() {
     adminLocalComercialSagas(),
     categoriasSaga(),
     productosSaga(),
+    ventasSaga(),
   ]);
 }
