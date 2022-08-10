@@ -9,6 +9,7 @@ import adminLocalComercialSagas from './adminLocalComercial/saga';
 import categoriasSaga from './categorias/saga';
 import productosSaga from './productos/saga';
 import ventasSaga from './ventas/saga';
+import ordenesSaga from './ordenes/saga';
 
 export default function* rootSaga() {
   yield all([
@@ -22,5 +23,6 @@ export default function* rootSaga() {
     categoriasSaga(),
     productosSaga(),
     ventasSaga(),
+    ordenesSaga(),
   ]);
 }

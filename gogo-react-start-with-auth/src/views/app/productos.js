@@ -22,7 +22,6 @@ const Productos = () => {
 
   useEffect(() => {
     if (categoriaSeleccionada === null) {
-      console.log('Categoria null');
       dispatch({
         type: PRODUCTO_CARGAR_CATEGORIAS,
         payload: {

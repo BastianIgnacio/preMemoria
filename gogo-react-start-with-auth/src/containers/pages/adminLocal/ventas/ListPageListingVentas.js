@@ -1,10 +1,10 @@
 import React from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import { Row } from 'reactstrap';
-import Pagination from '../Pagination';
+import Pagination from '../../Pagination';
 import ThumbListViewVentas from './ThumbListViewVentas';
-import ThumbListViewEmpty from './ThumbListViewEmpty';
-import { VENTA_CHANGE_PAGE } from '../../../redux/actions';
+import ThumbListViewEmpty from '../../ListPageListing/ThumbListViewEmpty';
+import { VENTA_CHANGE_PAGE } from '../../../../redux/actions';
 
 const ListPageListingVentas = () => {
   // eslint-disable-next-line no-unused-vars

@@ -13,11 +13,11 @@ import {
 } from 'reactstrap';
 import { NavLink } from 'react-router-dom';
 import { ContextMenuTrigger } from 'react-contextmenu';
-import { Colxx } from '../../../components/common/CustomBootstrap';
+import { Colxx } from '../../../../components/common/CustomBootstrap';
 import {
   VENTA_GET_ORDEN,
   VENTA_GET_PRODUCTOS_VENTA,
-} from '../../../redux/actions';
+} from '../../../../redux/actions';
 
 const ThumbListViewVentas = ({ venta }) => {
   const dispatch = useDispatch();

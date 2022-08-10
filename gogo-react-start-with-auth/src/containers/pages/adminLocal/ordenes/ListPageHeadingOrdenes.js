@@ -1,5 +1,6 @@
 /* eslint-disable prettier/prettier */
 /* eslint-disable react/no-array-index-key */
+// eslint-disable-next-line no-unused-vars
 import React, { useState, useEffect } from 'react';
 import { useSelector, useDispatch } from 'react-redux';
 import {
@@ -12,19 +13,23 @@ import {
   Collapse,
 } from 'reactstrap';
 import { injectIntl } from 'react-intl';
-import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
-import { Colxx, Separator } from '../../components/common/CustomBootstrap';
-import { VENTA_CHANGE_DATE, VENTA_CHANGE_PAGE_SIZE } from '../../redux/actions';
+import { Colxx, Separator } from '../../../../components/common/CustomBootstrap';
+// eslint-disable-next-line no-unused-vars
+import { ORDEN_CHANGE_ESTADO, ORDEN_SET_ESTADO } from '../../../../redux/actions';
 
-const ListPageHeadingVentas = ({
-  intl,
+const ListPageHeadingOrdenes = ({
   pageSizes,
+
 }) => {
+  const opciones = [{ key: 0, label: 'EN COLA', estate: 'EN_COLA' },
+  { key: 1, label: 'EN PREPARACION', estate: 'EN_PREPARACION' },
+  { key: 2, label: 'EN REPARTO', estate: 'EN_REPARTO' },
+  { key: 3, label: 'EN ESPERA DE RETIRO', estate: 'EN_ESPERA_RETIRO' }];
   const dispatch = useDispatch();
   const [displayOptionsIsOpen, setDisplayOptionsIsOpen] = useState(false);
-  const { messages } = intl;
-  const fecha = useSelector((state) => state.ventas.fecha);
+  const estado = useSelector((state) => state.ordenes.estado);
+
   const idTienda = useSelector((state) => state.authUser.tienda.id);
 
   const totalItems = useSelector((state) => state.ventas.totalItems);
@@ -34,46 +39,7 @@ const ListPageHeadingVentas = ({
     (state) => state.ventas.itemsPorPagina
   );
 
-  const formatDate = (date) => {
-    const d = new Date(date);
-    let month = `${d.getMonth() + 1}`;
-    let day = `${d.getDate()}`;
-    const year = d.getFullYear();
-    if (month.length < 2)
-      month = `0${month}`;
-    if (day.length < 2)
-      day = `0${day}`;
-
-    return [year, month, day].join('-');
-  }
-
-  useEffect(() => {
-    if (fecha === null) {
-      const fechaActual = new Date();
-      const formattedDate = formatDate(fechaActual);
-      dispatch({
-        type: VENTA_CHANGE_DATE,
-        payload: {
-          fecha: fechaActual,
-          formattedDate,
-          refLocalComercial: idTienda,
-        }
-      });
-    }
-  });
-
-  const changeDate = (nuevaFecha) => {
-    const formattedDate = formatDate(nuevaFecha);
-    dispatch({
-      type: VENTA_CHANGE_DATE,
-      payload: {
-        fecha: nuevaFecha,
-        formattedDate,
-        refLocalComercial: idTienda,
-      }
-    });
-  }
-
+  /*
   const changePageSize = (nuevosItemsPorPagina) => {
     const formattedDate = formatDate(fecha);
     dispatch({
@@ -86,13 +52,23 @@ const ListPageHeadingVentas = ({
       },
     });
   }
+  */
+  const changeEstado = (nuevoEstado) => {
+    dispatch({
+      type: ORDEN_CHANGE_ESTADO,
+      payload: {
+        estado: nuevoEstado,
+        refLocalComercial: idTienda,
+      }
+    });
+  }
 
   return (
     <Row>
       <Colxx xxs="12">
         <div className="mb-2">
           <h1>
-            VENTAS
+            ORDENES
           </h1>
         </div>
 
@@ -111,16 +87,24 @@ const ListPageHeadingVentas = ({
             id="displayOptions"
           >
             <div className="d-block d-md-inline-block pt-1">
-              <div className="search-sm d-inline-block float-md-left mr-1 mb-1 align-top">
-                <DatePicker
-                  selected={fecha}
-                  onChange={(event) => {
-                    console.log(event);
-                    changeDate(event);
-                  }}
-                  placeholderText={messages['forms.date']}
-                />
-              </div>
+              <UncontrolledDropdown className="mr-1 float-md-left btn-group mb-1">
+                <DropdownToggle caret color="outline-dark" size="xs">
+                  Ordenar por {'  '}
+                  {estado.label}
+                </DropdownToggle>
+                <DropdownMenu>
+                  {opciones.map((opc, index) => {
+                    return (
+                      <DropdownItem
+                        key={index}
+                        onClick={() => changeEstado(opc)}
+                      >
+                        {opc.label}
+                      </DropdownItem>
+                    );
+                  })}
+                </DropdownMenu>
+              </UncontrolledDropdown>
             </div>
             <div className="float-md-right pt-1">
               <span className="text-muted text-small mr-1">{`${startItem}-${endItem} de ${totalItems} `}</span>
@@ -133,7 +117,7 @@ const ListPageHeadingVentas = ({
                     return (
                       <DropdownItem
                         key={index}
-                        onClick={() => changePageSize(size)}
+                      // onClick={() => changePageSize(size)}
                       >
                         {size}
                       </DropdownItem>
@@ -150,4 +134,4 @@ const ListPageHeadingVentas = ({
   );
 };
 
-export default injectIntl(ListPageHeadingVentas);
+export default injectIntl(ListPageHeadingOrdenes);
