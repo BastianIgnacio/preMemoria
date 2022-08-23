@@ -1,6 +1,5 @@
 /* eslint-disable prettier/prettier */
-/* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
 // eslint-disable-next-line no-unused-vars
 import {
@@ -20,132 +19,106 @@ import {
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 
-import LinesEllipsis from 'react-lines-ellipsis';
-import responsiveHOC from 'react-lines-ellipsis/lib/responsiveHOC';
-import { useParams, Redirect, useHistory } from 'react-router-dom';
-import {
-  FormikReactSelect,
-  FormikTagsInput,
-  FormikDatePicker,
-} from '../../../containers/form-validations/FormikFields';
+import { useParams, useHistory } from 'react-router-dom';
+import { FormikReactSelect } from '../../../containers/form-validations/FormikFields';
 
 import { Colxx } from '../../../components/common/CustomBootstrap';
 import { NotificationManager } from '../../../components/common/react-notifications';
+import {
+  CARRITO_ELIMINAR_PRODUCTO,
+  CARRITO_INIT,
+  CARRITO_PROCESAR,
+  CARRITO_RES_PRODUCTO,
+  CARRITO_SUM_PRODUCTO,
+} from '../../../redux/actions';
+import { tiposPago, estadosPago, estadosVenta, tiposEntrega, estadosOrden } from '../../../constants/defaultValues';
 
-// eslint-disable-next-line no-unused-vars
-const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
-
-const Carrito = (props) => {
-  // Variables para identificar que pag corresponde
-  // eslint-disable-next-line no-unused-vars
-  const [header, setHeader] = useState('Carrito de compras de ');
+const Carrito = () => {
   // ID DE LA TIENDA QUE ESTAMOS CARGANDO EN EL COMPONENTE
   const { id } = useParams();
-  // Variable para saber que id del array del carrito vamos a eliminar
-  // eslint-disable-next-line no-unused-vars
-  const [idKeyEliminar, setIdKeyEliminar] = useState(-1);
-  const [cantidadProductoEliminar, setCantidadProductoEliminar] = useState(-1);
-  const [nombreProductoEliminar, setNombreProductoEliminar] = useState(-1);
-  const [notaProductoEliminar, setNotaProductoEliminar] = useState(-1);
-  const [precioProductoEliminar, setPrecioProductoEliminar] = useState(-1);
-  const [modalEliminar, setModalEliminar] = useState(false);
 
   // Variables para el estado del componente
-  // eslint-disable-next-line no-unused-vars
   const dispatch = useDispatch();
   const history = useHistory();
-  // eslint-disable-next-line no-unused-vars
-  const estadoApp = useSelector((state) => state);
 
-  // Variables para el modal
+
+
+  // VARIABLES DEL MODAL
   const [modalFinalizarCompra, setModalFinalizarCompra] = useState(false);
-  const [selectedRadioPago, setSelectedRadioPago] = useState(0);
-  const [selectedRadioEntrega, setSelectedRadioEntrega] = useState(0);
+  const [modalEliminar, setModalEliminar] = useState(false);
 
-  // Variables para el select del tiempo para opcion retiro el local
-  const dataRetiroEnLocal = [
-    { label: 'Lo antes posible', value: 0, key: 0 },
-    { label: 'En 15 a 30 minutos', value: 1, key: 1 },
-    { label: 'En 30 a 40 minutos', value: 2, key: 2 },
-    { label: 'En 40 a 50 minutos', value: 3, key: 3 },
-    { label: 'En 50 a 60 minutos', value: 4, key: 4 },
-    { label: 'En 60 a 90 minutos', value: 5, key: 5 },
-    { label: 'En 90 a 120 minutos', value: 6, key: 6 },
-  ];
-  const [selectedOptionLO, setSelectedOptionLO] = useState(
-    dataRetiroEnLocal[0]
+  // INFORMACION SOBRE LA TIENDA
+  const idTienda = useSelector((state) => state.carrito.idTienda);
+  const carritoCargado = useSelector((state) => state.carrito.carritoCargado);
+  const total = useSelector((state) => state.carrito.total);
+  const arrayCarrito = useSelector((state) => state.carrito.arrayCarrito);
+
+
+  // METODOS DE PAGO DISPONIBLES
+  const pagoRetiroLocalEfectivo = useSelector(
+    (state) => state.carrito.pagoRetiroLocalEfectivo
   );
-
-  // Variable para el select del tiempo para la opcion de delivery
-  const dataDelivery = [
-    { label: 'Lo antes posible', value: 0, key: 0 },
-    { label: 'En 30 a 60 minutos', value: 1, key: 1 },
-    { label: 'En 60 a 90 minutos', value: 2, key: 2 },
-    { label: 'En 90 a 120 minutos', value: 3, key: 3 },
-    { label: 'En 120 a 150 minutos', value: 4, key: 4 },
-  ];
-  const [selectedOptionDelivery, setSelectedOptionDelivery] = useState(
-    dataDelivery[0]
+  const pagoRetiroLocalPos = useSelector(
+    (state) => state.carrito.pagoRetiroLocalPos
   );
-
-  // Variables para metodo de pago
-  // eslint-disable-next-line no-unused-vars
-  const [mercadoPago, setMercadoPago] = useState(true);
-  // eslint-disable-next-line no-unused-vars
-  const [efectivo, setEfectivo] = useState(true);
-  // eslint-disable-next-line no-unused-vars
-  const [redcompra, setRedcompra] = useState(true);
-  // eslint-disable-next-line no-unused-vars
+  const pagoRetiroLocalMercadopago = useSelector(
+    (state) => state.carrito.pagoRetiroLocalMercadopago
+  );
+  const pagoDeliveryEfectivo = useSelector(
+    (state) => state.carrito.pagoDeliveryEfectivo
+  );
+  const pagoDeliveryPos = useSelector((state) => state.carrito.pagoDeliveryPos);
+  const pagoDeliveryMercadopago = useSelector(
+    (state) => state.carrito.pagoDeliveryMercadopago
+  );
   const [metodoDePago, setMetodoDePago] = useState(0);
 
-  // Variables para metodo de entrega que posee un local comercial
-  // eslint-disable-next-line no-unused-vars
-  const [delivery, setDelivery] = useState(true);
-  // eslint-disable-next-line no-unused-vars
-  const [retiroEnLocal, setRetiroEnLocal] = useState(true);
-  // eslint-disable-next-line no-unused-vars
-  const [metodoDeEntrega, setMetodoDeEntrega] = useState(0);
+  // METODOS DE ENTREGA
+  const tieneDelivery = useSelector((state) => state.carrito.tieneDelivery);
+  const tieneRetiroLocal = useSelector(
+    (state) => state.carrito.tieneRetiroLocal
+  );
+  const [metodoDeEntrega, setMetodoEntrega] = useState(0);
 
-  // Funcion para iniciar el carrito de compras, en caso de que este null en el localstorage
-  const initCarrito = () => {
-    if (JSON.parse(localStorage.getItem('carritoLocalStorage')) === null) {
-      return [];
+  // eslint-disable-next-line no-unused-vars
+  const dataRetiroEnLocal = useSelector(
+    (state) => state.carrito.dataRetiroEnLocal
+  );
+  const dataDelivery = useSelector((state) => state.carrito.dataDelivery);
+
+  useEffect(() => {
+    if (!carritoCargado) {
+      dispatch({
+        type: CARRITO_INIT,
+        payload: id,
+      });
     }
-    return JSON.parse(localStorage.getItem('carritoLocalStorage'));
+  });
+
+  // Funcion para sumar un producto en el carrito de compras
+  const sumar = (producto) => {
+    dispatch({
+      type: CARRITO_SUM_PRODUCTO,
+      payload: producto,
+    });
   };
-
-  // Variable para mostrar el array correspondiente
-  // eslint-disable-next-line no-unused-vars
-  const [arrayCarrito, setArrayCarrito] = useState(initCarrito());
-
-  // Suma total del array de productos
-  const totalInit = arrayCarrito
-    .filter((producto) => producto.idTienda === id)
-    .reduce((sum, el) => sum + el.precio * el.cantidad, 0);
-
-  // eslint-disable-next-line no-unused-vars
-  const [total, setTotal] = useState(totalInit);
-
-  const clickRetiroEnLocal = () => {
-    setSelectedRadioEntrega(1);
-    setMetodoDeEntrega(1);
+  // Funcion para sumar un producto en el carrito de compras
+  const restar = (producto) => {
+    dispatch({
+      type: CARRITO_RES_PRODUCTO,
+      payload: producto,
+    });
   };
-
-  const clickDelivery = () => {
-    setSelectedRadioEntrega(2);
-    setMetodoDeEntrega(2);
+  // Funcion para eliminar un producto en el carrito de compras
+  const eliminar = (producto) => {
+    dispatch({
+      type: CARRITO_ELIMINAR_PRODUCTO,
+      payload: producto,
+    });
+    setModalEliminar(!modalEliminar);
   };
-
-  const actualizarNav = () => {
-    props.llamarPadre(id);
-  };
-
-  const existe = true;
-  if (!existe) {
-    return <Redirect to="/error" />;
-  }
-
   // Notificacion al eliminar un producto
+  // eslint-disable-next-line no-unused-vars
   const notificacionEliminarProducto = (nombreProducto) => {
     NotificationManager.info(
       nombreProducto,
@@ -156,8 +129,8 @@ const Carrito = (props) => {
       'filled'
     );
   };
-
   // Notificacion al eliminar un producto
+  // eslint-disable-next-line no-unused-vars
   const notificacionFaltaDireccion = () => {
     NotificationManager.warning(
       'POR FAVOR INGRESAR LA DIRECCION PARA LA ENTREGA',
@@ -168,8 +141,8 @@ const Carrito = (props) => {
       'filled'
     );
   };
-
   // Notificacion al eliminar un producto
+  // eslint-disable-next-line no-unused-vars
   const notificacionFormaDePago = () => {
     NotificationManager.warning(
       'POR FAVOR SELECCIONAR LA FORMA DE PAGO',
@@ -180,124 +153,17 @@ const Carrito = (props) => {
       'filled'
     );
   };
-
   // Notificacion al eliminar un producto
+  // eslint-disable-next-line no-unused-vars
   const notificacionFormaEntrega = () => {
     NotificationManager.warning(
-      'POR FAVOR SELECCIONAR LA FORMA DE ENTREGA',
+      'POR FAVOR SELECCIONAR UN METODO DE ENTREGA',
       'ENTREGA',
       2000,
       null,
       null,
       'filled'
     );
-  };
-  // Variables modal eliminar
-  const abrirModalEliminar = (idKey) => {
-    const found = arrayCarrito.find((element) => element.idKey === idKey);
-    setIdKeyEliminar(found.idKey);
-    setNombreProductoEliminar(found.nombreProducto);
-    setCantidadProductoEliminar(found.cantidad);
-    setNotaProductoEliminar(found.notaEspecial);
-    setPrecioProductoEliminar(found.precio);
-    setModalEliminar(true);
-  };
-
-  // Funcion para sumar un producto en el carrito de compras
-  const sumar = (idKey) => {
-    const found = arrayCarrito.find((element) => element.idKey === idKey);
-    const index = arrayCarrito.indexOf(found);
-    const cant = arrayCarrito[index].cantidad;
-    arrayCarrito[index].cantidad = cant + 1;
-    const nuevoArray = [...arrayCarrito];
-    setArrayCarrito(nuevoArray);
-    localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
-    const totalSum = nuevoArray
-      .filter((producto) => producto.idTienda === id)
-      .reduce((sum, el) => sum + el.precio * el.cantidad, 0);
-    setTotal(totalSum);
-  };
-
-  // Funcion para restar un producto en el carrito de compras
-  const restar = (idKey) => {
-    const found = arrayCarrito.find((element) => element.idKey === idKey);
-    const index = arrayCarrito.indexOf(found);
-    const cant = arrayCarrito[index].cantidad;
-    if (cant > 1) {
-      arrayCarrito[index].cantidad = cant - 1;
-      const nuevoArray = [...arrayCarrito];
-      setArrayCarrito(nuevoArray);
-      localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
-      const totalSum = nuevoArray
-        .filter((producto) => producto.idTienda === id)
-        .reduce((sum, el) => sum + el.precio * el.cantidad, 0);
-      setTotal(totalSum);
-    } else {
-      abrirModalEliminar(idKey);
-    }
-  };
-
-  // Funcion para eliminar un producto en el carrito de compras
-  const eliminar = (idKey) => {
-    const found = arrayCarrito.find((element) => element.idKey === idKey);
-    const index = arrayCarrito.indexOf(found);
-    const nombreEliminar = arrayCarrito[index].nombreProducto;
-    arrayCarrito.splice(index, 1);
-    const nuevoArray = [...arrayCarrito];
-    setArrayCarrito(nuevoArray);
-    localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
-    const totalSum = nuevoArray
-      .filter((producto) => producto.idTienda === id)
-      .reduce((sum, el) => sum + el.precio * el.cantidad, 0);
-    setTotal(totalSum);
-    setModalEliminar(false);
-    notificacionEliminarProducto(nombreEliminar);
-  };
-
-  const finalizarCompra = () => {
-    setModalFinalizarCompra(true);
-  };
-
-  const modificarMetodoPago = (metodo) => {
-    setMetodoDePago(metodo);
-    setSelectedRadioPago(metodo);
-  };
-
-  // Funcion para Enviar el pedido
-  const onSubmit = (values, { setSubmitting }) => {
-    const payload = {
-      ...values,
-      tiempoDelivery: values.tiempoDelivery.value,
-      tiempoRetiro: values.tiempoRetiro.value,
-      metodoDeEntrega,
-      metodoDePago,
-    };
-    setTimeout(() => {
-      // Cuando no se ha seleccionado metodo de entrega
-      if (payload.metodoDeEntrega === 0) {
-        notificacionFormaEntrega();
-        return;
-      }
-      // Cuando no se ha seleccionado metodo de pago
-      if (metodoDePago === 0) {
-        notificacionFormaDePago();
-        return;
-      }
-      // Cuando la direccion es null o undefined y el metodo de esntrega es delivery
-      if ((typeof payload.direccionDelivery === 'undefined') && (metodoDeEntrega === 2)) {
-        notificacionFaltaDireccion();
-        return;
-      }
-      // Cuando la direccion es vacia y el metodo de entrega es delivery
-      if ((payload.direccionDelivery === "") && (metodoDeEntrega === 2)) {
-        notificacionFaltaDireccion();
-        return;
-      }
-      console.log(JSON.stringify(payload, null, 2));
-      setSubmitting(false);
-      // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
-
-    }, 500);
   };
 
   // Validacion para el form que envia la orden
@@ -310,73 +176,392 @@ const Carrito = (props) => {
     direccionDelivery: Yup.string(),
   });
 
-  actualizarNav(id);
+  const finalizarCompra = () => {
+    setModalFinalizarCompra(true);
+  };
+
+  const clickRetiroEnLocal = () => {
+    setMetodoEntrega(1);
+    // Se reinicia el metodo de pago
+    setMetodoDePago(0);
+  };
+
+  const clickDelivery = () => {
+    setMetodoEntrega(2);
+    // Se reinicia el metodo de pago
+    setMetodoDePago(0);
+  };
+
+  // Funcion para Enviar el pedido
+  const enviarPedido = (values, { setSubmitting }) => {
+    // eslint-disable-next-line no-unused-vars
+    const payload = {
+      ...values,
+      tiempoDelivery: values.tiempoDelivery.label,
+      tiempoRetiro: values.tiempoRetiro.label,
+    };
+    setTimeout(() => {
+      console.log(JSON.stringify(payload, null, 2));
+      setSubmitting(false);
+
+      if (metodoDeEntrega === 0) {
+        notificacionFormaEntrega();
+        return;
+      }
+      if (metodoDePago === 0) {
+        notificacionFormaDePago();
+        return;
+      }
+      // RETIRO EN LOCAL
+      if (metodoDeEntrega === 1) {
+        // RETIRO EN LOCAL, PAGO EFECTIVO
+        if (metodoDePago === 1) {
+          // GENERAR VENTA 
+          const venta = {
+            total,
+            // tipo de pago 1 = EFECTIVO
+            tipoPago: tiposPago[0].id,
+            estadoPago: estadosPago[0].id,
+            estadosVenta: estadosVenta[0].id,
+            refLocalComercial: idTienda,
+          }
+          const productosVenta = arrayCarrito.map((pv) => {
+            return {
+              nombreProducto: pv.nombre,
+              descripcionProducto: pv.descripcion,
+              cantidad: pv.cantidad,
+              precioUnitario: pv.precio,
+              total: pv.total,
+            };
+          });
+
+          // GENERAR ORDEN
+          const orden = {
+            // tipo de entrega 0 = RETIRO_LOCAL
+            tipoEntrega: tiposEntrega[0].id,
+            entregaDelivery: false,
+            estado: estadosOrden[0].id,
+            direccionEntrega: 'NO HAY DIRECCION ENTREGA',
+            telefonoEntrega: payload.telefono,
+            nombrePedido: payload.nombre,
+            precioEnvio: 0,
+            total,
+            tiempoEntrega: payload.tiempoRetiro,
+            refLocalComercial: idTienda,
+            productos: arrayCarrito,
+          };
+          const productosOrden = arrayCarrito.map((pv) => {
+            const notaEspecialValidacion = pv.notaEspecial.trim();
+            if (notaEspecialValidacion === '') {
+              return {
+                nombre: pv.nombre,
+                descripcion: pv.descripcion,
+                notaEspecial: 'SIN NOTA ESPECIAL',
+                precioTotal: pv.total,
+                precioUnitario: pv.precio,
+                cantidad: pv.cantidad,
+              };
+            }
+            return {
+              nombre: pv.nombre,
+              descripcion: pv.descripcion,
+              notaEspecial: pv.notaEspecial,
+              precioTotal: pv.total,
+              precioUnitario: pv.precio,
+              cantidad: pv.cantidad,
+            };
+          });
+          // DESPACHAMOS LA ACCION PARA PROCESAR LA VENTA Y ORDEN
+          dispatch({
+            type: CARRITO_PROCESAR,
+            payload: {
+              venta,
+              productosVenta,
+              orden,
+              productosOrden,
+              refLocalComercia: idTienda
+            }
+          })
+        }
+        // RETIRO EN LOCAL, PAGO CON REDCOMPRA POS
+        if (metodoDePago === 2) {
+          // GENERAR VENTA 
+          const venta = {
+            total,
+            // tipo de pago 1 = DEBITO_CREDITO_POS
+            tipoPago: tiposPago[1].id,
+            estadoPago: estadosPago[0].id,
+            estadosVenta: estadosVenta[0].id,
+            refLocalComercial: idTienda,
+          }
+          const productosVenta = arrayCarrito.map((pv) => {
+            return {
+              nombreProducto: pv.nombre,
+              descripcionProducto: pv.descripcion,
+              cantidad: pv.cantidad,
+              precioUnitario: pv.precio,
+              total: pv.total,
+            };
+          });
+
+          // GENERAR ORDEN
+          const orden = {
+            // tipo de entrega 0 = RETIRO_LOCAL
+            tipoEntrega: tiposEntrega[0].id,
+            entregaDelivery: false,
+            estado: estadosOrden[0].id,
+            direccionEntrega: 'NO HAY DIRECCION ENTREGA',
+            telefonoEntrega: payload.telefono,
+            nombrePedido: payload.nombre,
+            precioEnvio: 0,
+            total,
+            tiempoEntrega: payload.tiempoRetiro,
+            refLocalComercial: idTienda,
+            productos: arrayCarrito,
+          };
+          const productosOrden = arrayCarrito.map((pv) => {
+            const notaEspecialValidacion = pv.notaEspecial.trim();
+            if (notaEspecialValidacion === '') {
+              return {
+                nombre: pv.nombre,
+                descripcion: pv.descripcion,
+                notaEspecial: 'SIN NOTA ESPECIAL',
+                precioTotal: pv.total,
+                precioUnitario: pv.precio,
+                cantidad: pv.cantidad,
+              };
+            }
+            return {
+              nombre: pv.nombre,
+              descripcion: pv.descripcion,
+              notaEspecial: pv.notaEspecial,
+              precioTotal: pv.total,
+              precioUnitario: pv.precio,
+              cantidad: pv.cantidad,
+            };
+          });
+          // DESPACHAMOS LA ACCION PARA PROCESAR LA VENTA Y ORDEN
+          dispatch({
+            type: CARRITO_PROCESAR,
+            payload: {
+              venta,
+              productosVenta,
+              orden,
+              productosOrden,
+              refLocalComercia: idTienda
+            }
+          })
+        }
+        // RETIRO EN LOCAL, PAGO CON MERCADOPAGO ONLINE
+        if (metodoDePago === 3) {
+          console.log('retiro en local, pago en mercadopago');
+        }
+      }
+      // DELIVERY
+      if (metodoDeEntrega === 2) {
+        // VALIDAMOS LA DIRECCION DE ENTREGA
+        const direccionValidacion = payload.direccionDelivery.trim();
+        if (direccionValidacion === '') {
+          notificacionFaltaDireccion();
+          return;
+        }
+        // RETIRO EN LOCAL, PAGO EFECTIVO
+        if (metodoDePago === 4) {
+          // GENERAR VENTA 
+          const venta = {
+            total,
+            // tipo de pago 1 = EFECTIVO
+            tipoPago: tiposPago[0].id,
+            estadoPago: estadosPago[0].id,
+            estadosVenta: estadosVenta[0].id,
+            refLocalComercial: idTienda,
+          }
+          const productosVenta = arrayCarrito.map((pv) => {
+            return {
+              nombreProducto: pv.nombre,
+              descripcionProducto: pv.descripcion,
+              cantidad: pv.cantidad,
+              precioUnitario: pv.precio,
+              total: pv.total,
+            };
+          });
+
+          // GENERAR ORDEN
+          const orden = {
+            // tipo de entrega 1 = DELIVERY
+            tipoEntrega: tiposEntrega[1].id,
+            entregaDelivery: true,
+            // Estado de orden 0 = EN_COLA
+            estado: estadosOrden[0].id,
+            direccionEntrega: payload.direccionDelivery,
+            telefonoEntrega: payload.telefono,
+            nombrePedido: payload.nombre,
+            precioEnvio: 0,
+            total,
+            tiempoEntrega: payload.tiempoRetiro,
+            refLocalComercial: idTienda,
+            productos: arrayCarrito,
+          };
+          const productosOrden = arrayCarrito.map((pv) => {
+            const notaEspecialValidacion = pv.notaEspecial.trim();
+            if (notaEspecialValidacion === '') {
+              return {
+                nombre: pv.nombre,
+                descripcion: pv.descripcion,
+                notaEspecial: 'SIN NOTA ESPECIAL',
+                precioTotal: pv.total,
+                precioUnitario: pv.precio,
+                cantidad: pv.cantidad,
+              };
+            }
+            return {
+              nombre: pv.nombre,
+              descripcion: pv.descripcion,
+              notaEspecial: pv.notaEspecial,
+              precioTotal: pv.total,
+              precioUnitario: pv.precio,
+              cantidad: pv.cantidad,
+            };
+          });
+          // DESPACHAMOS LA ACCION PARA PROCESAR LA VENTA Y ORDEN
+          dispatch({
+            type: CARRITO_PROCESAR,
+            payload: {
+              venta,
+              productosVenta,
+              orden,
+              productosOrden,
+              refLocalComercia: idTienda
+            }
+          });
+        }
+        if (metodoDePago === 5) {
+          // RETIRO EN LOCAL, PAGO REDCOMPRA CON POS
+          console.log('delivery, pago con redcompra');
+        }
+        if (metodoDePago === 6) {
+          // RETIRO EN LOCAL, PAGO CON MERCADOPAGO ONLINE
+          console.log('delivery, pago con mercadopago');
+        }
+      }
+    }, 500);
+  };
+
   return (
-    <Row>
+    < Row >
       <Card className="container-fluid">
         <CardBody>
           <Row className="container-fluid">
-            {arrayCarrito
-              .filter((producto) => producto.idTienda === id)
-              .map((producto) => {
-                return (
-                  <Colxx xxs="12" key={producto.idKey}>
-                    <Card className="d-flex flex-row mb-2">
-                      <div className="d-flex">
-                        <img
-                          alt="Thumbnail"
-                          src="/assets/img/products/chocolate-cake-thumb.jpg"
-                          className="list-thumbnail responsive border-0 card-img-left"
-                        />
-                      </div>
-                      <div className="pl-2 d-flex flex-grow-1 min-width-zero">
-                        <div className="card-body align-self-center d-flex flex-column flex-lg-row justify-content-between min-width-zero ">
-                          <p className="list-item-heading mb-1 w-60 w-sm-100 font-weight-bold">
-                            {producto.nombreProducto}
-                            {/* VALIDACION --> NOMBRE MAXIMO DE 65 CARACTERES */}
-                          </p>
-                          <p className="mb-1 text-small w-8 w-sm-100 d-flex justify-content-end">
-                            <div className=" list-item-heading font-weight-bold">
-                              {' '}
-                              {producto.cantidad}
-                              {'\u00A0'}
-                            </div>
-                            x $ {producto.precio}
-                          </p>
-                          <p className="mb-1 text-muted list-item-heading font-weight-bold w-8 w-sm-100 d-flex justify-content-end">
-                            $ {producto.cantidad * producto.precio}
-                          </p>
-                          <div className="w-15 w-sm-100 d-flex justify-content-end">
-                            <Button
-                              color="primary"
-                              size="xs"
-                              className="mb-0 mr-1"
-                              onClick={() => restar(producto.idKey)}
-                            >
-                              -
-                            </Button>
-                            <Button
-                              color="primary"
-                              size="xs"
-                              className="mb-0 mr-1"
-                              onClick={() => sumar(producto.idKey)}
-                            >
-                              +
-                            </Button>
-                            <Button
-                              color="danger"
-                              size="xs"
-                              className="mb-0 simple-icon-trash"
-                              onClick={() => abrirModalEliminar(producto.idKey)}
-                            />
+            {arrayCarrito.map((producto, index) => {
+              return (
+                // eslint-disable-next-line react/no-array-index-key
+                <Colxx xxs="12" key={index}>
+                  <Card className="d-flex flex-row mb-2">
+                    <div className="d-flex">
+                      <img
+                        alt="Thumbnail"
+                        src="/assets/img/products/chocolate-cake-thumb.jpg"
+                        className="list-thumbnail responsive border-0 card-img-left"
+                      />
+                    </div>
+                    <div className="pl-2 d-flex flex-grow-1 min-width-zero">
+                      <div className="card-body align-self-center d-flex flex-column flex-lg-row justify-content-between min-width-zero ">
+                        <span className="list-item-heading mb-1 w-60 w-sm-100 font-weight-bold">
+                          {producto.nombre}
+                          {/* VALIDACION --> NOMBRE MAXIMO DE 65 CARACTERES */}
+                        </span>
+                        <span className="mb-1 text-small w-8 w-sm-100 d-flex justify-content-end">
+                          <div className=" list-item-heading font-weight-bold">
+                            {' '}
+                            {producto.cantidad}
+                            {'\u00A0'}
                           </div>
+                          x $ {producto.precio}
+                        </span>
+                        <span className="mb-1 text-muted list-item-heading font-weight-bold w-8 w-sm-100 d-flex justify-content-end">
+                          $ {producto.cantidad * producto.precio}
+                        </span>
+                        <div className="w-15 w-sm-100 d-flex justify-content-end">
+                          <Button
+                            color="primary"
+                            size="xs"
+                            className="mb-0 mr-1"
+                            onClick={() => {
+                              restar(producto);
+                            }}
+                          >
+                            -
+                          </Button>
+                          <Button
+                            color="primary"
+                            size="xs"
+                            className="mb-0 mr-1"
+                            onClick={() => {
+                              sumar(producto);
+                            }}
+                          >
+                            +
+                          </Button>
+                          <Button
+                            color="danger"
+                            size="xs"
+                            className="mb-0 simple-icon-trash"
+                            onClick={() => {
+                              setModalEliminar(!modalEliminar);
+                            }}
+                          />
                         </div>
                       </div>
-                    </Card>
-                  </Colxx>
-                );
-              })}
-            {total === 0 && (
+                    </div>
+                  </Card>
+                  <Modal
+                    isOpen={modalEliminar}
+                    toggle={() => setModalEliminar(!modalEliminar)}
+                  >
+                    <ModalHeader>Quieres eliminar el producto ?</ModalHeader>
+                    <ModalBody>
+                      <Row>
+                        <Colxx xxs="12" xs="12" lg="12">
+                          <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                            NOMBRE: {producto.nombre}
+                          </CardText>
+                        </Colxx>
+                        <Colxx xxs="12" xs="12" lg="12">
+                          <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                            NOTA ESPECIAL: {producto.notaEspecial}
+                          </CardText>
+                        </Colxx>
+                        <Colxx xxs="12" xs="12" lg="12">
+                          <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                            CANTIDAD: {producto.cantidad}
+                          </CardText>
+                        </Colxx>
+                        <Colxx xxs="12" xs="12" lg="12">
+                          <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                            PRECIO: {producto.precio}
+                          </CardText>
+                        </Colxx>
+                      </Row>
+                    </ModalBody>
+                    <ModalFooter>
+                      <Button
+                        color="primary"
+                        onClick={() => eliminar(producto)}
+                      >
+                        Eliminar
+                      </Button>{' '}
+                      <Button
+                        color="secondary"
+                        onClick={() => setModalEliminar(false)}
+                      >
+                        Volver
+                      </Button>
+                    </ModalFooter>
+                  </Modal>
+                </Colxx>
+              );
+            })}
+            {arrayCarrito.length === 0 && (
               <Colxx xxs="12" xs="12" lg="12">
                 <Card className="container-fluid d-flex flex-row mb-2 ">
                   <div className="container-fluid pl-0 d-flex flex-grow-1 min-width-zero">
@@ -395,7 +580,6 @@ const Carrito = (props) => {
                   <div className="container-fluid card-body align-self-center d-flex flex-column flex-lg-row justify-content-center min-width-zero ">
                     <p className="list-item-heading text-medium mb-2 w-50 w-sm-100 font-weight-bold ">
                       TOTAL
-                      {/* VALIDACION --> NOMBRE MAXIMO DE 65 CARACTERES */}
                     </p>
                     <p className="mb-1 text-muted text-large font-weight-bold w-30 w-sm-100">
                       ${total}
@@ -405,7 +589,7 @@ const Carrito = (props) => {
                     <Button
                       color="primary"
                       className="mb-0"
-                      onClick={finalizarCompra}
+                      onClick={() => finalizarCompra()}
                     >
                       FINALIZAR COMPRA
                     </Button>
@@ -427,6 +611,7 @@ const Carrito = (props) => {
                 nombre: '',
                 telefono: '',
                 email: '',
+                direccionDelivery: '',
                 tiempoDelivery: {
                   label: 'Lo antes posible',
                   value: 0,
@@ -435,18 +620,14 @@ const Carrito = (props) => {
                 tiempoRetiro: { label: 'Lo antes posible', value: 0, key: 0 },
               }}
               validationSchema={SignupSchema}
-              onSubmit={onSubmit}
+              onSubmit={enviarPedido}
             >
               {({
-                handleSubmit,
                 setFieldValue,
                 setFieldTouched,
-                handleChange,
-                handleBlur,
                 values,
                 errors,
                 touched,
-                isSubmitting,
               }) => (
                 <Form className="av-tooltip tooltip-label-bottom">
                   <Row>
@@ -508,20 +689,20 @@ const Carrito = (props) => {
                             <Colxx xxs="12" xs="12" lg="12">
                               <div className="d-flex justify-content-center mb-2">
                                 <ButtonGroup>
-                                  {retiroEnLocal && (
+                                  {tieneRetiroLocal && (
                                     <Button
                                       color="primary"
                                       onClick={clickRetiroEnLocal}
-                                      active={selectedRadioEntrega === 1}
+                                      active={metodoDeEntrega === 1}
                                     >
                                       RETIRO EN LOCAL
                                     </Button>
                                   )}
-                                  {delivery && (
+                                  {tieneDelivery && (
                                     <Button
                                       color="primary"
                                       onClick={clickDelivery}
-                                      active={selectedRadioEntrega === 2}
+                                      active={metodoDeEntrega === 2}
                                     >
                                       DELIVERY
                                     </Button>
@@ -609,35 +790,86 @@ const Carrito = (props) => {
                             </Colxx>
                             <Colxx xxs="12" xs="12" lg="12">
                               <div className="d-flex justify-content-center">
-                                <ButtonGroup>
-                                  {efectivo && (
-                                    <Button
-                                      color="primary"
-                                      onClick={() => modificarMetodoPago(1)}
-                                      active={selectedRadioPago === 1}
-                                    >
-                                      EFECTIVO
-                                    </Button>
-                                  )}
-                                  {redcompra && (
-                                    <Button
-                                      color="primary"
-                                      onClick={() => modificarMetodoPago(2)}
-                                      active={selectedRadioPago === 2}
-                                    >
-                                      REDCOMPRA
-                                    </Button>
-                                  )}
-                                  {mercadoPago && (
-                                    <Button
-                                      color="primary"
-                                      onClick={() => modificarMetodoPago(3)}
-                                      active={selectedRadioPago === 3}
-                                    >
-                                      WEBPAY
-                                    </Button>
-                                  )}
-                                </ButtonGroup>
+                                {
+                                  // ENTREGA RETIRO EN LOCAL COMERCIAL
+                                  metodoDeEntrega === 1 && (
+                                    <ButtonGroup>
+                                      {pagoRetiroLocalEfectivo && (
+                                        <Button
+                                          color="primary"
+                                          active={metodoDePago === 1}
+                                          onClick={() => {
+                                            setMetodoDePago(1);
+                                          }}
+                                        >
+                                          EFECTIVO
+                                        </Button>
+                                      )}
+                                      {pagoRetiroLocalPos && (
+                                        <Button
+                                          color="primary"
+                                          active={metodoDePago === 2}
+                                          onClick={() => {
+                                            setMetodoDePago(2);
+                                          }}
+                                        >
+                                          REDCOMPRA POS
+                                        </Button>
+                                      )}
+                                      {pagoRetiroLocalMercadopago && (
+                                        <Button
+                                          color="primary"
+                                          active={metodoDePago === 3}
+                                          onClick={() => {
+                                            setMetodoDePago(3);
+                                          }}
+                                        >
+                                          MERCADOPAGO
+                                        </Button>
+                                      )}
+                                    </ButtonGroup>
+                                  )
+                                }
+                                {
+                                  // ENTREGA DELIVERY
+                                  metodoDeEntrega === 2 && (
+                                    <ButtonGroup>
+                                      {pagoDeliveryEfectivo && (
+                                        <Button
+                                          color="primary"
+                                          active={metodoDePago === 4}
+                                          onClick={() => {
+                                            setMetodoDePago(4);
+                                          }}
+                                        >
+                                          EFECTIVO
+                                        </Button>
+                                      )}
+                                      {pagoDeliveryPos && (
+                                        <Button
+                                          color="primary"
+                                          active={metodoDePago === 5}
+                                          onClick={() => {
+                                            setMetodoDePago(5);
+                                          }}
+                                        >
+                                          REDCOMPRA POS
+                                        </Button>
+                                      )}
+                                      {pagoDeliveryMercadopago && (
+                                        <Button
+                                          color="primary"
+                                          active={metodoDePago === 6}
+                                          onClick={() => {
+                                            setMetodoDePago(6);
+                                          }}
+                                        >
+                                          MERCADOPAGO
+                                        </Button>
+                                      )}
+                                    </ButtonGroup>
+                                  )
+                                }
                               </div>
                             </Colxx>
                           </Row>
@@ -655,7 +887,7 @@ const Carrito = (props) => {
                               className="text-center"
                             >
                               <CardText className="text-muted text-center text-large font-weight-bold mt-1 mb-2">
-                                TOTAL $ 12.500
+                                TOTAL ${total}
                               </CardText>
                             </Colxx>
                           </Row>
@@ -684,45 +916,7 @@ const Carrito = (props) => {
           </Row>
         </ModalBody>
       </Modal>
-      <Modal
-        isOpen={modalEliminar}
-        toggle={() => setModalEliminar(!modalEliminar)}
-      >
-        <ModalHeader>Quieres eliminar el producto ?</ModalHeader>
-        <ModalBody>
-          <Row>
-            <Colxx xxs="12" xs="12" lg="12">
-              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                NOMBRE: {nombreProductoEliminar}
-              </CardText>
-            </Colxx>
-            <Colxx xxs="12" xs="12" lg="12">
-              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                NOTA ESPECIAL: {notaProductoEliminar}
-              </CardText>
-            </Colxx>
-            <Colxx xxs="12" xs="12" lg="12">
-              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                CANTIDAD: {cantidadProductoEliminar}
-              </CardText>
-            </Colxx>
-            <Colxx xxs="12" xs="12" lg="12">
-              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                PRECIO: {precioProductoEliminar}
-              </CardText>
-            </Colxx>
-          </Row>
-        </ModalBody>
-        <ModalFooter>
-          <Button color="primary" onClick={() => eliminar(idKeyEliminar)}>
-            Eliminar
-          </Button>{' '}
-          <Button color="secondary" onClick={() => setModalEliminar(false)}>
-            Volver
-          </Button>
-        </ModalFooter>
-      </Modal>
-    </Row>
+    </Row >
   );
 };
 

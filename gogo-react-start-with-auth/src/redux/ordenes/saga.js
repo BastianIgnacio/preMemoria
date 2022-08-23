@@ -1,9 +1,13 @@
 /* eslint-disable no-unused-vars */
 import { all, call, fork, takeEvery, put } from 'redux-saga/effects';
 import axios from 'axios';
-import { apiRestUrl } from '../../constants/defaultValues';
+import {
+  apiRestUrl,
+  estadosOrden,
+  estadosVenta,
+  estadosPago,
+} from '../../constants/defaultValues';
 import { NotificationManager } from '../../components/common/react-notifications';
-
 import {
   ORDEN_IS_LOADED,
   ORDEN_SET_ITEMS,
@@ -20,6 +24,12 @@ import {
   ORDEN_CHANGE_ESTADO,
   ORDEN_GET_PRODUCTOS_ORDEN,
   ORDEN_SET_PRODUCTOS_ORDEN,
+  ORDEN_CANCELAR_ORDEN,
+  ORDEN_GET_VENTA,
+  ORDEN_SET_VENTA,
+  ORDEN_ENVIAR_A_PREPARACION,
+  ORDEN_ENVIAR_A_REPARTO,
+  ORDEN_ENVIAR_A_RETIRO,
 } from '../actions';
 
 /** NOTIFICACIONES  */
@@ -32,45 +42,13 @@ const notificacionSuccess = (titulo, subtitulo) => {
 
 //* * LLAMADAS AXIOS POST, DELETE, PUT, GET */
 
-// DELETE para eliminar un producto de una categoria
-const deleteProductoAsync = async (idProducto) =>
-  axios.delete(`${apiRestUrl}/productoCategorias/${idProducto}/`);
-// PUT para editar una categoria
-const putProductoAsync = async (idProducto, producto) =>
-  axios.put(`${apiRestUrl}/productoCategorias/${idProducto}/`, producto);
-// GET para obtener las VENTAS DE UN LOCAL COMERCIAL Async
-const getVentasLimitAsync = async (refLocalComercial, fecha, limit) => {
-  return axios
-    .get(
-      `${apiRestUrl}/ventas/?limit=${limit}&refLocalComercial=${refLocalComercial}&fecha=${fecha}`
-    )
-    .then((res) => {
-      return res.data;
-    });
-};
-// GET para obtener las VENTAS DE UN LOCAL COMERCIAL con limit y offset
-const getVentasLimitOffsetAsync = async (
-  refLocalComercial,
-  fecha,
-  limit,
-  offset
-) => {
-  return axios
-    .get(
-      `${apiRestUrl}/ventas/?limit=${limit}&offset=${offset}&refLocalComercial=${refLocalComercial}&fecha=${fecha}`
-    )
-    .then((res) => {
-      return res.data;
-    });
-};
-// GET para obtener las VENTAS DE UN LOCAL COMERCIAL con limit y offset
-const getProductosVentaAsync = async (refVenta) => {
-  return axios
-    .get(`${apiRestUrl}/productoVentas/?refVenta=${refVenta}`)
-    .then((res) => {
-      return res.data;
-    });
-};
+// PUT para editar una ORDEN
+const putOrdenAsync = async (idOrden, orden) =>
+  axios.put(`${apiRestUrl}/ordens/${idOrden}/`, orden);
+
+// PUT para editar una ORDEN
+const putVentaAsync = async (idVenta, venta) =>
+  axios.put(`${apiRestUrl}/ventas/${idVenta}/`, venta);
 
 // GET para obtener las ordenes de un localComercial
 const getOrdenesLimitAsync = async (refLocalComercial, estado, limit) => {
@@ -103,6 +81,13 @@ const getProductosOrdenAsync = async (refOrden) => {
     .then((res) => {
       return res.data;
     });
+};
+
+// GET para obtener una venta
+const getVentaAsync = async (refVenta) => {
+  return axios.get(`${apiRestUrl}/ventas/${refVenta}/`).then((res) => {
+    return res.data;
+  });
 };
 
 //* * FUNCIONES */
@@ -365,7 +350,7 @@ function* changeEstado({ payload }) {
         paginaActual: 1,
         itemsPorPagina: 4,
         refLocalComercial,
-        estado: estado.estate,
+        estado: estado.id,
       },
     });
   } catch (error) {
@@ -378,7 +363,6 @@ function* getProductosOrden({ payload }) {
   const refOrden = payload;
   try {
     const data = yield call(getProductosOrdenAsync, refOrden);
-    console.log('pasa x a kii');
     const productosOrden = data.results;
     yield put({
       type: ORDEN_SET_PRODUCTOS_ORDEN,
@@ -386,6 +370,91 @@ function* getProductosOrden({ payload }) {
     });
   } catch (error) {
     notificacionError('Error', 'Al cambiar el estado');
+  }
+}
+
+// Funcion para CANCELAR ORDEN
+function* cancelarOrden({ payload }) {
+  const orden = payload;
+  const { refVenta } = orden;
+  const estadoOrdenCancelado = estadosOrden[4];
+  const estadoPagoCancelado = estadosPago[2];
+  const estadoVentaCancelado = estadosVenta[2];
+  try {
+    // CANCELAR ORDEN
+    const ordenPut = { ...orden, estado: estadoOrdenCancelado.id };
+    // DEBEMOS ENVIAR EL PUT DE LA ORDEN
+    yield call(putOrdenAsync, orden.id, ordenPut);
+
+    // DEBEMOS PEDIR LA VENTA
+    const ventaData = yield call(getVentaAsync, refVenta);
+    // CANCELAR VENTA
+    const ventaDataPut = {
+      ...ventaData,
+      estadoPago: estadoPagoCancelado.id,
+      estadoVenta: estadoVentaCancelado.id,
+    };
+    // DEBEMOS ENVIAR EL PUT DE LA VENTA
+    yield call(putVentaAsync, refVenta, ventaDataPut);
+  } catch (error) {
+    notificacionError('Error', 'Al cancelar una orden');
+  }
+}
+
+// Funcion para ENVIAR ORDEN A PREPARACION
+function* enviarOrdenAPreparacion({ payload }) {
+  const orden = payload;
+  const estadoOrdenPreparacion = estadosOrden[1];
+
+  try {
+    // EDITAR ESTADO ORDEN (A PREPARACION)
+    const ordenPut = { ...orden, estado: estadoOrdenPreparacion.id };
+    // DEBEMOS ENVIAR EL PUT DE LA ORDEN
+    yield call(putOrdenAsync, orden.id, ordenPut);
+  } catch (error) {
+    notificacionError('Error', 'Al enviar orden a preparacion');
+  }
+}
+// Funcion para ENVIAR ORDEN A REPARTO
+function* enviarOrdenAReparto({ payload }) {
+  const orden = payload;
+  const estadoOrdenReparto = estadosOrden[2];
+
+  try {
+    // EDITAR ESTADO ORDEN (A REPARTO)
+    const ordenPut = { ...orden, estado: estadoOrdenReparto.id };
+    // DEBEMOS ENVIAR EL PUT DE LA ORDEN
+    yield call(putOrdenAsync, orden.id, ordenPut);
+  } catch (error) {
+    notificacionError('Error', 'Al enviar orden a reparto');
+  }
+}
+// Funcion para ENVIAR ORDEN A RETIRO
+function* enviarOrdenARetiro({ payload }) {
+  const orden = payload;
+  const estadoOrdenRetiro = estadosOrden[3];
+
+  try {
+    // EDITAR ESTADO ORDEN (A REPARTO)
+    const ordenPut = { ...orden, estado: estadoOrdenRetiro.id };
+    // DEBEMOS ENVIAR EL PUT DE LA ORDEN
+    yield call(putOrdenAsync, orden.id, ordenPut);
+  } catch (error) {
+    notificacionError('Error', 'Al enviar orden a retiro');
+  }
+}
+
+// Funcion para CARGAR LA VENTA QUE VAMOS A MOSTRAR
+function* cargarVenta({ payload }) {
+  const refVenta = payload;
+  try {
+    const data = yield call(getVentaAsync, refVenta);
+    yield put({
+      type: ORDEN_SET_VENTA,
+      payload: data,
+    });
+  } catch (error) {
+    notificacionError('Error', 'Al carga la venta');
   }
 }
 
@@ -398,11 +467,32 @@ export function* watchChangeEstado() {
 export function* watchGetProductosOrden() {
   yield takeEvery(ORDEN_GET_PRODUCTOS_ORDEN, getProductosOrden);
 }
+export function* watchGetVenta() {
+  yield takeEvery(ORDEN_GET_VENTA, cargarVenta);
+}
+export function* watchCancelarOrden() {
+  yield takeEvery(ORDEN_CANCELAR_ORDEN, cancelarOrden);
+}
+export function* watchEnviarOrdenAPreparacion() {
+  yield takeEvery(ORDEN_ENVIAR_A_PREPARACION, enviarOrdenAPreparacion);
+}
+export function* watchEnviarOrdenAReparto() {
+  yield takeEvery(ORDEN_ENVIAR_A_REPARTO, enviarOrdenAReparto);
+}
+export function* watchEnviarOrdenARetiro() {
+  yield takeEvery(ORDEN_ENVIAR_A_RETIRO, enviarOrdenARetiro);
+}
+
 export default function* rootSaga() {
   yield all([
     fork(watchChangeEstado),
     fork(watchUpdateItems),
     fork(watchGetProductosOrden),
+    fork(watchGetVenta),
+    fork(watchCancelarOrden),
+    fork(watchEnviarOrdenAPreparacion),
+    fork(watchEnviarOrdenAReparto),
+    fork(watchEnviarOrdenARetiro),
     // fork(watchChangePage),
     // fork(watchGetProductosVenta),
     // fork(watchGetOrden),

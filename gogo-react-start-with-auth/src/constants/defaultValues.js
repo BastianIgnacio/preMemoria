@@ -19,6 +19,38 @@ export const localeOptions = [
   { id: 'es', name: 'Español', direction: 'ltr' },
   { id: 'enrtl', name: 'English - RTL', direction: 'rtl' },
 ];
+export const tiposEntrega = [
+  { key: 0, id: 'RETIRO_LOCAL', label: 'RETIRO EN LOCAL' },
+  { key: 1, id: 'DELIVERY', label: 'DELIVERY' },
+];
+export const tiposPago = [
+  { key: 0, id: 'EFECTIVO', label: 'EFECTIVO' },
+  { key: 1, id: 'DEBITO_CREDITO_POS', label: 'DEBITO O CREDITO POS' },
+  { key: 2, id: 'DEBITO_CREDITO_MERCADOPAGO', label: 'MERCADOPAGO ONLINE' },
+];
+export const estadosPago = [
+  { key: 0, id: 'EN_ESPERA_PAGO', label: 'NO PAGADA' },
+  { key: 1, id: 'PAGADO', label: 'PAGADA' },
+  { key: 2, id: 'CANCELADO', label: 'CANCELADA' },
+];
+export const estadosVenta = [
+  { key: 0, id: 'EN_PROCESO', label: 'FINALIZADA, PERO NO PAGADA' },
+  { key: 1, id: 'FINALIZADO', label: 'FINALIZADA Y PAGADA' },
+  { key: 2, id: 'CANCELADO', label: 'CANCELADA' },
+];
+export const estadosOrdenVisualizador = [
+  { key: 0, id: 'EN_COLA', label: 'EN COLA' },
+  { key: 1, id: 'EN_PREPARACION', label: 'EN PREPARACIÓN ' },
+  { key: 2, id: 'EN_REPARTO', label: 'EN REPARTO (DELIVERY)' },
+  { key: 3, id: 'EN_ESPERA_RETIRO', label: 'EN ESPERA DE RETIRO' },
+];
+export const estadosOrden = [
+  { key: 0, id: 'EN_COLA', label: 'EN COLA' },
+  { key: 1, id: 'EN_PREPARACION', label: 'EN PREPARACIÓN ' },
+  { key: 2, id: 'EN_REPARTO', label: 'EN REPARTO (DELIVERY)' },
+  { key: 3, id: 'EN_ESPERA_RETIRO', label: 'EN ESPERA DE RETIRO' },
+  { key: 4, id: 'CANCELADO', label: 'ORDEN CANCELADA' },
+];
 
 export const firebaseConfig = {
   apiKey: 'AIzaSyBBksq-Asxq2M4Ot-75X19IyrEYJqNBPcg',

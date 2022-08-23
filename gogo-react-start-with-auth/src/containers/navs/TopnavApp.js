@@ -41,8 +41,6 @@ const TopNav = ({
   const superAdmin = useSelector(
     (state) => state.authUser.currentUser.superAdmin
   );
-  console.log(user);
-  console.log(tienda);
   const search = () => {
     history.push(`${searchPath}?key=${searchKeyword}`);
     setSearchKeyword('');

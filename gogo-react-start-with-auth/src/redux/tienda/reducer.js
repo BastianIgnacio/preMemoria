@@ -1,149 +1,103 @@
 import {
-  TIENDA_LIST_GET_PRODUCTS,
-  TIENDA_LIST_GET_PRODUCTS_SUCCESS,
+  TIENDA_IS_LOADED,
+  TIENDA_IS_EXIST,
+  TIENDA_SET_TIENDA,
+  TIENDA_SET_CATEGORIAS,
+  TIENDA_SET_CATEGORIA_SELECCIONADA,
+  TIENDA_SET_PRODUCTOS,
+  TIENDA_SET_PRODUCTO_SELECCIONADO,
+  TIENDA_VOLVER_A_CATEGORIAS,
+  TIENDA_DETALLE_MODAL,
 } from '../actions';
 
 const INIT_STATE = {
-  categorias_y_productos: [
-    {
-      idCategoria: 'cat1',
-      idLocalComercial: 1,
-      nombreCategoria: 'Herramientas',
-      descripcionCategoria: 'Todo sobre herramientas para el hogar',
-      rutaFotoCategoria: '/assets/img/blog/small-5.jpg',
-      badgeCategoria: 'NUEVO',
-      type: 'image',
-      esVisible: true,
-      productos: [
-        {
-          idCategoria: 'cat1',
-          idProducto: '001',
-          nombreProducto: 'Producto 1',
-          descripcionProducto: 'Aqui va la descripcion del producto',
-          precioProducto: 6900,
-          rutaFotoProducto: '/assets/img/blog/producto1.jpg',
-          badgeProducto: 'NEW',
-        },
-        {
-          idCategoria: 'cat1',
-          idProducto: '002',
-          nombreProducto: 'Producto 2',
-          descripcionProducto: 'Aqui va la descripcion del producto',
-          precioProducto: 6900,
-          rutaFotoProducto: '/assets/img/blog/producto1.jpg',
-          badgeProducto: 'NEW',
-        },
-        {
-          idCategoria: 'cat1',
-          idProducto: '003',
-          nombreProducto: 'Producto 3',
-          descripcionProducto: 'Aqui va la descripcion del producto',
-          precioProducto: 6900,
-          rutaFotoProducto: '/assets/img/blog/producto1.jpg',
-          badgeProducto: 'NEW',
-        },
-      ],
-    },
-    {
-      idCategoria: 'cat1',
-      idLocalComercial: 1,
-      nombreCategoria: 'Herramientas',
-      descripcionCategoria: 'Todo sobre herramientas para el hogar',
-      rutaFotoCategoria: '/assets/img/blog/small-5.jpg',
-      badgeCategoria: 'NUEVO',
-      type: 'image',
-      esVisible: true,
-      productos: [
-        {
-          idCategoria: 'cat1',
-          idProducto: '004',
-          nombreProducto: 'Producto 4',
-          descripcionProducto: 'Aqui va la descripcion del producto',
-          precioProducto: 6900,
-          rutaFotoProducto: '/assets/img/blog/producto1.jpg',
-          badgeProducto: 'NEW',
-        },
-        {
-          idCategoria: 'cat1',
-          idProducto: '005',
-          nombreProducto: 'Producto 5',
-          descripcionProducto: 'Aqui va la descripcion del producto',
-          precioProducto: 6900,
-          rutaFotoProducto: '/assets/img/blog/producto1.jpg',
-          badgeProducto: 'NEW',
-        },
-        {
-          idCategoria: 'cat1',
-          idProducto: '006',
-          nombreProducto: 'Producto 6',
-          descripcionProducto: 'Aqui va la descripcion del producto',
-          precioProducto: 6900,
-          rutaFotoProducto: '/assets/img/blog/producto1.jpg',
-          badgeProducto: 'NEW',
-        },
-      ],
-    },
-    {
-      idCategoria: 'cat1',
-      idLocalComercial: 1,
-      nombreCategoria: 'Herramientas',
-      descripcionCategoria: 'Todo sobre herramientas para el hogar',
-      rutaFotoCategoria: '/assets/img/blog/small-5.jpg',
-      badgeCategoria: 'NUEVO',
-      type: 'image',
-      esVisible: true,
-      productos: [
-        {
-          idCategoria: 'cat1',
-          idProducto: '007',
-          nombreProducto: 'Producto 7',
-          descripcionProducto: 'Aqui va la descripcion del producto',
-          precioProducto: 6900,
-          rutaFotoProducto: '/assets/img/blog/producto1.jpg',
-          badgeProducto: 'NEW',
-        },
-        {
-          idCategoria: 'cat1',
-          idProducto: '008',
-          nombreProducto: 'Producto 8',
-          descripcionProducto: 'Aqui va la descripcion del producto',
-          precioProducto: 6900,
-          rutaFotoProducto: '/assets/img/blog/producto1.jpg',
-          badgeProducto: 'NEW',
-        },
-        {
-          idCategoria: 'cat1',
-          idProducto: '009',
-          nombreProducto: 'Producto 9',
-          descripcionProducto: 'Aqui va la descripcion del producto',
-          precioProducto: 6900,
-          rutaFotoProducto: '/assets/img/blog/producto1.jpg',
-          badgeProducto: 'NEW',
-        },
-      ],
-    },
-  ],
-  idLocalComercial: 1,
-  nombreLocalComercial: 'Tienda de prueba',
-  horarioAtencion: 'desde 12:00 hasta 21:00',
-  isOpen: false,
-  logo: 'ruta/logo',
-  loading: false,
+  isLoaded: false,
+  tiendaCargada: false,
+  //
+  idTienda: null,
+  exist: false,
+  nombre: '',
+  direccion: '',
+  estado: 'CERRADO',
+  horarioAtencion: '',
+  tieneDelivery: false,
+  tieneMercadopago: false,
+  //
+  mostrarBotonAtras: false,
+  mostrarProductos: false,
+  //
+  categorias: [],
+  categoriaSeleccionada: null,
+  productos: [],
+  //
+  productoSeleccionado: [],
+  contadorProducto: 0,
+  total: 0,
 };
 
 export default (state = INIT_STATE, action) => {
   switch (action.type) {
-    case TIENDA_LIST_GET_PRODUCTS:
-      // eslint-disable-next-line no-debugger
+    case TIENDA_IS_LOADED:
       return {
         ...state,
-        loading: false,
+        isLoaded: action.payload,
       };
-    case TIENDA_LIST_GET_PRODUCTS_SUCCESS:
+    case TIENDA_IS_EXIST:
       return {
         ...state,
-        loading: true,
-        categorias_y_productos: action.payload,
+        exist: action.payload,
+      };
+    case TIENDA_SET_TIENDA:
+      return {
+        ...state,
+        nombre: action.payload.nombre,
+        direccion: action.payload.direccion,
+        estado: action.payload.estado,
+        horarioAtencion: action.payload.horarioAtencion,
+        tieneDelivery: action.payload.tieneDelivery,
+        tieneMercadopago: action.payload.tieneMercadopago,
+        isLoaded: action.payload.isLoaded,
+        exist: action.payload.exist,
+        tiendaCargada: true,
+        categorias: action.payload.categorias,
+        idTienda: action.payload.idTienda,
+      };
+    case TIENDA_SET_CATEGORIAS:
+      return {
+        ...state,
+        categorias: action.payload,
+      };
+    case TIENDA_SET_CATEGORIA_SELECCIONADA:
+      return {
+        ...state,
+        categoriaSeleccionada: action.payload,
+      };
+    case TIENDA_SET_PRODUCTOS:
+      return {
+        ...state,
+        productos: action.payload,
+        mostrarBotonAtras: true,
+        mostrarProductos: true,
+      };
+    case TIENDA_SET_PRODUCTO_SELECCIONADO:
+      return {
+        ...state,
+        productoSeleccionado: action.payload.producto,
+        contadorProducto: 1,
+        total: action.payload.total,
+      };
+    case TIENDA_VOLVER_A_CATEGORIAS:
+      return {
+        ...state,
+        productos: [],
+        mostrarBotonAtras: false,
+        mostrarProductos: false,
+      };
+    case TIENDA_DETALLE_MODAL:
+      return {
+        ...state,
+        contadorProducto: action.payload.contadorProducto,
+        total: action.payload.total,
       };
     default:
       return { ...state };

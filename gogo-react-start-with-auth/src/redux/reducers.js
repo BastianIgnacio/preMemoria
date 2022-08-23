@@ -6,14 +6,14 @@ import todoApp from './todo/reducer';
 import chatApp from './chat/reducer';
 import surveyListApp from './surveyList/reducer';
 import surveyDetailApp from './surveyDetail/reducer';
-import tiendaApp from './tienda/reducer';
-import carroApp from './carrito/reducer';
 import localComercial from './localComercial/reducer';
 import administradorLocalComercial from './adminLocalComercial/reducer';
 import categorias from './categorias/reducer';
 import productos from './productos/reducer';
 import ventas from './ventas/reducer';
 import ordenes from './ordenes/reducer';
+import tienda from './tienda/reducer';
+import carrito from './carrito/reducer';
 
 const reducers = combineReducers({
   menu,
@@ -23,14 +23,14 @@ const reducers = combineReducers({
   chatApp,
   surveyListApp,
   surveyDetailApp,
-  tiendaApp,
-  carroApp,
   localComercial,
   administradorLocalComercial,
   categorias,
   productos,
   ventas,
   ordenes,
+  tienda,
+  carrito,
 });
 
 export default reducers;

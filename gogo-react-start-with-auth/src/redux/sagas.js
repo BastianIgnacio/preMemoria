@@ -10,6 +10,8 @@ import categoriasSaga from './categorias/saga';
 import productosSaga from './productos/saga';
 import ventasSaga from './ventas/saga';
 import ordenesSaga from './ordenes/saga';
+import tiendaSaga from './tienda/saga';
+import carritoSaga from './carrito/saga';
 
 export default function* rootSaga() {
   yield all([
@@ -24,5 +26,7 @@ export default function* rootSaga() {
     productosSaga(),
     ventasSaga(),
     ordenesSaga(),
+    tiendaSaga(),
+    carritoSaga(),
   ]);
 }

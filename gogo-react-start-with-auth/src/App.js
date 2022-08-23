@@ -42,7 +42,9 @@ const AppTienda = React.lazy(() =>
 const AppCarrito = React.lazy(() =>
   import(/* webpackChunkName: "views-error" */ './views/app/carrito')
 );
-
+const AppSuccess = React.lazy(() =>
+  import(/* webpackChunkName: "views-error" */ './views/app/success')
+);
 class App extends React.Component {
   constructor(props) {
     super(props);
@@ -84,6 +86,7 @@ class App extends React.Component {
                   />
                   <Route path="/tienda" children={<AppTienda />} />
                   <Route path="/carrito" children={<AppCarrito />} />
+                  <Route path="/success" children={<AppSuccess />} />
                   <Route
                     path="/user"
                     render={(props) => <ViewUser {...props} />}

@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import ListPageHeadingOrdenes from '../../containers/pages/adminLocal/ordenes/ListPageHeadingOrdenes';
 import ListPageListingOrdenes from '../../containers/pages/adminLocal/ordenes/ListPageListingOrdenes';
 import { ORDEN_CHANGE_ESTADO } from '../../redux/actions';
+import { estadosOrden } from '../../constants/defaultValues';
 
 const pageSizes = [4, 8, 12, 20];
 
@@ -11,7 +12,7 @@ const Ordenes = () => {
   const isLoaded = useSelector((state) => state.ordenes.isLoaded);
   const estado = useSelector((state) => state.ordenes.estado);
   const idTienda = useSelector((state) => state.authUser.tienda.id);
-  const primerEstado = { key: 0, label: 'EN COLA', estate: 'EN_COLA' };
+  const primerEstado = estadosOrden[0];
 
   useEffect(() => {
     if (estado === null) {

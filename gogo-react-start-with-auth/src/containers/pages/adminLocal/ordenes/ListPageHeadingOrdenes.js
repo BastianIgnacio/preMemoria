@@ -17,15 +17,13 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { Colxx, Separator } from '../../../../components/common/CustomBootstrap';
 // eslint-disable-next-line no-unused-vars
 import { ORDEN_CHANGE_ESTADO, ORDEN_SET_ESTADO } from '../../../../redux/actions';
+import { estadosOrdenVisualizador } from '../../../../constants/defaultValues';
 
 const ListPageHeadingOrdenes = ({
   pageSizes,
 
 }) => {
-  const opciones = [{ key: 0, label: 'EN COLA', estate: 'EN_COLA' },
-  { key: 1, label: 'EN PREPARACION', estate: 'EN_PREPARACION' },
-  { key: 2, label: 'EN REPARTO', estate: 'EN_REPARTO' },
-  { key: 3, label: 'EN ESPERA DE RETIRO', estate: 'EN_ESPERA_RETIRO' }];
+
   const dispatch = useDispatch();
   const [displayOptionsIsOpen, setDisplayOptionsIsOpen] = useState(false);
   const estado = useSelector((state) => state.ordenes.estado);
@@ -53,6 +51,8 @@ const ListPageHeadingOrdenes = ({
     });
   }
   */
+
+  // eslint-disable-next-line no-unused-vars
   const changeEstado = (nuevoEstado) => {
     dispatch({
       type: ORDEN_CHANGE_ESTADO,
@@ -68,7 +68,7 @@ const ListPageHeadingOrdenes = ({
       <Colxx xxs="12">
         <div className="mb-2">
           <h1>
-            ORDENES
+            VISUALIZADOR DE ORDENES PENDIENTES
           </h1>
         </div>
 
@@ -93,11 +93,14 @@ const ListPageHeadingOrdenes = ({
                   {estado.label}
                 </DropdownToggle>
                 <DropdownMenu>
-                  {opciones.map((opc, index) => {
+                  {estadosOrdenVisualizador.map((opc, index) => {
                     return (
                       <DropdownItem
                         key={index}
-                        onClick={() => changeEstado(opc)}
+                        onClick={() => {
+                          console.log(opc.id);
+                          changeEstado(opc);
+                        }}
                       >
                         {opc.label}
                       </DropdownItem>

@@ -9,6 +9,7 @@ import {
   ORDEN_SET_PAGINAS,
   ORDEN_SET_ESTADO,
   ORDEN_SET_PRODUCTOS_ORDEN,
+  ORDEN_SET_VENTA,
 } from '../actions';
 
 const INIT_STATE = {
@@ -22,6 +23,7 @@ const INIT_STATE = {
   totalItems: 0,
   estado: null,
   productosOrden: [],
+  venta: [],
 };
 
 export default (state = INIT_STATE, action) => {
@@ -75,6 +77,11 @@ export default (state = INIT_STATE, action) => {
       return {
         ...state,
         productosOrden: action.payload,
+      };
+    case ORDEN_SET_VENTA:
+      return {
+        ...state,
+        venta: action.payload,
       };
     default:
       return { ...state };
