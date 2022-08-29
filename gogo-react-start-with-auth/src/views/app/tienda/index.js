@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense } from 'react';
 import { withRouter, Switch, Redirect, Route } from 'react-router-dom';
 import { connect } from 'react-redux';
 
@@ -9,26 +9,28 @@ import { ProtectedRoute } from '../../../helpers/authHelper';
 // eslint-disable-next-line no-unused-vars
 import { UserRole } from '../../../constants/defaultValues';
 
-const Tienda = React.lazy(() =>
+const CategoriasTienda = React.lazy(() =>
   // eslint-disable-next-line prettier/prettier
-  import(/* webpackChunkName: "viwes-blank-page" */ './tienda')
+  import(/* webpackChunkName: "viwes-blank-page" */ './categorias')
+);
+const ProductosCategoria = React.lazy(() =>
+  // eslint-disable-next-line prettier/prettier
+  import(/* webpackChunkName: "viwes-blank-page" */ './productos')
 );
 
 const AppTienda = ({ match }) => {
-  const [idTienda, setIdTienda] = useState('asdasd');
-  const handleFunction = (id) => {
-    setIdTienda(id);
-  };
   return (
-    <TiendaLayout idTienda={idTienda}>
+    <TiendaLayout>
       <div className="dashboard-wrapper">
         <Suspense fallback={<div className="loading" />}>
           <Switch>
             <Route
-              path={`${match.url}/:id`}
-              component={(props) => (
-                <Tienda llamarPadre={handleFunction} {...props} />
-              )}
+              path={`${match.url}/:link/:refCategoria`}
+              component={() => <ProductosCategoria />}
+            />
+            <Route
+              path={`${match.url}/:link`}
+              component={() => <CategoriasTienda />}
             />
             <Redirect to="/error" />
           </Switch>

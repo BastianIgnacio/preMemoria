@@ -4,10 +4,16 @@ import {
   CARRITO_CARGAR_METODOS_PAGO,
   CARRITO_CARGAR_METODOS_ENTREGA,
   CARRITO_SUCCESS,
+  CARRITO_CARGAR_CARRITO_SUM_RES,
+  CARRITO_PRODUCTO_ELIMINAR,
 } from '../actions';
 
 const INIT_STATE = {
-  sucess: false,
+  success: false,
+  ordenSuccess: [],
+  arrayOrdenSuccess: [],
+  fechaSuccess: '',
+  horaSuccess: '',
   //
   isLoaded: false,
   //
@@ -15,7 +21,9 @@ const INIT_STATE = {
   exist: false,
   //
   idTienda: null,
+  link: '',
   arrayCarrito: [],
+  productoParaEliminar: [],
   //
   contadorProducto: 0,
   total: 0,
@@ -65,6 +73,7 @@ export default (state = INIT_STATE, action) => {
         idTienda: action.payload.idTienda,
         arrayCarrito: action.payload.arrayCarrito,
         total: action.payload.total,
+        link: action.payload.link,
         isLoaded: true,
         carritoCargado: true,
         exist: true,
@@ -85,10 +94,23 @@ export default (state = INIT_STATE, action) => {
         tieneDelivery: action.payload.tieneDelivery,
         tieneRetiroLocal: action.payload.tieneRetiroLocal,
       };
+    case CARRITO_CARGAR_CARRITO_SUM_RES:
+      return {
+        ...state,
+        arrayCarrito: action.payload.arrayCarrito,
+        total: action.payload.total,
+        isLoaded: true,
+        carritoCargado: true,
+        exist: true,
+      };
     case CARRITO_SUCCESS:
       return {
         ...state,
         success: true,
+        ordenSuccess: action.payload.ordenSuccess,
+        arrayOrdenSuccess: action.payload.arrayOrdenSuccess,
+        fechaSuccess: action.payload.fechaSuccess,
+        horaSuccess: action.payload.horaSuccess,
         arrayCarrito: [],
         isLoaded: true,
         carritoCargado: true,
@@ -103,6 +125,11 @@ export default (state = INIT_STATE, action) => {
         pagoDeliveryMercadopago: false,
         contadorProducto: 0,
         total: 0,
+      };
+    case CARRITO_PRODUCTO_ELIMINAR:
+      return {
+        ...state,
+        productoParaEliminar: action.payload,
       };
 
     default:

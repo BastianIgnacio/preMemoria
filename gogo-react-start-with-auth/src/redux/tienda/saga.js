@@ -43,13 +43,20 @@ const getOrdenAsync = async (link) => {
       return res.data;
     });
 };
-// GET para obtener una tienda en base al link
+// GET para obtener todas las categorias de un local Comercial
 const getCategoriasAsync = async (refLocalComercial) => {
   return axios
     .get(`${apiRestUrl}/categorias/?refLocalComercial=${refLocalComercial}`)
     .then((res) => {
       return res.data;
     });
+};
+
+// GET para obtener una categoria
+const getCategoriaAsync = async (refCategoria) => {
+  return axios.get(`${apiRestUrl}/categorias/${refCategoria}/`).then((res) => {
+    return res.data;
+  });
 };
 
 // GET para obtener los productos de una categoria
@@ -95,6 +102,7 @@ function* cargarTienda({ payload }) {
           exist: true,
           categorias: dataCategorias.results,
           idTienda: tienda.id,
+          link: tienda.link,
         },
       });
     }
@@ -107,12 +115,47 @@ function* cargarTienda({ payload }) {
 function* cargarProductos({ payload }) {
   const refCategoria = payload;
   try {
+    const dataCategoria = yield call(getCategoriaAsync, refCategoria);
+    yield put({
+      type: TIENDA_SET_CATEGORIA_SELECCIONADA,
+      payload: dataCategoria,
+    });
     const data = yield call(getProductosAsync, refCategoria);
     const productosCategoria = data.results;
-    yield put({
-      type: TIENDA_SET_PRODUCTOS,
-      payload: productosCategoria,
-    });
+    // NO HAY PRODUCTOS EN LA CATEGORIA
+    if (productosCategoria.length === 0) {
+      yield put({
+        type: TIENDA_SET_PRODUCTOS,
+        payload: {
+          productos: [],
+          hayProductosVisibles: false,
+        },
+      });
+    } else {
+      // SI HAY PRODUCTOS EN LA CATEGORIA
+      // VER SI HAY PRODUCTOS VIISIBLES
+      const visibles = productosCategoria.filter(
+        (producto) => producto.esVisible === true
+      );
+      // HAY PRODUCTOS PERO NINGUNO VISIBLE
+      if (visibles.length === 0) {
+        yield put({
+          type: TIENDA_SET_PRODUCTOS,
+          payload: {
+            productos: [],
+            hayProductosVisibles: false,
+          },
+        });
+      } else {
+        yield put({
+          type: TIENDA_SET_PRODUCTOS,
+          payload: {
+            productos: visibles,
+            hayProductosVisibles: true,
+          },
+        });
+      }
+    }
   } catch (error) {
     console.log(error);
     notificacionError('Error', 'Al cargar productos de la categoria');

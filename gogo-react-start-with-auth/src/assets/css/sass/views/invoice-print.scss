@@ -6,6 +6,19 @@
   }
 }
 
+.background-tienda {
+  width: 100%;
+
+  .background-tienda-contents {
+    background-color: white;
+    max-width: 1200px;
+    min-height: 600px;
+    width: 1200px;
+    position: relative;
+    border-radius: 10px;
+  }
+}
+
 @media print {
   body {
     background: $foreground-color;

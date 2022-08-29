@@ -8,13 +8,20 @@ import {
   TIENDA_SET_PRODUCTO_SELECCIONADO,
   TIENDA_VOLVER_A_CATEGORIAS,
   TIENDA_DETALLE_MODAL,
+  TIENDA_CERRAR_MODAL_PRODUCTO,
+  TIENDA_CARGAR_PRODUCTOS_CATEGORIA,
 } from '../actions';
 
 const INIT_STATE = {
   isLoaded: false,
   tiendaCargada: false,
+  productosCargado: false,
+  hayProductosVisibles: true,
+  //
+  modalProducto: false,
   //
   idTienda: null,
+  link: '',
   exist: false,
   nombre: '',
   direccion: '',
@@ -23,11 +30,8 @@ const INIT_STATE = {
   tieneDelivery: false,
   tieneMercadopago: false,
   //
-  mostrarBotonAtras: false,
-  mostrarProductos: false,
-  //
   categorias: [],
-  categoriaSeleccionada: null,
+  categoriaSeleccionada: [],
   productos: [],
   //
   productoSeleccionado: [],
@@ -61,6 +65,7 @@ export default (state = INIT_STATE, action) => {
         tiendaCargada: true,
         categorias: action.payload.categorias,
         idTienda: action.payload.idTienda,
+        link: action.payload.link,
       };
     case TIENDA_SET_CATEGORIAS:
       return {
@@ -75,9 +80,10 @@ export default (state = INIT_STATE, action) => {
     case TIENDA_SET_PRODUCTOS:
       return {
         ...state,
-        productos: action.payload,
-        mostrarBotonAtras: true,
-        mostrarProductos: true,
+        productos: action.payload.productos,
+        hayProductosVisibles: action.payload.hayProductosVisibles,
+        productosCargado: true,
+        isLoaded: true,
       };
     case TIENDA_SET_PRODUCTO_SELECCIONADO:
       return {
@@ -85,13 +91,12 @@ export default (state = INIT_STATE, action) => {
         productoSeleccionado: action.payload.producto,
         contadorProducto: 1,
         total: action.payload.total,
+        modalProducto: true,
       };
     case TIENDA_VOLVER_A_CATEGORIAS:
       return {
         ...state,
         productos: [],
-        mostrarBotonAtras: false,
-        mostrarProductos: false,
       };
     case TIENDA_DETALLE_MODAL:
       return {
@@ -99,6 +104,17 @@ export default (state = INIT_STATE, action) => {
         contadorProducto: action.payload.contadorProducto,
         total: action.payload.total,
       };
+    case TIENDA_CERRAR_MODAL_PRODUCTO:
+      return {
+        ...state,
+        modalProducto: false,
+      };
+    case TIENDA_CARGAR_PRODUCTOS_CATEGORIA:
+      return {
+        ...state,
+        isLoaded: false,
+      };
+
     default:
       return { ...state };
   }

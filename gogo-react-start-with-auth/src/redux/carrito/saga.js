@@ -1,6 +1,14 @@
 /* eslint-disable no-unused-vars */
-import { all, call, fork, takeEvery, put } from 'redux-saga/effects';
+import {
+  all,
+  call,
+  fork,
+  takeEvery,
+  takeLatest,
+  put,
+} from 'redux-saga/effects';
 import axios from 'axios';
+import { useHistory } from 'react-router-dom';
 import { apiRestUrl } from '../../constants/defaultValues';
 import { NotificationManager } from '../../components/common/react-notifications';
 
@@ -25,6 +33,7 @@ import {
   CARRITO_CARGAR_METODOS_ENTREGA,
   CARRITO_PROCESAR,
   CARRITO_SUCCESS,
+  CARRITO_CARGAR_CARRITO_SUM_RES,
 } from '../actions';
 
 /** NOTIFICACIONES  */
@@ -33,6 +42,35 @@ const notificacionError = (titulo, subtitulo) => {
 };
 const notificacionSuccess = (titulo, subtitulo) => {
   NotificationManager.success(titulo, subtitulo, 4000, null, null, 'filled');
+};
+
+const formatDateFecha = (date) => {
+  const d = new Date(date);
+  let month = `${d.getMonth() + 1}`;
+  let day = `${d.getDate()}`;
+  const year = d.getFullYear();
+  const tab = '\u00A0';
+  if (month.length < 2) month = `0${month}`;
+  if (day.length < 2) day = `0${day}`;
+  return (
+    // eslint-disable-next-line prefer-template
+    [year, month, day].join('-')
+  );
+};
+
+const formatDateHora = (date) => {
+  const d = new Date(date);
+  let hora = d.getHours();
+  let minute = d.getMinutes();
+  let segundo = d.getSeconds();
+  const tab = '\u00A0';
+  if (hora < 10) hora = `0${hora}`;
+  if (minute < 10) minute = `0${minute}`;
+  if (segundo < 10) segundo = `0${segundo}`;
+  return (
+    // eslint-disable-next-line prefer-template
+    '[' + [hora, minute, segundo].join(':') + ']'
+  );
 };
 
 //* * LLAMADAS AXIOS POST, DELETE, PUT, GET */
@@ -113,6 +151,8 @@ function* carritoInit({ payload }) {
           payload: {
             idTienda,
             arrayCarrito: [],
+            total: 0,
+            link: tienda.link,
           },
         });
       } else {
@@ -133,6 +173,7 @@ function* carritoInit({ payload }) {
             idTienda,
             arrayCarrito: carritoTienda,
             total,
+            link: tienda.link,
           },
         });
         yield put({
@@ -173,35 +214,36 @@ function* carritoSumProducto({ payload }) {
     const found = carritoLocal.find(
       (element) => element.keyCarritoProducto === keyCarritoProducto
     );
-    // OBTENEMOS LA POSICION EN LA QUE ESTA EN EL CARRITO GLOBAL
-    const index = carritoLocal.indexOf(found);
-    let cantProducto = carritoLocal[index].cantidad;
-    const precioProducto = carritoLocal[index].precio;
-    let totalProducto = carritoLocal[index].total;
-    cantProducto += 1;
-    totalProducto = cantProducto * precioProducto;
+    if (found !== undefined) {
+      // OBTENEMOS LA POSICION EN LA QUE ESTA EN EL CARRITO GLOBAL
+      const index = carritoLocal.indexOf(found);
+      let cantProducto = carritoLocal[index].cantidad;
+      const precioProducto = carritoLocal[index].precio;
+      let totalProducto = carritoLocal[index].total;
+      cantProducto += 1;
+      totalProducto = cantProducto * precioProducto;
 
-    carritoLocal[index].cantidad = cantProducto;
-    carritoLocal[index].total = totalProducto;
-    const nuevoArray = [...carritoLocal];
+      carritoLocal[index].cantidad = cantProducto;
+      carritoLocal[index].total = totalProducto;
+      const nuevoArray = [...carritoLocal];
 
-    // Le enviamos el nuevo carrito editado al local storage
-    localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
-    const carritoTienda = nuevoArray.filter(
-      (producto) => producto.idLocalComercial === idLocalComercial
-    );
-    const total = carritoTienda.reduce(
-      (sum, el) => sum + el.precio * el.cantidad,
-      0
-    );
-    yield put({
-      type: CARRITO_CARGAR_CARRITO,
-      payload: {
-        idTienda: idLocalComercial,
-        arrayCarrito: carritoTienda,
-        total,
-      },
-    });
+      // Le enviamos el nuevo carrito editado al local storage
+      localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
+      const carritoTienda = nuevoArray.filter(
+        (producto) => producto.idLocalComercial === idLocalComercial
+      );
+      const total = carritoTienda.reduce(
+        (sum, el) => sum + el.precio * el.cantidad,
+        0
+      );
+      yield put({
+        type: CARRITO_CARGAR_CARRITO_SUM_RES,
+        payload: {
+          arrayCarrito: carritoTienda,
+          total,
+        },
+      });
+    }
   } catch (error) {
     console.log(error);
     notificacionError('Error', 'Al sumar el producto');
@@ -220,40 +262,41 @@ function* carritoResProducto({ payload }) {
     const found = carritoLocal.find(
       (element) => element.keyCarritoProducto === keyCarritoProducto
     );
-    // OBTENEMOS LA POSICION EN LA QUE ESTA EN EL CARRITO GLOBAL
-    const index = carritoLocal.indexOf(found);
-    let cantProducto = carritoLocal[index].cantidad;
-    const precioProducto = carritoLocal[index].precio;
-    let totalProducto = carritoLocal[index].total;
-    cantProducto -= 1;
-    totalProducto = cantProducto * precioProducto;
+    if (found !== undefined) {
+      // OBTENEMOS LA POSICION EN LA QUE ESTA EN EL CARRITO GLOBAL
+      const index = carritoLocal.indexOf(found);
+      let cantProducto = carritoLocal[index].cantidad;
+      const precioProducto = carritoLocal[index].precio;
+      let totalProducto = carritoLocal[index].total;
+      cantProducto -= 1;
+      totalProducto = cantProducto * precioProducto;
 
-    carritoLocal[index].cantidad = cantProducto;
-    carritoLocal[index].total = totalProducto;
+      carritoLocal[index].cantidad = cantProducto;
+      carritoLocal[index].total = totalProducto;
 
-    // Si la cantidad de producto es igual a cero
-    if (cantProducto === 0) {
-      // preguntar si desean eliminar el producto
-      return;
+      // Si la cantidad de producto es igual a cero
+      if (cantProducto === 0) {
+        // preguntar si desean eliminar el producto
+        return;
+      }
+      const nuevoArray = [...carritoLocal];
+      // Le enviamos el nuevo carrito editado al local storage
+      localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
+      const carritoTienda = nuevoArray.filter(
+        (producto) => producto.idLocalComercial === idLocalComercial
+      );
+      const total = carritoTienda.reduce(
+        (sum, el) => sum + el.precio * el.cantidad,
+        0
+      );
+      yield put({
+        type: CARRITO_CARGAR_CARRITO_SUM_RES,
+        payload: {
+          arrayCarrito: carritoTienda,
+          total,
+        },
+      });
     }
-    const nuevoArray = [...carritoLocal];
-    // Le enviamos el nuevo carrito editado al local storage
-    localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
-    const carritoTienda = nuevoArray.filter(
-      (producto) => producto.idLocalComercial === idLocalComercial
-    );
-    const total = carritoTienda.reduce(
-      (sum, el) => sum + el.precio * el.cantidad,
-      0
-    );
-    yield put({
-      type: CARRITO_CARGAR_CARRITO,
-      payload: {
-        idTienda: idLocalComercial,
-        arrayCarrito: carritoTienda,
-        total,
-      },
-    });
   } catch (error) {
     console.log(error);
     notificacionError('Error', 'Al restar el producto');
@@ -261,8 +304,9 @@ function* carritoResProducto({ payload }) {
 }
 // Funcion para eliminar producto en el carrito de compras
 function* carritoEliminarProducto({ payload }) {
-  const productoRes = payload;
-  const { keyCarritoProducto, idLocalComercial } = productoRes;
+  console.log('ejecutando carrito eliminar en el saga');
+  const { keyCarritoProducto, idLocalComercial } = payload;
+  console.log(keyCarritoProducto);
   try {
     // OBTENEMOS EL CARRITO DE COMPRAS A NIVEL GLOBAL
     const carritoLocal = JSON.parse(
@@ -271,27 +315,31 @@ function* carritoEliminarProducto({ payload }) {
     const found = carritoLocal.find(
       (element) => element.keyCarritoProducto === keyCarritoProducto
     );
-    // OBTENEMOS LA POSICION EN LA QUE ESTA EN EL CARRITO GLOBAL
-    const index = carritoLocal.indexOf(found);
-    carritoLocal.splice(index, 1);
-    const nuevoArray = [...carritoLocal];
-    // Le enviamos el nuevo carrito editado al local storage
-    localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
-    const carritoTienda = nuevoArray.filter(
-      (producto) => producto.idLocalComercial === idLocalComercial
-    );
-    const total = carritoTienda.reduce(
-      (sum, el) => sum + el.precio * el.cantidad,
-      0
-    );
-    yield put({
-      type: CARRITO_CARGAR_CARRITO,
-      payload: {
-        idTienda: idLocalComercial,
-        arrayCarrito: carritoTienda,
-        total,
-      },
-    });
+    if (found !== undefined) {
+      // OBTENEMOS LA POSICION EN LA QUE ESTA EN EL CARRITO GLOBAL
+      const index = carritoLocal.indexOf(found);
+      carritoLocal.splice(index, 1);
+      const nuevoArray = [...carritoLocal];
+      // Le enviamos el nuevo carrito editado al local storage
+      localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
+      const carritoTienda = nuevoArray.filter(
+        (producto) => producto.idLocalComercial === idLocalComercial
+      );
+      console.log('carrito Tienda');
+      console.log(carritoTienda);
+      const total = carritoTienda.reduce(
+        (sum, el) => sum + el.precio * el.cantidad,
+        0
+      );
+      yield put({
+        type: CARRITO_CARGAR_CARRITO,
+        payload: {
+          idTienda: idLocalComercial,
+          arrayCarrito: carritoTienda,
+          total,
+        },
+      });
+    }
   } catch (error) {
     console.log(error);
     notificacionError('Error', 'Al restar el producto');
@@ -300,7 +348,14 @@ function* carritoEliminarProducto({ payload }) {
 
 // Funcion para procesar un carrito de compra
 function* carritoProcesar({ payload }) {
-  const { venta, productosVenta, orden, productosOrden } = payload;
+  const {
+    venta,
+    productosVenta,
+    orden,
+    productosOrden,
+    history,
+    link,
+  } = payload;
   try {
     // ENVIAMOS LA VENTA
     const dataPost = yield call(postAddVentaAsync, venta);
@@ -346,9 +401,19 @@ function* carritoProcesar({ payload }) {
     const nuevoArray = [];
     // Le enviamos el nuevo carrito editado al local storage
     localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
+    // PROCESAMOS LA FECHA PARA SETEARLA EN EL REDUCER
+    const fechaSuccess = formatDateFecha(dataPostOrden.data.fecha);
+    const horaSuccess = formatDateHora(dataPostOrden.data.fecha);
     yield put({
       type: CARRITO_SUCCESS,
+      payload: {
+        ordenSuccess: dataPostOrden.data,
+        arrayOrdenSuccess: poArray,
+        fechaSuccess,
+        horaSuccess,
+      },
     });
+    history.push(`/success/${link}`);
   } catch (error) {
     console.log(error);
     notificacionError('Error', 'Al restar el producto');
@@ -359,10 +424,10 @@ export function* watchCarritoInit() {
   yield takeEvery(CARRITO_INIT, carritoInit);
 }
 export function* watchCarritoSumProducto() {
-  yield takeEvery(CARRITO_SUM_PRODUCTO, carritoSumProducto);
+  yield takeLatest(CARRITO_SUM_PRODUCTO, carritoSumProducto);
 }
 export function* watchCarritoResProducto() {
-  yield takeEvery(CARRITO_RES_PRODUCTO, carritoResProducto);
+  yield takeLatest(CARRITO_RES_PRODUCTO, carritoResProducto);
 }
 export function* watchCarritoEliminarProducto() {
   yield takeEvery(CARRITO_ELIMINAR_PRODUCTO, carritoEliminarProducto);

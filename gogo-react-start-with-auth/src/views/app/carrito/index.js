@@ -27,7 +27,7 @@ const AppCarrito = ({ match }) => {
         <Suspense fallback={<div className="loading" />}>
           <Switch>
             <Route
-              path={`${match.url}/:id`}
+              path={`${match.url}/:link`}
               component={(props) => (
                 <Carrito llamarPadre={handleFunction} {...props} />
               )}
