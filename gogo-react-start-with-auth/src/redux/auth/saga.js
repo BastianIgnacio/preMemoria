@@ -69,13 +69,14 @@ function* loginWithEmailPassword({ payload }) {
     const { rol, refTienda } = data.data.user; // Sabemos el rol y la tienda
 
     // Si EL USUARIO NO TIENE TIENDA NO ES POSIBLE MOSTRAR UNA TIENDA
+    /*
     if (refTienda === -1) {
       const error = 'Email o contraseña incorrectos';
       history.push(loginRoot);
       yield put(loginUserError(error));
       return;
     }
-    /*
+    */
     if (rol === 'SuperAdmin') {
       console.log('Es super admin');
       user = {
@@ -95,7 +96,6 @@ function* loginWithEmailPassword({ payload }) {
       yield put(loginUserSuccess(user));
       history.push(superAdminRoot);
     }
-    */
     if (rol === 'adminLocal') {
       user = {
         role: UserRole.AdminLocalComercial,

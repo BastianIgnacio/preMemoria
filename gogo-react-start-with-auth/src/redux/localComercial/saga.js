@@ -3,7 +3,6 @@ import {
   call,
   fork,
   takeEvery,
-  takeLatest,
   // eslint-disable-next-line no-unused-vars
   put,
 } from 'redux-saga/effects';
@@ -12,24 +11,22 @@ import { apiRestUrl } from '../../constants/defaultValues';
 import { NotificationManager } from '../../components/common/react-notifications';
 
 import {
-  LOCALCOMERCIAL_ADD,
-  LOCALCOMERCIAL_UPDATE,
-  LOCALCOMERCIALS_GETADMINSDISPONIBLES,
-  // eslint-disable-next-line no-unused-vars
-  LOCALCOMERCIALS_SETADMINSDISPONIBLES,
-  LOCALCOMERCIAL_ASIGNAR_ADMIN,
-  LOCALCOMERCIAL_REMOVE_ADMIN,
-  LOCALCOMERCIAL_DELETE,
-  ADMINLOCALCOMERCIAL_REMOVE,
-  LOCALCOMERCIALS_UPDATE_ITEMS,
-  LOCALCOMERCIALS_SET_ITEMS,
-  LOCALCOMERCIAL_SET_TOTAL_PAGINAS,
+  LOCALCOMERCIAL_IS_LOADED,
   LOCALCOMERCIAL_SET_START_ITEM,
   LOCALCOMERCIAL_SET_END_ITEM,
-  LOCALCOMERCIALS_SET_TOTAL_ITEMS,
-  LOCALCOMERCIALS_CHANGEPAGE,
-  LOCALCOMERCIAL_AFTER_UPDATE,
-  LOCALCOMERCIALS_SET_ADMIN_ASIGNAR,
+  LOCALCOMERCIAL_SET_PAGINA_ACTUAL,
+  LOCALCOMERCIAL_SET_PAGINAS,
+  LOCALCOMERCIAL_SET_ITEMS,
+  LOCALCOMERCIAL_SET_TOTAL_ITEMS,
+  LOCALCOMERCIAL_CARGAR_LOCALES,
+  LOCALCOMERCIAL_UPDATE_ITEMS,
+  LOCALCOMERCIAL_CARGAR_ADMINISTRADOR,
+  LOCALCOMERCIAL_ADMINISTRADOR,
+  LOCALCOMERCIAL_MODIFICAR_CREDENCIALES,
+  LOCALCOMERCIAL_EDITAR,
+  LOCALCOMERCIAL_CHANGE_PAGE,
+  LOCALCOMERCIAL_CHANGE_PAGE_SIZE,
+  LOCALCOMERCIAL_ELIMINAR,
 } from '../actions';
 
 const notificacionSuccess = (titulo, subtitulo) => {
@@ -44,69 +41,31 @@ const addLocalComercialAsync = async (localComercial) =>
   axios.post(`${apiRestUrl}/localComercials/`, localComercial);
 
 // PUT para actualizar un local comercial
-const updateLocalComercialAsync = async (localComercial, idLocalComercial) =>
+const putLocalComercialAsync = async (localComercial, refLocalComercial) =>
   axios.put(
-    `${apiRestUrl}/localComercials/${idLocalComercial}/`,
+    `${apiRestUrl}/localComercials/${refLocalComercial}/`,
     localComercial
   );
 
 // GET PARA OBTENER LOS ADMINISTRADORES
 // eslint-disable-next-line no-unused-vars
-const getAdministradoresLocalesComercialesAsync = async () => {
-  return axios.get(`${apiRestUrl}/listAdministradores`).then((res) => {
-    return res.data;
-  });
-};
-
-// GET PARA OBTENER LOS ADMINISTRADORES DISPONIBLES
-const getAdministradoresLocalesComercialesDisponiblesAsync = async () => {
+const getAdminsitradorAsync = async (refLocalComercial) => {
   return axios
-    .get(`${apiRestUrl}/listAdministradores/?disponible=True`)
+    .get(`${apiRestUrl}/auth/users/?refLocalComercial=${refLocalComercial}`)
     .then((res) => {
       return res.data;
     });
 };
-
-// GET PARA OBTENER UN ADMINISTRADOR
-const getAdministradorAsync = async (idAdministrador) => {
-  return axios
-    .get(`${apiRestUrl}/listAdministradores/?id=${idAdministrador}`)
-    .then((res) => {
-      return res.data;
-    });
-};
-
-// PUT para Editar una administrador
-// eslint-disable-next-line no-unused-vars
-const updateAdministradorLocalComercialAsync = async (
-  idAdminLocalComercial,
-  adminLocalComercial
-) =>
-  axios.put(
-    `${apiRestUrl}/auth/administradores/${idAdminLocalComercial}`,
-    adminLocalComercial
-  );
 
 // DELETE para ELIMINAR UN LOCAL COMERCIAL
 // eslint-disable-next-line no-unused-vars
-const deleteLocalComercialAsync = async (idLocalComercial) =>
-  axios.delete(`${apiRestUrl}/localComercials/${idLocalComercial}/`);
-
-// GET para obtener un local Comercial
-const getLocalComercialPorAdministradorAsync = async (refAdministrador) => {
-  return axios
-    .get(
-      `${apiRestUrl}/listLocalComercial/?refAdministrador=${refAdministrador}`
-    )
-    .then((res) => {
-      return res.data;
-    });
-};
+const deleteLocalComercialAsync = async (refLocalComercial) =>
+  axios.delete(`${apiRestUrl}/localComercials/${refLocalComercial}/`);
 
 // eslint-disable-next-line no-unused-vars
 const getLocalesLimit = async (limit) => {
   return axios
-    .get(`${apiRestUrl}/listLocalComercial/?limit=${limit}`)
+    .get(`${apiRestUrl}/localComercials/?limit=${limit}`)
     .then((res) => {
       return res.data;
     });
@@ -115,11 +74,21 @@ const getLocalesLimit = async (limit) => {
 // eslint-disable-next-line no-unused-vars
 const getLocalesLimitOffset = async (limit, offset) => {
   return axios
-    .get(`${apiRestUrl}/listLocalComercial/?limit=${limit}&offset=${offset}`)
+    .get(`${apiRestUrl}/localComercials/?limit=${limit}&offset=${offset}`)
     .then((res) => {
       return res.data;
     });
 };
+
+// eslint-disable-next-line no-unused-vars
+const putAdministrador = async (user, refTienda) => {
+  return axios
+    .put(`${apiRestUrl}/auth/users/${refTienda}/`, user)
+    .then((res) => {
+      return res.data;
+    });
+};
+
 //----------------------------------------------------------------
 //----------------------------------------------------------------
 //----------------------------------------------------------------
@@ -127,6 +96,7 @@ const getLocalesLimitOffset = async (limit, offset) => {
 //----------------------------------------------------------------
 //----------------------------------------------------------------
 
+// eslint-disable-next-line no-unused-vars
 function* addLocalComercial({ payload }) {
   try {
     yield call(addLocalComercialAsync, payload);
@@ -138,227 +108,117 @@ function* addLocalComercial({ payload }) {
   }
 }
 
-function* updateLocalComercial({ payload }) {
-  // eslint-disable-next-line prefer-destructuring
-  const localComercialToUpdate = payload.localComercialToUpdate;
-  // eslint-disable-next-line prefer-destructuring
-  const idLocalComercialToUpdate = payload.idLocalComercialToUpdate;
+function* cargarLocales() {
   try {
-    // eslint-disable-next-line no-unused-vars
-    yield call(
-      updateLocalComercialAsync,
-      localComercialToUpdate,
-      idLocalComercialToUpdate
-    );
-    // Aca se deberia llamar a la notificacion
-    notificacionSuccess('Local Comercial', 'Actualizado correctamente');
-  } catch (error) {
-    notificacionError('Error', 'Error al editar un Local Comercial');
-  }
-}
-
-function* getAdministradoresDisponibles() {
-  try {
-    // eslint-disable-next-line no-unused-vars
-    const adminsDisponibles = yield call(
-      getAdministradoresLocalesComercialesDisponiblesAsync
-    );
-    if (adminsDisponibles.count > 0) {
-      yield put({
-        type: LOCALCOMERCIALS_SETADMINSDISPONIBLES,
-        payload: adminsDisponibles.results,
-      });
-      // Seteamos en redux el primer administrador
-      yield put({
-        type: LOCALCOMERCIALS_SET_ADMIN_ASIGNAR,
-        payload: {
-          refAdministradorAsignar: adminsDisponibles.results[0].id,
-          nombresAsignar: adminsDisponibles.results[0].first_name,
-          apellidosAsignar: adminsDisponibles.results[0].last_name,
-          telefonoAsignar: adminsDisponibles.results[0].telefono,
-        },
-      });
-    } else {
-      yield put({
-        type: LOCALCOMERCIALS_SETADMINSDISPONIBLES,
-        payload: [],
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    notificacionError('Error', 'Error al cargar los administradores');
-  }
-}
-
-function* localComercialAsignarAdmin({ payload }) {
-  // eslint-disable-next-line prefer-destructuring
-  const localComercialToUpdate = payload.localComercialToUpdate;
-  // eslint-disable-next-line prefer-destructuring
-  const idLocalComercialToUpdate = payload.idLocalComercialToUpdate;
-  // eslint-disable-next-line prefer-destructuring
-  const idAdministrador = payload.idAdministrador;
-  // eslint-disable-next-line prefer-destructuring
-  const idAntiguoAdministrador = payload.idAntiguoAdministrador;
-
-  try {
-    // SI ES -1 --> NO ERA ADMINISTRADOR DE OTRO LOCAL COMERCIAL
-    if (idAntiguoAdministrador === -1) {
-      // ACA YA VIENE SETEADO EL REF ADMINISTRADOR
-      // ACTUALIZAMOS LA REFERENCIA EN EL LOCAL COMERCIAL
-      // eslint-disable-next-line no-unused-vars
-      yield call(
-        updateLocalComercialAsync,
-        localComercialToUpdate,
-        idLocalComercialToUpdate
-      );
-
-      // AHORA SE BUSCA EL ADMINISTRADOR PARA POSTERIORMENTE ACTUALIZARLO
-      // YA QUE SOLO TENEMOS EL ID DEL ADMINISTRADOR
-      const adminLocalComercialGet = yield call(
-        getAdministradorAsync,
-        idAdministrador
-      );
-      // CREAMOS LOS DATOS QUE ENVIAREMOS A LA API
-      const adminLocalComercial = {
-        email: adminLocalComercialGet.results[0].email,
-        disponible: false,
-      };
-
-      // ACTUALIZAMOS LA DISPONIBILIDAD (FALSE) EN EL USUARIO ADMINISTRADOR DE LOCAL COMERCIAL
-      yield call(
-        updateAdministradorLocalComercialAsync,
-        idAdministrador,
-        adminLocalComercial
-      );
-      notificacionSuccess('Local Comercial', 'Asignador correctamente');
-    } else {
-      // ACTUALIZAMOS LA REFERENCIA EN EL LOCAL COMERCIAL
-      // eslint-disable-next-line no-unused-vars
-      yield call(
-        updateLocalComercialAsync,
-        localComercialToUpdate,
-        idLocalComercialToUpdate
-      );
-      // AHORA SE BUSCA EL ADMINISTRADOR PARA POSTERIORMENTE ACTUALIZARLO
-      // YA QUE SOLO TENEMOS EL ID DEL ADMINISTRADOR
-      const adminLocalComercialGet = yield call(
-        getAdministradorAsync,
-        idAdministrador
-      );
-      // CREAMOS LOS DATOS QUE ENVIAREMOS A LA API
-      const adminLocalComercial = {
-        email: adminLocalComercialGet.results[0].email,
-        disponible: false,
-      };
-
-      // ACTUALIZAMOS LA DISPONIBILIDAD (FALSE) EN EL USUARIO ADMINISTRADOR DE LOCAL COMERCIAL
-      yield call(
-        updateAdministradorLocalComercialAsync,
-        idAdministrador,
-        adminLocalComercial
-      );
-
-      // AHORA SE BUSCA EL ADMINISTRADOR PARA POSTERIORMENTE ACTUALIZARLO
-      // YA QUE SOLO TENEMOS EL ID DEL ADMINISTRADOR ANTIGUO
-      const antiguiAdminLocalComercialGet = yield call(
-        getAdministradorAsync,
-        idAntiguoAdministrador
-      );
-      // CREAMOS LOS DATOS QUE ENVIAREMOS A LA API
-      // PARA DEJAR DISPONIBLE EL USUARIO ADMIN LOCAL COMERCIAL
-      const antiguoAdminLocalComercial = {
-        email: antiguiAdminLocalComercialGet.results[0].email,
-        disponible: true,
-      };
-      // ACTUALIZAMOS EL ADMINISTRADOR EN DISPONIBLE
-      yield call(
-        updateAdministradorLocalComercialAsync,
-        idAntiguoAdministrador,
-        antiguoAdminLocalComercial
-      );
-      notificacionSuccess('Local Comercial', 'Asignador correctamente');
-    }
-  } catch (error) {
-    console.log(error);
-    notificacionError('Error', 'Error al Asignar Administrador');
-  }
-}
-function* deleteLocalComercial({ payload }) {
-  // eslint-disable-next-line prefer-destructuring
-  const idLocalComercial = payload.idEliminar;
-  // eslint-disable-next-line prefer-destructuring
-  const refAdministradorEliminar = payload.refAdministradorEliminar;
-  console.log(idLocalComercial);
-  console.log(refAdministradorEliminar);
-  try {
-    // No hay administrador, por ende no se elimina el usuario.
-    if (refAdministradorEliminar === -1) {
-      yield call(deleteLocalComercialAsync, idLocalComercial);
-    } else {
-      // Si hay administrador, por ende se deme eliminar
-      // Eliminamos el local comercial
-      yield call(deleteLocalComercialAsync, idLocalComercial);
-
-      // Eliminamos el Administrador del local comercial
-      yield put({
-        type: ADMINLOCALCOMERCIAL_REMOVE,
-        payload: refAdministradorEliminar,
-      });
-    }
-    // yield call(deleteLocalComercialAsync, idLocalComercial);
-    yield call(getAdministradoresLocalesComercialesDisponiblesAsync);
-    notificacionSuccess('Local Comercial', 'Eliminado correctamente');
-  } catch (error) {
-    notificacionError('Error', 'Error al eliminar Local Comercial');
-  }
-}
-
-function* localComercialRemoveAdmin({ payload }) {
-  // eslint-disable-next-line prefer-destructuring
-  const idAdministradorRemovido = payload;
-  try {
-    const localComercialToRemoveAdmin = yield call(
-      getLocalComercialPorAdministradorAsync,
-      idAdministradorRemovido
-    );
-    console.log('Local comercial a remover');
-    console.log(localComercialToRemoveAdmin.results[0].id);
-
-    const idLocalComercialToUpdate = localComercialToRemoveAdmin.results[0].id;
-    const localComercialToUpdate = {
-      nombre: localComercialToRemoveAdmin.results[0].nombre,
-      direccion: localComercialToRemoveAdmin.results[0].direccion,
-      link: localComercialToRemoveAdmin.results[0].link,
-      horarioAtencion: localComercialToRemoveAdmin.results[0].horarioAtencion,
-      estado: localComercialToRemoveAdmin.results[0].estado,
-      privateKeyMercadopago:
-        localComercialToRemoveAdmin.results[0].privateKeyMercadopago,
-      publicKeyMercadopago:
-        localComercialToRemoveAdmin.results[0].publicKeyMercadopago,
-      tieneMercadopago: localComercialToRemoveAdmin.results[0].tieneMercadopago,
-      refAdministrador: -1,
-    };
-
-    yield call(
-      updateLocalComercialAsync,
-      localComercialToUpdate,
-      idLocalComercialToUpdate
-    );
-    notificacionSuccess('Local Comercial', 'Eliminado correctamente');
+    yield put({
+      type: LOCALCOMERCIAL_UPDATE_ITEMS,
+      payload: {
+        paginaActual: 1,
+        itemsPorPagina: 4,
+      },
+    });
   } catch (error) {
     notificacionError('Error', 'Error al eliminar Administrador');
+  }
+}
+
+function* cargarAdministrador({ payload }) {
+  const { refLocalComercial, modal } = payload;
+  try {
+    const administrador = yield call(getAdminsitradorAsync, refLocalComercial);
+    if (administrador.count === 0) {
+      notificacionError('Error', 'Error al cargar administrador ');
+      return;
+    }
+    yield put({
+      type: LOCALCOMERCIAL_ADMINISTRADOR,
+      payload: administrador.results[0],
+    });
+    modal(true);
+  } catch (error) {
+    notificacionError('Error', 'Error al cargar administrador ');
+  }
+}
+
+function* modificarCredenciales({ payload }) {
+  // eslint-disable-next-line no-unused-vars
+  const { refLocalComercial, modal, user } = payload;
+  try {
+    yield call(putAdministrador, user, refLocalComercial);
+    modal(false);
+    notificacionSuccess('Credenciales', 'Modificadas de forma exitosa!');
+  } catch (error) {
+    notificacionError('Error', 'El Email ya está en uso. ');
+  }
+}
+
+function* editarLocalComercial({ payload }) {
+  // eslint-disable-next-line no-unused-vars
+  const {
+    refLocalComercial,
+    modal,
+    localComercial,
+    paginaActual,
+    itemsPorPagina,
+  } = payload;
+  try {
+    yield call(putLocalComercialAsync, localComercial, refLocalComercial);
+    yield put({
+      type: LOCALCOMERCIAL_UPDATE_ITEMS,
+      payload: {
+        paginaActual,
+        itemsPorPagina,
+      },
+    });
+    modal(false);
+    notificacionSuccess('Local Comercial', 'Modificado de forma exitosa!');
+  } catch (error) {
+    notificacionError('Error', 'No fue posible editar ');
+  }
+}
+
+function* changePage({ payload }) {
+  // eslint-disable-next-line no-unused-vars
+  const { paginaActual, itemsPorPagina } = payload;
+  console.log('paso x aki');
+  try {
+    yield put({
+      type: LOCALCOMERCIAL_UPDATE_ITEMS,
+      payload: {
+        paginaActual,
+        itemsPorPagina,
+      },
+    });
+  } catch (error) {
+    notificacionError('Error', 'No fue cambiar la pagina ');
+  }
+}
+
+function* eliminar({ payload }) {
+  // eslint-disable-next-line no-unused-vars
+  const refLocalComercial = payload;
+  try {
+    yield call(deleteLocalComercialAsync, refLocalComercial);
+    // Ahora hay que eliminar el usuario que tiene referencia al local comercial
+    yield put({
+      type: LOCALCOMERCIAL_UPDATE_ITEMS,
+      payload: {
+        paginaActual: 1,
+        itemsPorPagina: 4,
+      },
+    });
+
+    notificacionSuccess('Local Comercial', 'Eliminado correctamente !');
+  } catch (error) {
+    notificacionError('Error', 'No fue posible eliminar');
   }
 }
 
 function* updateItems({ payload }) {
   // eslint-disable-next-line prefer-destructuring
   const paginaActual = payload.paginaActual;
-  console.log('pagina actual');
-  console.log(paginaActual);
   // eslint-disable-next-line prefer-destructuring
   const itemsPorPagina = payload.itemsPorPagina;
-  console.log('items x pagina');
-  console.log(itemsPorPagina);
   try {
     if (paginaActual === 1) {
       const limit = itemsPorPagina;
@@ -370,9 +230,12 @@ function* updateItems({ payload }) {
       if (valor <= 1) {
         // Es necesario solo mostrar 1 pagina
         const paginas = 1;
-        yield put({ type: LOCALCOMERCIAL_SET_TOTAL_PAGINAS, payload: paginas });
+        yield put({ type: LOCALCOMERCIAL_SET_PAGINAS, payload: paginas });
         // Debemos despachar la accion para mostar la pagina actual == 1
-        yield put({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: paginaActual });
+        yield put({
+          type: LOCALCOMERCIAL_SET_PAGINA_ACTUAL,
+          payload: paginaActual,
+        });
 
         // Aca debemos despachar que el startItem es 1
         const startItem = 1;
@@ -393,10 +256,13 @@ function* updateItems({ payload }) {
           valorTruc = Math.trunc(valor) + 1;
         }
         // Debemos despachar la accion para mostar la pagina actual == 1
-        yield put({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: paginaActual });
+        yield put({
+          type: LOCALCOMERCIAL_SET_PAGINA_ACTUAL,
+          payload: paginaActual,
+        });
         const paginas = valorTruc;
         // Debemos despachar la cantidad de paginas
-        yield put({ type: LOCALCOMERCIAL_SET_TOTAL_PAGINAS, payload: paginas });
+        yield put({ type: LOCALCOMERCIAL_SET_PAGINAS, payload: paginas });
 
         // Aca debemos despachar que el startItem es 1
         const startItem = 1;
@@ -408,8 +274,8 @@ function* updateItems({ payload }) {
       }
       // Aca desppachamos una accion con los items(Locales comerciales)
       const items = data.results;
-      yield put({ type: LOCALCOMERCIALS_SET_ITEMS, payload: items });
-      yield put({ type: LOCALCOMERCIALS_SET_TOTAL_ITEMS, payload: totalItems });
+      yield put({ type: LOCALCOMERCIAL_SET_ITEMS, payload: items });
+      yield put({ type: LOCALCOMERCIAL_SET_TOTAL_ITEMS, payload: totalItems });
     } else {
       // Cuando la pagina actual NO ES LA PRIMERA
       const limit = itemsPorPagina;
@@ -422,9 +288,9 @@ function* updateItems({ payload }) {
       if (valor <= 1) {
         // Es necesario solo mostrar 1 pagina
         const paginas = 1;
-        yield put({ type: LOCALCOMERCIAL_SET_TOTAL_PAGINAS, payload: paginas });
+        yield put({ type: LOCALCOMERCIAL_SET_PAGINAS, payload: paginas });
         // Debemos despachar la accion para mostar la pagina actual == 1
-        yield put({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: 1 });
+        yield put({ type: LOCALCOMERCIAL_SET_PAGINA_ACTUAL, payload: 1 });
 
         // Aca debemos despachar que el startItem es 1
         const startItem = 1;
@@ -447,10 +313,13 @@ function* updateItems({ payload }) {
         }
         // Debemos despachar la cantidad de paginas
         const paginas = valorTruc;
-        yield put({ type: LOCALCOMERCIAL_SET_TOTAL_PAGINAS, payload: paginas });
+        yield put({ type: LOCALCOMERCIAL_SET_PAGINAS, payload: paginas });
 
         // Debemos despachar la accion para mostar la pagina actual == 1
-        yield put({ type: LOCALCOMERCIALS_CHANGEPAGE, payload: paginaActual });
+        yield put({
+          type: LOCALCOMERCIAL_SET_PAGINA_ACTUAL,
+          payload: paginaActual,
+        });
 
         const valorInicio = paginaActual - 1;
         const valorFinal = paginaActual;
@@ -470,16 +339,17 @@ function* updateItems({ payload }) {
       }
       // Aca desppachamos una accion con los items(Locales comerciales)
       const items = data.results;
-      yield put({ type: LOCALCOMERCIALS_SET_ITEMS, payload: items });
-      yield put({ type: LOCALCOMERCIALS_SET_TOTAL_ITEMS, payload: totalItems });
+      yield put({ type: LOCALCOMERCIAL_SET_ITEMS, payload: items });
+      yield put({ type: LOCALCOMERCIAL_SET_TOTAL_ITEMS, payload: totalItems });
     }
-    yield put({ type: LOCALCOMERCIAL_AFTER_UPDATE, payload: true });
+    yield put({ type: LOCALCOMERCIAL_IS_LOADED, payload: true });
   } catch (error) {
     console.log('error');
     // Notificaion de error
     // Poner a cargar
   }
 }
+
 //----------------------------------------------------------------
 //----------------------------------------------------------------
 //----------------------------------------------------------------
@@ -489,30 +359,31 @@ function* updateItems({ payload }) {
 //----------------------------------------------------------------
 //----------------------------------------------------------------
 
-export function* watchGetAdministradoresDisponibles() {
-  yield takeLatest(
-    LOCALCOMERCIALS_GETADMINSDISPONIBLES,
-    getAdministradoresDisponibles
-  );
+export function* watchCargarLocales() {
+  yield takeEvery(LOCALCOMERCIAL_CARGAR_LOCALES, cargarLocales);
 }
-export function* watchAddLocalComercial() {
-  yield takeEvery(LOCALCOMERCIAL_ADD, addLocalComercial);
+export function* watchUpdateLocalesComerciales() {
+  yield takeEvery(LOCALCOMERCIAL_UPDATE_ITEMS, updateItems);
 }
-export function* watchUpdateLocalComercial() {
-  yield takeEvery(LOCALCOMERCIAL_UPDATE, updateLocalComercial);
+export function* watchCargarAdministrador() {
+  yield takeEvery(LOCALCOMERCIAL_CARGAR_ADMINISTRADOR, cargarAdministrador);
 }
-export function* watchAsignarAdministrador() {
-  yield takeEvery(LOCALCOMERCIAL_ASIGNAR_ADMIN, localComercialAsignarAdmin);
+export function* watchModificarCredenciales() {
+  yield takeEvery(LOCALCOMERCIAL_MODIFICAR_CREDENCIALES, modificarCredenciales);
 }
-export function* watchDeleteLocalComercial() {
-  yield takeEvery(LOCALCOMERCIAL_DELETE, deleteLocalComercial);
+export function* watchEditarLocalComercial() {
+  yield takeEvery(LOCALCOMERCIAL_EDITAR, editarLocalComercial);
 }
-export function* watchRemoveAdministrador() {
-  yield takeEvery(LOCALCOMERCIAL_REMOVE_ADMIN, localComercialRemoveAdmin);
+export function* watchChangePage() {
+  yield takeEvery(LOCALCOMERCIAL_CHANGE_PAGE, changePage);
 }
-export function* watchUpdateItems() {
-  yield takeEvery(LOCALCOMERCIALS_UPDATE_ITEMS, updateItems);
+export function* watchChangePageSize() {
+  yield takeEvery(LOCALCOMERCIAL_CHANGE_PAGE_SIZE, changePage);
 }
+export function* watchEliminarLocalComercial() {
+  yield takeEvery(LOCALCOMERCIAL_ELIMINAR, eliminar);
+}
+
 //----------------------------------------------------------------
 //----------------------------------------------------------------
 //----------------------------------------------------------------
@@ -521,12 +392,13 @@ export function* watchUpdateItems() {
 //----------------------------------------------------------------
 export default function* rootSaga() {
   yield all([
-    fork(watchAddLocalComercial),
-    fork(watchUpdateLocalComercial),
-    fork(watchGetAdministradoresDisponibles),
-    fork(watchAsignarAdministrador),
-    fork(watchDeleteLocalComercial),
-    fork(watchRemoveAdministrador),
-    fork(watchUpdateItems),
+    fork(watchCargarLocales),
+    fork(watchUpdateLocalesComerciales),
+    fork(watchCargarAdministrador),
+    fork(watchModificarCredenciales),
+    fork(watchEditarLocalComercial),
+    fork(watchChangePage),
+    fork(watchChangePageSize),
+    fork(watchEliminarLocalComercial),
   ]);
 }

@@ -117,7 +117,7 @@ const Validation = ({ intl }) => {
                   initialValues={{
                     name: fields[0].value,
                   }}
-                  onSubmit={() => {}}
+                  onSubmit={() => { }}
                 >
                   {({ errors, touched }) => (
                     <Form className="av-tooltip tooltip-label-right">
@@ -150,7 +150,7 @@ const Validation = ({ intl }) => {
                   initialValues={{
                     email: fields[1].value,
                   }}
-                  onSubmit={() => {}}
+                  onSubmit={() => { }}
                 >
                   {({ errors, touched }) => (
                     <Form className="av-tooltip tooltip-label-right">
@@ -183,7 +183,7 @@ const Validation = ({ intl }) => {
                   initialValues={{
                     password: fields[2].value,
                   }}
-                  onSubmit={() => {}}
+                  onSubmit={() => { }}
                 >
                   {({ errors, touched }) => (
                     <Form className="av-tooltip tooltip-label-right error-l-75">
@@ -231,9 +231,8 @@ const Validation = ({ intl }) => {
           <BottomNavigation
             onClickNext={onClickNext}
             onClickPrev={onClickPrev}
-            className={`justify-content-center ${
-              bottomNavHidden && 'invisible'
-            }`}
+            className={`justify-content-center ${bottomNavHidden && 'invisible'
+              }`}
             prevLabel={messages['wizard.prev']}
             nextLabel={messages['wizard.next']}
           />

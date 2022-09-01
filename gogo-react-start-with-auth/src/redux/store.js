@@ -1,3 +1,5 @@
+// eslint-disable-next-line
+import Symbol_observable from 'symbol-observable';
 import { createStore, applyMiddleware, compose } from 'redux';
 import createSagaMiddleware from 'redux-saga';
 import { composeWithDevTools } from 'redux-devtools-extension';
@@ -15,7 +17,6 @@ export function configureStore(initialState) {
     initialState,
     compose(composeWithDevTools(applyMiddleware(...middlewares)))
   );
-
   sagaMiddleware.run(sagas);
 
   if (module.hot) {

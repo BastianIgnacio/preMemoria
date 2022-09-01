@@ -31,10 +31,7 @@ const LocalesComerciales = React.lazy(() =>
   // eslint-disable-next-line prettier/prettier
   import(/* webpackChunkName: "viwes-blank-page" */ './localesComerciales')
 );
-const AdmsLocalesComerciales = React.lazy(() =>
-  // eslint-disable-next-line prettier/prettier
-  import(/* webpackChunkName: "viwes-blank-page" */ './admsLocalesComerciales')
-);
+
 const App = ({ match }) => {
   return (
     <AppLayout>
@@ -49,11 +46,6 @@ const App = ({ match }) => {
             <ProtectedRoute
               path={`${match.url}/localesComerciales`}
               component={(props) => <LocalesComerciales {...props} />}
-              roles={[UserRole.SuperAdmin]}
-            />
-            <ProtectedRoute
-              path={`${match.url}/administradoresLocalesComerciales`}
-              component={(props) => <AdmsLocalesComerciales {...props} />}
               roles={[UserRole.SuperAdmin]}
             />
             <ProtectedRoute

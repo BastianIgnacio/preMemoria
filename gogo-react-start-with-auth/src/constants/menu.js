@@ -9,13 +9,6 @@ const data = [
     roles: [UserRole.SuperAdmin],
   },
   {
-    id: 'administradoresLocalesComerciales',
-    icon: 'iconsminds-business-mens',
-    label: 'menu.admlocales',
-    to: `${adminRoot}/administradoresLocalesComerciales`,
-    roles: [UserRole.SuperAdmin],
-  },
-  {
     id: 'categorias',
     icon: 'iconsminds-receipt-4',
     label: 'menu.categorias',

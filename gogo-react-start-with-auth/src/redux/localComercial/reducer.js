@@ -1,93 +1,35 @@
 import {
-  LOCALCOMERCIAL_ADD,
-  LOCALCOMERCIALS_CHANGEPAGE,
-  LOCALCOMERCIALS_CHANGEPAGESIZE,
-  LOCALCOMERCIALS_ISLOADED,
-  LOCALCOMERCIAL_UPDATE,
-  LOCALCOMERCIALS_SETADMINSDISPONIBLES,
-  LOCALCOMERCIALS_UPDATE_ITEMS,
-  LOCALCOMERCIALS_SET_TOTAL_ITEMS,
-  LOCALCOMERCIAL_SET_TOTAL_PAGINAS,
-  LOCALCOMERCIALS_SET_ITEMS,
+  LOCALCOMERCIAL_IS_LOADED,
   LOCALCOMERCIAL_SET_START_ITEM,
   LOCALCOMERCIAL_SET_END_ITEM,
-  LOCALCOMERCIAL_BEFORE_UPDATE,
-  LOCALCOMERCIAL_AFTER_UPDATE,
-  LOCALCOMERCIAL_RESET_ITEMS,
-  LOCALCOMERCIALS_SET_ADMIN_ASIGNAR,
-  LOCALCOMERCIALS_SET_PRIMERA_CARGA_ADMIN,
+  LOCALCOMERCIAL_SET_PAGINA_ACTUAL,
+  LOCALCOMERCIAL_SET_PAGINAS,
+  LOCALCOMERCIAL_SET_ITEMS,
+  LOCALCOMERCIAL_SET_TOTAL_ITEMS,
+  LOCALCOMERCIAL_SET_ITEMS_POR_PAGINA,
+  LOCALCOMERCIAL_ADMINISTRADOR,
 } from '../actions';
 
 const INIT_STATE = {
-  isLoaded: true,
-  primeraCarga: true,
-  totalItems: 0,
-  items: [],
-  paginas: 0,
+  // VARIABLES PARA MOSTRAR LA LISTA
+  isLoaded: false,
   paginaActual: 1,
   itemsPorPagina: 4,
+  items: [],
+  paginas: 1,
   startItem: 0,
   endItem: 0,
-  primeraCargaAdmins: true,
-  admins: [],
-  refAdministradorAsignar: 0,
-  nombresAsignar: 'reducer',
-  apellidosAsignar: 'reducerApelldio',
-  telefonoAsignar: 'reducerTelefono',
+  totalItems: 0,
+  //
+  administrador: [],
 };
 
 export default (state = INIT_STATE, action) => {
   switch (action.type) {
-    case LOCALCOMERCIAL_ADD:
-      // eslint-disable-next-line no-debugger
-      return {
-        ...state,
-      };
-    case LOCALCOMERCIALS_CHANGEPAGE:
-      return {
-        ...state,
-        paginaActual: action.payload,
-      };
-    case LOCALCOMERCIALS_CHANGEPAGESIZE:
-      return {
-        ...state,
-        itemsPorPagina: action.payload,
-      };
-    case LOCALCOMERCIALS_ISLOADED:
+    case LOCALCOMERCIAL_IS_LOADED:
       return {
         ...state,
         isLoaded: action.payload,
-      };
-    case LOCALCOMERCIAL_UPDATE:
-      return {
-        ...state,
-      };
-    case LOCALCOMERCIALS_SETADMINSDISPONIBLES:
-      return {
-        ...state,
-        admins: action.payload,
-      };
-    case LOCALCOMERCIALS_UPDATE_ITEMS:
-      return {
-        ...state,
-        itemsPorPagina: action.payload.itemsPorPagina,
-        paginaActual: action.payload.paginaActual,
-        primeraCarga: action.payload.primeraCarga,
-      };
-    case LOCALCOMERCIALS_SET_TOTAL_ITEMS:
-      return {
-        ...state,
-        totalItems: action.payload,
-      };
-    case LOCALCOMERCIAL_SET_TOTAL_PAGINAS:
-      return {
-        ...state,
-        paginas: action.payload,
-      };
-    case LOCALCOMERCIALS_SET_ITEMS:
-      return {
-        ...state,
-        items: action.payload,
       };
     case LOCALCOMERCIAL_SET_START_ITEM:
       return {
@@ -99,33 +41,35 @@ export default (state = INIT_STATE, action) => {
         ...state,
         endItem: action.payload,
       };
-    case LOCALCOMERCIAL_BEFORE_UPDATE:
+    case LOCALCOMERCIAL_SET_PAGINA_ACTUAL:
       return {
         ...state,
-        isLoaded: action.payload,
+        paginaActual: action.payload,
       };
-    case LOCALCOMERCIAL_AFTER_UPDATE:
+    case LOCALCOMERCIAL_SET_PAGINAS:
       return {
         ...state,
-        isLoaded: action.payload,
+        paginas: action.payload,
       };
-    case LOCALCOMERCIAL_RESET_ITEMS:
+    case LOCALCOMERCIAL_SET_ITEMS:
       return {
         ...state,
         items: action.payload,
       };
-    case LOCALCOMERCIALS_SET_ADMIN_ASIGNAR:
+    case LOCALCOMERCIAL_SET_TOTAL_ITEMS:
       return {
         ...state,
-        refAdministradorAsignar: action.payload.refAdministradorAsignar,
-        nombresAsignar: action.payload.nombresAsignar,
-        apellidosAsignar: action.payload.apellidosAsignar,
-        telefonoAsignar: action.payload.telefonoAsignar,
+        totalItems: action.payload,
       };
-    case LOCALCOMERCIALS_SET_PRIMERA_CARGA_ADMIN:
+    case LOCALCOMERCIAL_SET_ITEMS_POR_PAGINA:
       return {
         ...state,
-        primeraCargaAdmins: action.payload,
+        itemsPorPagina: action.payload,
+      };
+    case LOCALCOMERCIAL_ADMINISTRADOR:
+      return {
+        ...state,
+        administrador: action.payload,
       };
     default:
       return { ...state };
