@@ -8,6 +8,10 @@ const Success = React.lazy(() =>
   // eslint-disable-next-line prettier/prettier
   import(/* webpackChunkName: "viwes-blank-page" */ './success')
 );
+const Print = React.lazy(() =>
+  // eslint-disable-next-line prettier/prettier
+  import(/* webpackChunkName: "viwes-blank-page" */ './print')
+);
 
 const AppSuccess = ({ match }) => {
   // eslint-disable-next-line no-unused-vars
@@ -20,6 +24,7 @@ const AppSuccess = ({ match }) => {
       <div className="dashboard-wrapper">
         <Suspense fallback={<div className="loading" />}>
           <Switch>
+            <Route path={`${match.url}/print`} component={() => <Print />} />
             <Route
               path={`${match.url}/:id`}
               component={(props) => (

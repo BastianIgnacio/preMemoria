@@ -61,7 +61,7 @@ const CategoriasTienda = (props) => {
               block
               className="mb-2 d-flex justify-content-center rounded-0 "
             >
-              <div>{reformatStringUpperCase(nombreTienda)}</div>
+              <div>{`CATEGORIAS ${reformatStringUpperCase(nombreTienda)}`}</div>
             </Button>{' '}
             <Row>
               {categorias.map((categoria, index) => {

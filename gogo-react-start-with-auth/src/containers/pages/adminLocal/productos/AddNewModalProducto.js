@@ -21,9 +21,11 @@ import { Colxx } from '../../../../components/common/CustomBootstrap';
 import PreviewImage from '../../previewImage';
 
 import { NotificationManager } from '../../../../components/common/react-notifications';
+// eslint-disable-next-line no-unused-vars
 import { PRODUCTO_ADD } from '../../../../redux/actions';
 
 const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
+  // eslint-disable-next-line no-unused-vars
   const dispatch = useDispatch();
   const categoriaSeleccionada = useSelector(
     (state) => state.productos.categoriaSeleccionada
@@ -76,9 +78,11 @@ const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
             descripcion: payload.descripcion,
             esVisible,
             esNuevo: true,
-            imagen,
+            isBestProduct: false,
             refCategoria: categoriaSeleccionada.id,
+            imagen,
           };
+          console.log(producto);
           dispatch({ type: PRODUCTO_ADD, payload: producto });
           toggleModal();
           resetForm();

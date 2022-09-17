@@ -126,46 +126,63 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
     <Colxx xxs="12" key={categoria.id} className="mb-3">
       <ContextMenuTrigger id="menu_id" data={categoria.id} collect={collect}>
         <Card className="d-flex flex-row">
-          <div className="d-flex">
-            <img
-              alt={apiMediaUrl}
-              src={apiMediaUrl + categoria.imagen}
-              className="list-thumbnail responsive border-0 card-img-left"
-            />
-          </div>
-          <div className="pl-2 d-flex flex-grow-1 min-width-zero">
-            <div className="card-body align-self-center d-flex flex-column flex-lg-row justify-content-between min-width-zero align-items-lg-center">
-              <p className="mb-1 list-item-heading mb-1 truncate w-100 w-sm-100">
-                {categoria.nombre}
-              </p>
-              {categoria.esNuevo && (
-                <Badge color="secondary" className="m-1" pill>
-                  NUEVO
-                </Badge>
-              )}
-              {categoria.esVisible ? (
-                <Badge color="primary" className="m-1" pill>
-                  VISIBLE
-                </Badge>
-              ) : (
-                <Badge color="warning" className="m-1" pill>
-                  NO VISIBLE
-                </Badge>
-              )}
-              <Button
-                onClick={() => setModalEliminar(!modalEliminar)}
-                color="danger"
-                className="m-1"
-              >
-                Eliminar
-              </Button>{' '}
-              <Button
-                onClick={() => setModalEditar(!modalEditar)}
-                color="primary"
-                className="m-1"
-              >
-                Editar
-              </Button>{' '}
+          <img
+            alt={apiMediaUrl}
+            src={apiMediaUrl + categoria.imagen}
+            className="list-thumbnail responsive border-0 card-img-left"
+          />
+          <div className="pl-2 d-flex flex-grow-1 min-width-zero ">
+            <div className="card-body-products d-flex justify-content-between align-self-center align-items-lg-center w-100">
+              <div className="d-flex flex-column w-70">
+                <p className="mb-1 list-item-heading  font-weight-semibold">
+                  {categoria.nombre}
+                </p>
+                <p className="mb-1 list-item-heading ">
+                  {categoria.descripcion}
+                </p>
+              </div>
+              <div className="d-flex flex-row align-self-center justify-content-end w-100">
+                {categoria.esNuevo && (
+                  <Badge
+                    color="secondary"
+                    className="align-self-center mr-1"
+                    pill
+                  >
+                    NUEVO
+                  </Badge>
+                )}
+                {categoria.esVisible ? (
+                  <Badge
+                    color="primary"
+                    className="align-self-center mr-1"
+                    pill
+                  >
+                    VISIBLE
+                  </Badge>
+                ) : (
+                  <Badge
+                    color="warning"
+                    className="align-self-center mr-1"
+                    pill
+                  >
+                    NO VISIBLE
+                  </Badge>
+                )}
+                <Button
+                  onClick={() => setModalEliminar(!modalEliminar)}
+                  color="danger"
+                  className="align-self-center mr-1"
+                >
+                  Eliminar
+                </Button>{' '}
+                <Button
+                  onClick={() => setModalEditar(!modalEditar)}
+                  color="primary"
+                  className="align-self-center mr-1"
+                >
+                  Editar
+                </Button>{' '}
+              </div>
             </div>
           </div>
         </Card>

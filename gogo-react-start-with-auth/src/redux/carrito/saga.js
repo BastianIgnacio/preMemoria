@@ -355,6 +355,7 @@ function* carritoProcesar({ payload }) {
     productosOrden,
     history,
     link,
+    ordenSuccess,
   } = payload;
   try {
     // ENVIAMOS LA VENTA
@@ -377,13 +378,13 @@ function* carritoProcesar({ payload }) {
     // ENVIAMOS LOS PRODUCTOS DE LA VENTA
     // eslint-disable-next-line no-plusplus
     for (let i = 0; i < pvArray.length; i++) {
-      console.log(pvArray[i]);
       yield call(postAddProductoVentaAsync, pvArray[i]);
     }
 
     // HACEMOS LA ORDEN
     const ordenSend = { ...orden, refVenta };
     // ENVIAMOS LA ORDEN
+    console.log(ordenSend);
     const dataPostOrden = yield call(postAddOrdenAsync, ordenSend);
     // TENEMOS LA REFERENCIA DE LA ORDEN
     const refOrden = dataPostOrden.data.id;
@@ -413,10 +414,10 @@ function* carritoProcesar({ payload }) {
         horaSuccess,
       },
     });
-    history.push(`/success/${link}`);
+    ordenSuccess();
   } catch (error) {
     console.log(error);
-    notificacionError('Error', 'Al restar el producto');
+    notificacionError('Error', 'Error al enviar la orden');
   }
 }
 

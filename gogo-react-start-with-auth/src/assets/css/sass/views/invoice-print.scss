@@ -1,4 +1,13 @@
 .invoice-react {
+  width: 100%;
+
+  .invoice-contents-pdf {
+    background-color: $foreground-color;
+    max-width: 830px;
+    min-width: 830px;
+    position: relative;
+  }
+
   .invoice-contents {
     background-color: $foreground-color;
     max-width: 830px;

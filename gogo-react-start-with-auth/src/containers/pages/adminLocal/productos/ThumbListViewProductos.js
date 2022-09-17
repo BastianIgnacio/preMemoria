@@ -71,6 +71,7 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
         const putProducto = {
           nombre: payload.nombre,
           descripcion: payload.desc,
+          precio: payload.precio,
           esVisible: payload.esVisible,
           esNuevo: payload.esNuevo,
           isBestProduct: payload.isBestProduct,
@@ -94,6 +95,7 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
             const putProducto = {
               nombre: payload.nombre,
               descripcion: payload.desc,
+              precio: payload.precio,
               esVisible: payload.esVisible,
               esNuevo: payload.esNuevo,
               isBestProduct: payload.isBestProduct,
@@ -122,54 +124,75 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
   };
 
   return (
-    <Colxx xxs="12" key={productoCategoria.id} className="mb-3">
+    <Colxx xxs="12" key={productoCategoria.id} className="mb-2">
       <ContextMenuTrigger id="menu_id" data={productoCategoria.id}>
         <Card className="d-flex flex-row">
-          <div className="d-flex">
-            <img
-              alt={apiMediaUrl}
-              src={apiMediaUrl + productoCategoria.imagen}
-              className="list-thumbnail responsive border-0 card-img-left"
-            />
-          </div>
-          <div className="pl-2 d-flex flex-grow-1 min-width-zero">
-            <div className="card-body align-self-center d-flex flex-column flex-lg-row justify-content-between min-width-zero align-items-lg-center">
-              <p className="mb-1 list-item-heading mb-1 truncate w-100 w-sm-100">
-                {productoCategoria.nombre}
-              </p>
-              {productoCategoria.esNuevo && (
-                <Badge color="secondary" className="m-1" pill>
-                  NUEVO
-                </Badge>
-              )}
-              {productoCategoria.isBestProduct && (
-                <Badge color="secondary" className="m-1" pill>
-                  BEST PRODUCT
-                </Badge>
-              )}
-              {productoCategoria.esVisible ? (
-                <Badge color="primary" className="m-1" pill>
-                  VISIBLE
-                </Badge>
-              ) : (
-                <Badge color="warning" className="m-1" pill>
-                  NO VISIBLE
-                </Badge>
-              )}
-              <Button
-                onClick={() => setModalEliminar(!modalEliminar)}
-                color="danger"
-                className="m-1"
-              >
-                Eliminar
-              </Button>{' '}
-              <Button
-                onClick={() => setModalEditar(!modalEditar)}
-                color="primary"
-                className="m-1"
-              >
-                Editar
-              </Button>{' '}
+          <img
+            alt={apiMediaUrl}
+            src={apiMediaUrl + productoCategoria.imagen}
+            className="list-thumbnail responsive border-0 card-img-left"
+          />
+          <div className="pl-2 d-flex flex-grow-1 min-width-zero ">
+            <div className="card-body-products d-flex justify-content-between align-self-center align-items-lg-center w-100">
+              <div className="d-flex flex-column w-70">
+                <p className="mb-1 list-item-heading font-weight-semibold">
+                  {productoCategoria.nombre}
+                </p>
+                <p className="mb-1 list-item-heading font-weight-bold ">
+                  ${productoCategoria.precio}
+                </p>
+              </div>
+              <div className="d-flex flex-row align-self-center justify-content-end w-100">
+                {productoCategoria.isBestProduct && (
+                  <Badge
+                    color="secondary"
+                    className="align-self-center mr-1"
+                    pill
+                  >
+                    MEJORES PRODUCTOS
+                  </Badge>
+                )}
+                {productoCategoria.esNuevo && (
+                  <Badge
+                    color="secondary"
+                    className="align-self-center mr-1"
+                    pill
+                  >
+                    NUEVO
+                  </Badge>
+                )}
+                {productoCategoria.esVisible ? (
+                  <Badge
+                    color="primary"
+                    className="align-self-center mr-1"
+                    pill
+                  >
+                    VISIBLE
+                  </Badge>
+                ) : (
+                  <Badge
+                    color="warning"
+                    className="align-self-center mr-1"
+                    pill
+                  >
+                    NO VISIBLE
+                  </Badge>
+                )}
+                <Button
+                  onClick={() => setModalEliminar(!modalEliminar)}
+                  color="danger"
+                  className="align-self-center mr-1"
+                >
+                  Eliminar
+                </Button>{' '}
+                <Button
+                  onClick={() => setModalEditar(!modalEditar)}
+                  color="primary"
+                  className="align-self-center mr-1"
+                >
+                  Editar
+                </Button>{' '}
+              </div>
             </div>
           </div>
         </Card>
@@ -181,6 +204,7 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
             initialValues={{
               nombre: productoCategoria.nombre,
               desc: productoCategoria.descripcion,
+              precio: productoCategoria.precio,
               esVisible: productoCategoria.esVisible,
               esNuevo: productoCategoria.esNuevo,
               isBestProduct: productoCategoria.isBestProduct,
@@ -227,6 +251,22 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
                       {errors.desc && touched.desc ? (
                         <div className="invalid-feedback d-block ">
                           {errors.desc}
+                        </div>
+                      ) : null}
+                    </FormGroup>
+                  </Colxx>
+                  <Colxx xxs="12" xs="12" lg="12">
+                    <FormGroup className="form-group has-top-label error-l-100 tooltip-label-right">
+                      <Label>PRECIO</Label>
+                      <Field
+                        className="form-control"
+                        type="number"
+                        min="1"
+                        name="precio"
+                      />
+                      {errors.nombre && touched.nombre ? (
+                        <div className="invalid-feedback d-block ">
+                          {errors.nombre}
                         </div>
                       ) : null}
                     </FormGroup>

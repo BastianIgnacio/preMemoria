@@ -27,6 +27,7 @@ import {
   LOCALCOMERCIAL_CHANGE_PAGE,
   LOCALCOMERCIAL_CHANGE_PAGE_SIZE,
   LOCALCOMERCIAL_ELIMINAR,
+  LOCALCOMERCIAL_ADD_LOCALCOMERCIAL_USER,
 } from '../actions';
 
 const notificacionSuccess = (titulo, subtitulo) => {
@@ -87,6 +88,32 @@ const putAdministrador = async (user, refTienda) => {
     .then((res) => {
       return res.data;
     });
+};
+
+// Obtener un usuario por el email
+const getUserAsync = async (email) => {
+  return axios.get(`${apiRestUrl}/auth/users/?email=${email}`).then((res) => {
+    return res.data;
+  });
+};
+// Añadir un usuario
+const postUserAsync = async (user) => {
+  return axios.post(`${apiRestUrl}/auth/users/`, user);
+};
+
+// Obtener un localcomercial por el link
+const getLocalComercialByLinkAsync = async (link) => {
+  return axios
+    .get(`${apiRestUrl}/localComercials/?link=${link}`)
+    .then((res) => {
+      return res.data;
+    });
+};
+// Añadir un usuario
+const postLocalComercial = async (lc) => {
+  return axios.post(`${apiRestUrl}/localComercials/`, lc).then((res) => {
+    return res.data;
+  });
 };
 
 //----------------------------------------------------------------
@@ -180,7 +207,6 @@ function* editarLocalComercial({ payload }) {
 function* changePage({ payload }) {
   // eslint-disable-next-line no-unused-vars
   const { paginaActual, itemsPorPagina } = payload;
-  console.log('paso x aki');
   try {
     yield put({
       type: LOCALCOMERCIAL_UPDATE_ITEMS,
@@ -211,6 +237,70 @@ function* eliminar({ payload }) {
     notificacionSuccess('Local Comercial', 'Eliminado correctamente !');
   } catch (error) {
     notificacionError('Error', 'No fue posible eliminar');
+  }
+}
+
+function* add({ payload }) {
+  // eslint-disable-next-line no-unused-vars
+  const {
+    link,
+    email,
+    lc,
+    us,
+    loading,
+    paginaActual,
+    itemsPorPagina,
+    fields,
+    setFields,
+    setFieldsShow,
+  } = payload;
+  try {
+    const dataUser = yield call(getUserAsync, email);
+    const dataLocalComercial = yield call(getLocalComercialByLinkAsync, link);
+    if (dataUser.count === 1) {
+      notificacionError('Error', 'Email en uso');
+      return;
+    }
+    if (dataLocalComercial.count === 1) {
+      notificacionError('Error', 'Link en uso');
+      return;
+    }
+    // Si llegamos hasta aca es que se pueden agregar jiji
+    const response = yield call(postLocalComercial, lc);
+    const usuario = {
+      ...us,
+      refTienda: response.id,
+    };
+    yield call(postUserAsync, usuario);
+    yield put({
+      type: LOCALCOMERCIAL_UPDATE_ITEMS,
+      payload: {
+        paginaActual,
+        itemsPorPagina,
+      },
+    });
+    loading(false);
+    setFieldsShow(fields);
+    setFields([
+      {
+        valid: false,
+        name: 'linkLocalComercial',
+        value: '',
+      },
+      {
+        valid: false,
+        name: 'email',
+        value: '',
+      },
+      {
+        valid: false,
+        name: 'password',
+        value: '',
+      },
+    ]);
+    notificacionSuccess('Añadir ', 'Añadido correctamente !');
+  } catch (error) {
+    notificacionError('Error', 'No fue posible agregar');
   }
 }
 
@@ -283,7 +373,6 @@ function* updateItems({ payload }) {
       const data = yield call(getLocalesLimitOffset, limit, offset);
       // Ya tenemos los items a mostrar
       const totalItems = data.count;
-      console.log(totalItems);
       const valor = data.count / limit;
       if (valor <= 1) {
         // Es necesario solo mostrar 1 pagina
@@ -383,7 +472,9 @@ export function* watchChangePageSize() {
 export function* watchEliminarLocalComercial() {
   yield takeEvery(LOCALCOMERCIAL_ELIMINAR, eliminar);
 }
-
+export function* watchAddLocalComercialUser() {
+  yield takeEvery(LOCALCOMERCIAL_ADD_LOCALCOMERCIAL_USER, add);
+}
 //----------------------------------------------------------------
 //----------------------------------------------------------------
 //----------------------------------------------------------------
@@ -400,5 +491,6 @@ export default function* rootSaga() {
     fork(watchChangePage),
     fork(watchChangePageSize),
     fork(watchEliminarLocalComercial),
+    fork(watchAddLocalComercialUser),
   ]);
 }

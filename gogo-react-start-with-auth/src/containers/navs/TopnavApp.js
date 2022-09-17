@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/click-events-have-key-events */
 /* eslint-disable jsx-a11y/no-static-element-interactions */
 /* eslint-disable no-use-before-define */
-import React, { useState } from 'react';
+import React from 'react';
 import { injectIntl } from 'react-intl';
 import { useSelector, connect } from 'react-redux';
 
@@ -21,8 +21,6 @@ import {
   changeLocale,
 } from '../../redux/actions';
 
-import { searchPath } from '../../constants/defaultValues';
-
 import { MobileMenuIcon, MenuIcon } from '../../components/svg';
 
 const TopNav = ({
@@ -34,52 +32,13 @@ const TopNav = ({
   clickOnMobileMenuAction,
   logoutUserAction,
 }) => {
-  const [searchKeyword, setSearchKeyword] = useState('');
-
-  const tienda = useSelector((state) => state.authUser.tienda);
+  const localComercial = useSelector((state) => state.authUser.tienda);
   const user = useSelector((state) => state.authUser.currentUser);
   const superAdmin = useSelector(
     (state) => state.authUser.currentUser.superAdmin
   );
-  const search = () => {
-    history.push(`${searchPath}?key=${searchKeyword}`);
-    setSearchKeyword('');
-  };
-
-  const handleDocumentClickSearch = (e) => {
-    let isSearchClick = false;
-    if (
-      e.target &&
-      e.target.classList &&
-      (e.target.classList.contains('navbar') ||
-        e.target.classList.contains('simple-icon-magnifier'))
-    ) {
-      isSearchClick = true;
-      if (e.target.classList.contains('simple-icon-magnifier')) {
-        search();
-      }
-    } else if (
-      e.target.parentElement &&
-      e.target.parentElement.classList &&
-      e.target.parentElement.classList.contains('search')
-    ) {
-      isSearchClick = true;
-    }
-
-    if (!isSearchClick) {
-      const input = document.querySelector('.mobile-view');
-      if (input && input.classList) input.classList.remove('mobile-view');
-      removeEventsSearch();
-      setSearchKeyword('');
-    }
-  };
-
-  const removeEventsSearch = () => {
-    document.removeEventListener('click', handleDocumentClickSearch, true);
-  };
 
   const handleLogout = () => {
-    console.log('logout');
     logoutUserAction(history);
   };
 
@@ -124,6 +83,8 @@ const TopNav = ({
         >
           <MobileMenuIcon />
         </NavLink>
+      </div>
+      <div className="d-flex align-items-center ">
         <p className="m-1 text-muted text-medium font-weight-bold">
           SUPER ADMINISTRADOR
         </p>
@@ -134,7 +95,7 @@ const TopNav = ({
           <UncontrolledDropdown className="dropdown-menu-right">
             <DropdownToggle className="p-0" color="empty">
               <span className="name mr-1">
-                {`${user.first_name} ${user.last_name}`}
+                {`${user.nombre} ${user.apellido}`}
               </span>
               <span>
                 <img alt="Profile" src="/assets/img/profiles/l-1.jpg" />
@@ -170,13 +131,11 @@ const TopNav = ({
         >
           <MobileMenuIcon />
         </NavLink>
-        <p className="m-1 text-muted text-medium font-weight-bold">
-          Administra tu tienda!
-        </p>
       </div>
       <NavLink
         className="navbar-logo text-muted text-medium font-weight-bold"
-        to={tienda.link}
+        to={`/tienda/${localComercial.link}`}
+        target="_blank"
       >
         Ver tu tienda!
       </NavLink>

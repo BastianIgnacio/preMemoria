@@ -30,6 +30,8 @@ import {
   ORDEN_ENVIAR_A_PREPARACION,
   ORDEN_ENVIAR_A_REPARTO,
   ORDEN_ENVIAR_A_RETIRO,
+  ORDEN_CHANGE_PAGE,
+  ORDEN_CHANGE_PAGE_SIZE,
 } from '../actions';
 
 /** NOTIFICACIONES  */
@@ -161,7 +163,6 @@ function* updateItems(payload) {
       }
       // Aca desppachamos una accion con los items(ADMINISTRADORES LOCALES COMERCIALES)
       const items = data.results;
-      console.log(items);
       // DESPACHAMOS LA ACCION DE LOS ITEMS
       yield put({ type: ORDEN_SET_ITEMS, payload: items });
       // DESPACHAMOS LA ACCION PARA LA CANTIDAD DE LOS ITEMS
@@ -260,82 +261,6 @@ function* updateItems(payload) {
   }
 }
 
-/*
-// Funcion para cambiar el tamaño de la pagina que se muestra
-function* changePageSize({ payload }) {
-  const {
-    formattedDate,
-    refLocalComercial,
-    paginaActual,
-    itemsPorPagina,
-  } = payload;
-  console.log(itemsPorPagina);
-  try {
-    yield put({
-      type: VENTA_UPDATE_ITEMS,
-      payload: {
-        paginaActual,
-        itemsPorPagina,
-        refLocalComercial,
-        fecha: formattedDate,
-      },
-    });
-  } catch (error) {
-    console.log(error);
-    notificacionError('Error', 'Al cargar las ventas');
-  }
-}
-*/
-
-/*
-// Funcion para cambiar el numero de pagina
-function* changePage({ payload }) {
-  const {
-    formattedDate,
-    refLocalComercial,
-    paginaActual,
-    itemsPorPagina,
-  } = payload;
-  try {
-    yield put({
-      type: VENTA_UPDATE_ITEMS,
-      payload: {
-        paginaActual,
-        itemsPorPagina,
-        refLocalComercial,
-        fecha: formattedDate,
-      },
-    });
-  } catch (error) {
-    notificacionError('Error', 'Al cargar productos de la categoria');
-  }
-}
-*/
-
-/*
-// Funcion para OBTENER LOS DETALLES DE LA ORDEN
-function* getOrden({ payload }) {
-  const refVenta = payload;
-  try {
-    let data = yield call(geOrdenAsync, refVenta);
-    const orden = data.results;
-    yield put({
-      type: VENTA_SET_ORDEN,
-      payload: orden[0],
-    });
-
-    const refOrden = orden[0].id;
-    data = yield call(getProductosOrdenAsync, refOrden);
-    const productosOrden = data.results;
-    yield put({
-      type: VENTA_SET_PRODUCTOS_ORDEN,
-      payload: productosOrden,
-    });
-  } catch (error) {
-    notificacionError('Error', 'Al cargar el detalle de la orden');
-  }
-}
-*/
 // Funcion para CAMBIAR EL ESTADO
 function* changeEstado({ payload }) {
   const { refLocalComercial, estado } = payload;
@@ -375,7 +300,7 @@ function* getProductosOrden({ payload }) {
 
 // Funcion para CANCELAR ORDEN
 function* cancelarOrden({ payload }) {
-  const orden = payload;
+  const { orden, ordenCanceladaSuccess } = payload;
   const { refVenta } = orden;
   const estadoOrdenCancelado = estadosOrden[4];
   const estadoPagoCancelado = estadosPago[2];
@@ -396,6 +321,8 @@ function* cancelarOrden({ payload }) {
     };
     // DEBEMOS ENVIAR EL PUT DE LA VENTA
     yield call(putVentaAsync, refVenta, ventaDataPut);
+    // ESTAMOS LISTOS
+    ordenCanceladaSuccess();
   } catch (error) {
     notificacionError('Error', 'Al cancelar una orden');
   }
@@ -403,41 +330,41 @@ function* cancelarOrden({ payload }) {
 
 // Funcion para ENVIAR ORDEN A PREPARACION
 function* enviarOrdenAPreparacion({ payload }) {
-  const orden = payload;
+  const { orden, ordenEnviada } = payload;
   const estadoOrdenPreparacion = estadosOrden[1];
-
   try {
     // EDITAR ESTADO ORDEN (A PREPARACION)
     const ordenPut = { ...orden, estado: estadoOrdenPreparacion.id };
     // DEBEMOS ENVIAR EL PUT DE LA ORDEN
     yield call(putOrdenAsync, orden.id, ordenPut);
+    ordenEnviada();
   } catch (error) {
     notificacionError('Error', 'Al enviar orden a preparacion');
   }
 }
 // Funcion para ENVIAR ORDEN A REPARTO
 function* enviarOrdenAReparto({ payload }) {
-  const orden = payload;
+  const { orden, ordenEnviada } = payload;
   const estadoOrdenReparto = estadosOrden[2];
-
   try {
     // EDITAR ESTADO ORDEN (A REPARTO)
     const ordenPut = { ...orden, estado: estadoOrdenReparto.id };
     // DEBEMOS ENVIAR EL PUT DE LA ORDEN
     yield call(putOrdenAsync, orden.id, ordenPut);
+    ordenEnviada();
   } catch (error) {
     notificacionError('Error', 'Al enviar orden a reparto');
   }
 }
 // Funcion para ENVIAR ORDEN A RETIRO
 function* enviarOrdenARetiro({ payload }) {
-  const orden = payload;
+  const { orden, ordenEnviada } = payload;
   const estadoOrdenRetiro = estadosOrden[3];
-
   try {
     // EDITAR ESTADO ORDEN (A REPARTO)
     const ordenPut = { ...orden, estado: estadoOrdenRetiro.id };
     // DEBEMOS ENVIAR EL PUT DE LA ORDEN
+    ordenEnviada();
     yield call(putOrdenAsync, orden.id, ordenPut);
   } catch (error) {
     notificacionError('Error', 'Al enviar orden a retiro');
@@ -456,6 +383,40 @@ function* cargarVenta({ payload }) {
   } catch (error) {
     notificacionError('Error', 'Al carga la venta');
   }
+}
+
+function* changePage({ payload }) {
+  const { paginaActual, itemsPorPagina, refLocalComercial, estado } = payload;
+  yield put({
+    type: ORDEN_SET_ESTADO,
+    payload: estado,
+  });
+  yield put({
+    type: ORDEN_UPDATE_ITEMS,
+    payload: {
+      paginaActual,
+      itemsPorPagina,
+      refLocalComercial,
+      estado: estado.id,
+    },
+  });
+}
+
+function* changePageSize({ payload }) {
+  const { paginaActual, itemsPorPagina, refLocalComercial, estado } = payload;
+  yield put({
+    type: ORDEN_SET_ESTADO,
+    payload: estado,
+  });
+  yield put({
+    type: ORDEN_UPDATE_ITEMS,
+    payload: {
+      paginaActual,
+      itemsPorPagina,
+      refLocalComercial,
+      estado: estado.id,
+    },
+  });
 }
 
 export function* watchUpdateItems() {
@@ -482,7 +443,12 @@ export function* watchEnviarOrdenAReparto() {
 export function* watchEnviarOrdenARetiro() {
   yield takeEvery(ORDEN_ENVIAR_A_RETIRO, enviarOrdenARetiro);
 }
-
+export function* watchOrdenChangePage() {
+  yield takeEvery(ORDEN_CHANGE_PAGE, changePage);
+}
+export function* watchOrdenChangePageSize() {
+  yield takeEvery(ORDEN_CHANGE_PAGE_SIZE, changePageSize);
+}
 export default function* rootSaga() {
   yield all([
     fork(watchChangeEstado),
@@ -493,8 +459,8 @@ export default function* rootSaga() {
     fork(watchEnviarOrdenAPreparacion),
     fork(watchEnviarOrdenAReparto),
     fork(watchEnviarOrdenARetiro),
-    // fork(watchChangePage),
-    // fork(watchGetProductosVenta),
+    fork(watchOrdenChangePage),
+    fork(watchOrdenChangePageSize),
     // fork(watchGetOrden),
   ]);
 }

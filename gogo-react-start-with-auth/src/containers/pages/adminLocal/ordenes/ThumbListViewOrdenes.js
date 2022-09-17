@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 // eslint-disable-next-line no-unused-vars
 import React, { useState } from 'react';
 // eslint-disable-next-line no-unused-vars
@@ -17,8 +18,6 @@ import {
   Table,
   // eslint-disable-next-line no-unused-vars
   Row,
-  ModalHeader,
-  Alert,
 } from 'reactstrap';
 import { ContextMenuTrigger } from 'react-contextmenu';
 import { Colxx } from '../../../../components/common/CustomBootstrap';
@@ -26,11 +25,14 @@ import {
   ORDEN_GET_PRODUCTOS_ORDEN,
   // eslint-disable-next-line no-unused-vars
   ORDEN_GET_VENTA,
-  ORDEN_CANCELAR_ORDEN,
+  // eslint-disable-next-line no-unused-vars
   ORDEN_ENVIAR_A_PREPARACION,
-  ORDEN_ENVIAR_A_REPARTO,
-  ORDEN_ENVIAR_A_RETIRO,
 } from '../../../../redux/actions';
+import CardEnviarAPreparacion from './orden_cards/CardEnviarAPreparacion';
+import CardEnviarARetiro from './orden_cards/CardEnviarARetiro';
+import CardEnviarAReparto from './orden_cards/CardEnviarAReparto';
+import CardCancelar from './orden_cards/CardCancelar';
+import Mercadopago from './orden_cards/Mercadopago';
 
 const ThumbListViewOrdenes = ({ orden }) => {
   const dispatch = useDispatch();
@@ -87,31 +89,6 @@ const ThumbListViewOrdenes = ({ orden }) => {
       payload: refVenta,
     });
   };
-  // eslint-disable-next-line no-unused-vars
-  const cancelarOrden = () => {
-    dispatch({
-      type: ORDEN_CANCELAR_ORDEN,
-      payload: orden,
-    });
-  };
-  const enviarAPreparacion = () => {
-    dispatch({
-      type: ORDEN_ENVIAR_A_PREPARACION,
-      payload: orden,
-    });
-  };
-  const enviarAReparto = () => {
-    dispatch({
-      type: ORDEN_ENVIAR_A_REPARTO,
-      payload: orden,
-    });
-  };
-  const enviarARetiro = () => {
-    dispatch({
-      type: ORDEN_ENVIAR_A_RETIRO,
-      payload: orden,
-    });
-  };
 
   return (
     <Colxx xxs="12" key={orden.id} className="mb-3">
@@ -129,10 +106,10 @@ const ThumbListViewOrdenes = ({ orden }) => {
                 <div>
                   <Button
                     onClick={() => {
-                      setModalEnviarAPreparacion(!modalEnviarAPreparacion);
+                      setModalEnviarAPreparacion(true);
                     }}
                     color="success"
-                    className="mb-2"
+                    className="m-1"
                   >
                     ENVIAR A PREPARACIÓN
                   </Button>
@@ -142,7 +119,7 @@ const ThumbListViewOrdenes = ({ orden }) => {
                       setModalVerOrden(!modalVerOrden);
                     }}
                     color="secondary"
-                    className="mb-2"
+                    className="m-1"
                   >
                     Ver orden
                   </Button>
@@ -152,7 +129,7 @@ const ThumbListViewOrdenes = ({ orden }) => {
                       setModalCancelar(!modalCancelar);
                     }}
                     color="danger"
-                    className="mb-2"
+                    className="m-1"
                   >
                     Cancelar
                   </Button>
@@ -166,9 +143,9 @@ const ThumbListViewOrdenes = ({ orden }) => {
                         setModalEnviarAReparto(!modalEnviarAReparto);
                       }}
                       color="success"
-                      className="mb-2"
+                      className="m-1"
                     >
-                      DESPACHAR A REPARTO
+                      DESPACHAR A DELIVERY
                     </Button>
                     <Button
                       onClick={() => {
@@ -176,7 +153,7 @@ const ThumbListViewOrdenes = ({ orden }) => {
                         setModalVerOrden(!modalVerOrden);
                       }}
                       color="secondary"
-                      className="mb-2"
+                      className="m-1"
                     >
                       Ver orden
                     </Button>
@@ -186,7 +163,7 @@ const ThumbListViewOrdenes = ({ orden }) => {
                         setModalCancelar(!modalCancelar);
                       }}
                       color="danger"
-                      className="mb-2"
+                      className="m-1"
                     >
                       Cancelar
                     </Button>
@@ -200,7 +177,7 @@ const ThumbListViewOrdenes = ({ orden }) => {
                         setModalEnviarARetiro(!modalEnviarARetiro);
                       }}
                       color="success"
-                      className="mb-2"
+                      className="m-1"
                     >
                       DESPACHAR A RETIRO
                     </Button>
@@ -210,7 +187,7 @@ const ThumbListViewOrdenes = ({ orden }) => {
                         setModalVerOrden(!modalVerOrden);
                       }}
                       color="secondary"
-                      className="mb-2"
+                      className="m-1"
                     >
                       Ver orden
                     </Button>
@@ -220,7 +197,7 @@ const ThumbListViewOrdenes = ({ orden }) => {
                         setModalCancelar(!modalCancelar);
                       }}
                       color="danger"
-                      className="mb-2"
+                      className="m-1"
                     >
                       Cancelar
                     </Button>
@@ -234,9 +211,19 @@ const ThumbListViewOrdenes = ({ orden }) => {
                       setModalVerOrden(!modalVerOrden);
                     }}
                     color="secondary"
-                    className="mb-2"
+                    className="m-1"
                   >
                     Ver orden
+                  </Button>
+                  <Button
+                    onClick={() => {
+                      cargarVenta(orden.refVenta);
+                      setModalCancelar(!modalCancelar);
+                    }}
+                    color="danger"
+                    className="m-1"
+                  >
+                    Cancelar
                   </Button>
                 </div>
               )}
@@ -248,7 +235,7 @@ const ThumbListViewOrdenes = ({ orden }) => {
                       setModalVerOrden(!modalVerOrden);
                     }}
                     color="secondary"
-                    className="mb-2"
+                    className="m-1"
                   >
                     Ver orden
                   </Button>
@@ -258,7 +245,7 @@ const ThumbListViewOrdenes = ({ orden }) => {
                       setModalCancelar(!modalCancelar);
                     }}
                     color="danger"
-                    className="mb-2"
+                    className="m-1"
                   >
                     Cancelar
                   </Button>
@@ -386,124 +373,62 @@ const ThumbListViewOrdenes = ({ orden }) => {
       </Modal>
       <Modal
         isOpen={modalCancelar}
-        toggle={() => setModalCancelar(!modalCancelar)}
+        toggle={() => {
+          console.log('cancelando');
+        }}
       >
-        {venta.tipoPago === 'DEBITO/CREDITO_MERCADOPAGO' &&
+        {venta.tipoPago === 'DEBITO_CREDITO_MERCADOPAGO' &&
+          // eslint-disable-next-line prettier/prettier
           venta.estadoPago === 'PAGADO' &&
-          venta.estadoVenta === 'FINALIZADO' && (
-            <div>
-              <ModalHeader>MERCADOPAGO</ModalHeader>
-              <ModalBody>
-                <div>
-                  <p>EL PAGO YA HA SIDO REALIZADO VIA MERCADOPAGO</p>
-                  <Alert color="danger">
-                    <p>AL CANCELAR LA ORDEN, DEBES REVERTIR EL PAGO ONLINE.</p>
-                  </Alert>
-                </div>
-              </ModalBody>
-            </div>
-          )}
-        <ModalFooter>
-          <Button color="danger" onClick={() => cancelarOrden()}>
-            Cancelar Orden
-          </Button>
-          <Button color="secondary" onClick={() => setModalCancelar(false)}>
-            Cerrar
-          </Button>
-        </ModalFooter>
+          venta.estadoVenta === 'FINALIZADO' ? (
+          <div>
+            <ModalBody >
+              <div className="d-flex justify-content-center" >
+                <Mercadopago />
+              </div>
+              <CardCancelar orden={orden} modal={setModalCancelar} mercadopago />
+            </ModalBody>
+          </div>
+        ) : (
+          <div>
+            <ModalBody>
+              <CardCancelar orden={orden} modal={setModalCancelar} mercadopago={false} />
+            </ModalBody>
+          </div>
+        )}
       </Modal>
       <Modal
         isOpen={modalEnviarAPreparacion}
-        toggle={() => setModalEnviarAPreparacion(!modalEnviarAPreparacion)}
+        toggle={() => {
+          console.log('cerrando');
+        }}
       >
-        {venta.tipoPago === 'DEBITO/CREDITO_MERCADOPAGO' &&
-          venta.estadoPago === 'PAGADO' &&
-          venta.estadoVenta === 'FINALIZADO' && (
-            <div>
-              <ModalHeader>MERCADOPAGO</ModalHeader>
-              <ModalBody>
-                <div>
-                  <p>EL PAGO YA HA SIDO REALIZADO VIA MERCADOPAGO</p>
-                  <Alert color="danger">
-                    <p>AL CANCELAR LA ORDEN, DEBES REVERTIR EL PAGO ONLINE.</p>
-                  </Alert>
-                </div>
-              </ModalBody>
-            </div>
-          )}
-        <ModalFooter>
-          <Button color="success" onClick={() => enviarAPreparacion()}>
-            ENVIAR A PREPARACION
-          </Button>
-          <Button
-            color="secondary"
-            onClick={() => setModalEnviarAPreparacion(false)}
-          >
-            Cerrar
-          </Button>
-        </ModalFooter>
+        <ModalBody>
+          <CardEnviarAPreparacion
+            modal={setModalEnviarAPreparacion}
+            orden={orden}
+          />
+        </ModalBody>
       </Modal>
       <Modal
         isOpen={modalEnviarAReparto}
-        toggle={() => setModalEnviarAReparto(!modalEnviarAReparto)}
+        toggle={() => {
+          console.log('cancelando');
+        }}
       >
-        {venta.tipoPago === 'DEBITO/CREDITO_MERCADOPAGO' &&
-          venta.estadoPago === 'PAGADO' &&
-          venta.estadoVenta === 'FINALIZADO' && (
-            <div>
-              <ModalHeader>MERCADOPAGO</ModalHeader>
-              <ModalBody>
-                <div>
-                  <p>EL PAGO YA HA SIDO REALIZADO VIA MERCADOPAGO</p>
-                  <Alert color="danger">
-                    <p>AL CANCELAR LA ORDEN, DEBES REVERTIR EL PAGO ONLINE.</p>
-                  </Alert>
-                </div>
-              </ModalBody>
-            </div>
-          )}
-        <ModalFooter>
-          <Button color="success" onClick={() => enviarAReparto()}>
-            ENVIAR A REPARTO
-          </Button>
-          <Button
-            color="secondary"
-            onClick={() => setModalEnviarAReparto(false)}
-          >
-            Cerrar
-          </Button>
-        </ModalFooter>
+        <ModalBody>
+          <CardEnviarAReparto orden={orden} modal={setModalEnviarAReparto} />
+        </ModalBody>
       </Modal>
       <Modal
         isOpen={modalEnviarARetiro}
-        toggle={() => setModalEnviarARetiro(!modalEnviarARetiro)}
+        toggle={() => {
+          console.log('cancelando');
+        }}
       >
-        {venta.tipoPago === 'DEBITO/CREDITO_MERCADOPAGO' &&
-          venta.estadoPago === 'PAGADO' &&
-          venta.estadoVenta === 'FINALIZADO' && (
-            <div>
-              <ModalHeader>MERCADOPAGO</ModalHeader>
-              <ModalBody>
-                <div>
-                  <p>EL PAGO YA HA SIDO REALIZADO VIA MERCADOPAGO</p>
-                  <Alert color="danger">
-                    <p>AL CANCELAR LA ORDEN, DEBES REVERTIR EL PAGO ONLINE.</p>
-                  </Alert>
-                </div>
-              </ModalBody>
-            </div>
-          )}
-        <ModalFooter>
-          <Button color="success" onClick={() => enviarARetiro()}>
-            ENVIAR A RETIRO
-          </Button>
-          <Button
-            color="secondary"
-            onClick={() => setModalEnviarARetiro(false)}
-          >
-            Cerrar
-          </Button>
-        </ModalFooter>
+        <ModalBody>
+          <CardEnviarARetiro orden={orden} modal={setModalEnviarARetiro} />
+        </ModalBody>
       </Modal>
     </Colxx>
   );

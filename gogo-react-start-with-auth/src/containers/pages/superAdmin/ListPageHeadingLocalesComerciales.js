@@ -21,7 +21,10 @@ import {
 import { Wizard, Steps, Step } from 'react-albus';
 import { injectIntl } from 'react-intl';
 import { Formik, Form, Field } from 'formik';
-import { LOCALCOMERCIAL_CHANGE_PAGE_SIZE } from '../../../redux/actions';
+import {
+  LOCALCOMERCIAL_ADD_LOCALCOMERCIAL_USER,
+  LOCALCOMERCIAL_CHANGE_PAGE_SIZE,
+} from '../../../redux/actions';
 import { Colxx, Separator } from '../../../components/common/CustomBootstrap';
 import BottomNavigation from '../../../components/wizard/BottomNavigation';
 import TopNavigation from '../../../components/wizard/TopNavigation';
@@ -29,19 +32,35 @@ import TopNavigation from '../../../components/wizard/TopNavigation';
 const validateEmail = (value) => {
   let error;
   if (!value) {
-    error = 'Please enter your email address';
+    error = 'Por favor ingresa un email!';
   } else if (!/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,4}$/i.test(value)) {
-    error = 'Invalid email address';
+    error = 'Email no valido!';
   }
   return error;
 };
 
-const validateName = (value) => {
+const validateLink = (value) => {
   let error;
   if (!value) {
-    error = 'Please enter your name';
-  } else if (value.length < 2) {
-    error = 'Value must be longer than 2 characters';
+    error = 'Por favor ingresar el link!';
+  } else {
+    if (value.length < 4 || value.length > 64) {
+      error = 'EL largo debe tener entre 4 y 64 caracteres';
+      return error;
+    }
+    const valueTrim = value.trim();
+    if (valueTrim.length < 4 || valueTrim.length > 64) {
+      error = 'EL largo debe tener entre 4 y 64 caracteres';
+      return error;
+    }
+    const cadena = valueTrim.split('');
+    // eslint-disable-next-line no-plusplus
+    for (let i = 0; i < cadena.length; i++) {
+      if (cadena[i] === ' ') {
+        error = 'El link no puede tener espacios vacios!';
+        return error;
+      }
+    }
   }
   return error;
 };
@@ -49,9 +68,15 @@ const validateName = (value) => {
 const validatePassword = (value) => {
   let error;
   if (!value) {
-    error = 'Please enter your password';
-  } else if (value.length < 6) {
-    error = 'Password must be longer than 6 characters';
+    error = 'Por favor ingresa una contraseña!';
+  } else {
+    const result = /^(((?=.*[a-z])(?=.*[A-Z]))|((?=.*[a-z])(?=.*[0-9]))|((?=.*[A-Z])(?=.*[0-9])))(?=.{8,})/.test(
+      value
+    );
+    if (!result) {
+      error =
+        'Debe contener al menos 8 caracteres, Uno en mayuscula, Uno en minuscula y Un numero.';
+    }
   }
   return error;
 };
@@ -65,6 +90,9 @@ const ListPageHeading = () => {
   const heading = 'Locales Comerciales';
   const itemsPorPagina = useSelector(
     (state) => state.localComercial.itemsPorPagina
+  );
+  const paginaActual = useSelector(
+    (state) => state.localComercial.paginaActual
   );
   const totalItems = useSelector((state) => state.localComercial.totalItems);
   const startItem = useSelector((state) => state.localComercial.startItem);
@@ -80,13 +108,26 @@ const ListPageHeading = () => {
     });
   };
 
-  const nuevoLocalComercial = () => {
-    setModalAdd(!modalAdd);
-  };
-
   const forms = [createRef(null), createRef(null), createRef(null)];
   const [bottomNavHidden, setBottomNavHidden] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [fieldsShow, setFieldsShow] = useState([
+    {
+      valid: false,
+      name: 'linkLocalComercial',
+      value: '',
+    },
+    {
+      valid: false,
+      name: 'email',
+      value: '',
+    },
+    {
+      valid: false,
+      name: 'password',
+      value: '',
+    },
+  ]);
   const [fields, setFields] = useState([
     {
       valid: false,
@@ -108,10 +149,49 @@ const ListPageHeading = () => {
   const asyncLoading = () => {
     setLoading(true);
     console.log(fields);
+    const link = fields[0].value;
+    const email = fields[1].value;
+    const password = fields[2].value;
     // Aca debemos enviar el put
+    const lc = {
+      nombre: 'NOMBRETIENDA',
+      direccion: 'DIRECCIONTIENDA',
+      link: fields[0].value,
+      horarioAtencion: 'HORARIOTIENDA',
+      estado: 'Cerrado',
+      publicKeyMercadopago: '-------------------',
+      privateKeyMercadopago: '-------------------',
+      tieneMercadopago: false,
+    };
+
+    const us = {
+      email,
+      nombre: 'NOMBREUSUARIO',
+      apellido: 'APELLIDOUSUARIO',
+      rol: 'adminLocal',
+      telefono: 'TELEFONOUSUARIO',
+      password,
+    };
     setTimeout(() => {
-      setLoading(false);
-    }, 3000);
+      dispatch({
+        type: LOCALCOMERCIAL_ADD_LOCALCOMERCIAL_USER,
+        payload: {
+          link,
+          email,
+          password,
+          lc,
+          us,
+          loading: setLoading,
+          itemsPorPagina,
+          paginaActual,
+          fields,
+          setFields,
+          fieldsShow,
+          setFieldsShow,
+          setBottomNavHidden,
+        },
+      });
+    }, 1000);
   };
 
   const onClickNext = (goToNext, steps, step) => {
@@ -145,6 +225,11 @@ const ListPageHeading = () => {
       return;
     }
     goToPrev();
+  };
+
+  const nuevoLocalComercial = () => {
+    setBottomNavHidden(false);
+    setModalAdd(!modalAdd);
   };
 
   return (
@@ -229,7 +314,7 @@ const ListPageHeading = () => {
                               <Field
                                 className="form-control"
                                 name="linkLocalComercial"
-                                validate={validateName}
+                                validate={validateLink}
                               />
                               {errors.linkLocalComercial &&
                                 touched.linkLocalComercial && (
@@ -309,14 +394,14 @@ const ListPageHeading = () => {
                       {loading ? (
                         <div>
                           <Spinner color="primary" className="mb-1" />
-                          <p>Cargando</p>
+                          <p>Agregando Local Comercial</p>
                         </div>
                       ) : (
                         <div>
                           <h2 className="mb-2">Registro completado</h2>
-                          <p>{fields[0].value}</p>
-                          <p>{fields[1].value}</p>
-                          <p>{fields[2].value}</p>
+                          <p>{fieldsShow[0].value}</p>
+                          <p>{fieldsShow[1].value}</p>
+                          <p>{fieldsShow[2].value}</p>
                         </div>
                       )}
                     </div>

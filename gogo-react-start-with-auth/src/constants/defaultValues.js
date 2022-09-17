@@ -63,6 +63,7 @@ export const firebaseConfig = {
 
 export const apiRestUrl = 'http://127.0.0.1:8000/api';
 export const apiMediaUrl = 'http://127.0.0.1:8000';
+export const tiendaUrl = 'http://127.0.0.1:8000/tienda'
 
 export const adminRoot = '/app';
 export const superAdminRoot = '/app/localesComerciales';

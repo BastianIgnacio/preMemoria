@@ -22,17 +22,14 @@ import * as Yup from 'yup';
 import { NavLink } from 'react-router-dom';
 import { ContextMenuTrigger } from 'react-contextmenu';
 import { Colxx } from '../../../components/common/CustomBootstrap';
-import { NotificationManager } from '../../../components/common/react-notifications';
 import {
-  LOCALCOMERCIAL_UPDATE,
-  LOCALCOMERCIALS_UPDATE_ITEMS,
-  LOCALCOMERCIAL_BEFORE_UPDATE,
-  LOCALCOMERCIAL_RESET_ITEMS,
   LOCALCOMERCIAL_CARGAR_ADMINISTRADOR,
   LOCALCOMERCIAL_MODIFICAR_CREDENCIALES,
   LOCALCOMERCIAL_EDITAR,
   LOCALCOMERCIAL_ELIMINAR,
+  TIENDA_CARGAR_TIENDA,
 } from '../../../redux/actions';
+import { tiendaUrl } from '../../../constants/defaultValues';
 
 const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
 
@@ -217,7 +214,12 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
     });
   }
 
-
+  const cargarTienda = (link) => {
+    dispatch({
+      type: TIENDA_CARGAR_TIENDA,
+      payload: link,
+    });
+  }
   return (
     <Colxx xxs="12" key={localComercial.id} className="mb-3">
       <ContextMenuTrigger
@@ -244,10 +246,10 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
                   {`${localComercial.nombre}`}
                 </p>
                 <NavLink
-                  to={`?p=${localComercial.link}`}
+                  to={`/tienda/${localComercial.link}`} target="_blank"
                 >
                   <p className="m-2 text-muted text-small">
-                    {localComercial.link}
+                    {`https://www.dominio.cl/tienda/${localComercial.link}`}
                   </p>
                 </NavLink>
               </div>

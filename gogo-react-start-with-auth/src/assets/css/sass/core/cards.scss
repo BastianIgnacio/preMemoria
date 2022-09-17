@@ -36,6 +36,18 @@
     }
   }
 
+  .card-body-products {
+    padding: 0.5rem;
+
+    @include respond-below(xs) {
+      padding: 1.25rem;
+    }
+
+    &.sm {
+      padding: 1.25rem 1.75rem;
+    }
+  }
+
   .card-title {
     margin-bottom: 1.5rem;
 

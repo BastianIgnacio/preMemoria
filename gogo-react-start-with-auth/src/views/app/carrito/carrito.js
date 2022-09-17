@@ -26,13 +26,13 @@ import { Colxx } from '../../../components/common/CustomBootstrap';
 import {
   CARRITO_ELIMINAR_PRODUCTO,
   CARRITO_INIT,
-  CARRITO_PROCESAR,
   CARRITO_PRODUCTO_ELIMINAR,
   CARRITO_RES_PRODUCTO,
   CARRITO_SUM_PRODUCTO,
   TIENDA_CARGAR_TIENDA,
 } from '../../../redux/actions';
 import { tiposPago, estadosPago, estadosVenta, tiposEntrega, estadosOrden } from '../../../constants/defaultValues';
+import CardEnviarPedido from './CardEnviarPedido';
 
 const Carrito = () => {
   // ID DE LA TIENDA QUE ESTAMOS CARGANDO EN EL COMPONENTE
@@ -47,6 +47,13 @@ const Carrito = () => {
   // VARIABLES DEL MODAL
   const [modalFinalizarCompra, setModalFinalizarCompra] = useState(false);
   const [modalEliminar, setModalEliminar] = useState(false);
+  const [modalEnviandoOrden, setModalEnviandoOrden] = useState(false);
+
+  // VARIABLES PARA UN PEDIDO
+  const [venta, setVenta] = useState([]);
+  const [productosVenta, setProductosVenta] = useState([])
+  const [orden, setOrden] = useState([])
+  const [productosOrden, setProductosOrden] = useState([])
 
   // INFORMACION SOBRE LA TIENDA
   const idTienda = useSelector((state) => state.carrito.idTienda);
@@ -54,6 +61,7 @@ const Carrito = () => {
   const total = useSelector((state) => state.carrito.total);
   const arrayCarrito = useSelector((state) => state.carrito.arrayCarrito);
   const productoParaEliminar = useSelector((state) => state.carrito.productoParaEliminar);
+  const direccionTienda = useSelector((state) => state.tienda.direccion);
 
 
   // METODOS DE PAGO DISPONIBLES
@@ -73,6 +81,7 @@ const Carrito = () => {
   const pagoDeliveryMercadopago = useSelector(
     (state) => state.carrito.pagoDeliveryMercadopago
   );
+
   // eslint-disable-next-line no-unused-vars
   const [metodoDePago, setMetodoDePago] = useState(0);
 
@@ -84,13 +93,27 @@ const Carrito = () => {
     { value: tiposPago[2].id, label: tiposPago[2].label, disabled: !pagoRetiroLocalMercadopago },
   ];
 
+  const opcionesVisiblesPagoRetiroLocal = [];
+  opcionesPagoRetiroLocal.map((opc) => {
+    if (!opc.disabled) {
+      opcionesVisiblesPagoRetiroLocal.push(opc);
+    }
+    return "";
+  });
+
   // eslint-disable-next-line no-unused-vars
   const opcionesPagoDelivery = [
     { value: tiposPago[0].id, label: tiposPago[0].label, disabled: !pagoDeliveryEfectivo },
     { value: tiposPago[1].id, label: tiposPago[1].label, disabled: !pagoDeliveryPos },
     { value: tiposPago[2].id, label: tiposPago[2].label, disabled: !pagoDeliveryMercadopago },
   ];
-
+  const opcionesVisiblesPagoDelivery = [];
+  opcionesPagoDelivery.map((opc) => {
+    if (!opc.disabled) {
+      opcionesVisiblesPagoDelivery.push(opc);
+    }
+    return "";
+  });
 
 
   // METODOS DE ENTREGA
@@ -203,15 +226,17 @@ const Carrito = () => {
       console.log(JSON.stringify(payload, null, 2));
 
       if (payload.customRadioGroupFormaPago === 'EFECTIVO') {
-        const venta = {
+        const ventaPrev = {
           total,
           // tipo de pago 1 = EFECTIVO
           tipoPago: tiposPago[0].id,
           estadoPago: estadosPago[0].id,
-          estadosVenta: estadosVenta[0].id,
+          estadoVenta: estadosVenta[0].id,
           refLocalComercial: idTienda,
         }
-        const productosVenta = arrayCarrito.map((pv) => {
+        setVenta(ventaPrev);
+
+        const productosVentaPrev = arrayCarrito.map((pv) => {
           return {
             nombreProducto: pv.nombre,
             descripcionProducto: pv.descripcion,
@@ -220,9 +245,10 @@ const Carrito = () => {
             total: pv.total,
           };
         });
+        setProductosVenta(productosVentaPrev);
 
         // GENERAR ORDEN
-        const orden = {
+        const ordenPrev = {
           // tipo de entrega 0 = RETIRO_LOCAL
           tipoEntrega: tiposEntrega[0].id,
           entregaDelivery: false,
@@ -237,7 +263,9 @@ const Carrito = () => {
           refLocalComercial: idTienda,
           productos: arrayCarrito,
         };
-        const productosOrden = arrayCarrito.map((pv) => {
+        setOrden(ordenPrev);
+
+        const productosOrdenPrev = arrayCarrito.map((pv) => {
           const notaEspecialValidacion = pv.notaEspecial.trim();
           if (notaEspecialValidacion === '') {
             return {
@@ -258,31 +286,22 @@ const Carrito = () => {
             cantidad: pv.cantidad,
           };
         });
-        // DESPACHAMOS LA ACCION PARA PROCESAR LA VENTA Y ORDEN
-        dispatch({
-          type: CARRITO_PROCESAR,
-          payload: {
-            venta,
-            productosVenta,
-            orden,
-            productosOrden,
-            refLocalComercia: idTienda,
-            history,
-            link,
-          }
-        });
+        setProductosOrden(productosOrdenPrev);
+
       }
       if (payload.customRadioGroupFormaPago === 'DEBITO_CREDITO_POS') {
         // GENERAR VENTA 
-        const venta = {
+        const ventaPrev = {
           total,
           // tipo de pago 1 = DEBITO_CREDITO_POS
           tipoPago: tiposPago[1].id,
           estadoPago: estadosPago[0].id,
-          estadosVenta: estadosVenta[0].id,
+          estadoVenta: estadosVenta[0].id,
           refLocalComercial: idTienda,
         }
-        const productosVenta = arrayCarrito.map((pv) => {
+        setVenta(ventaPrev);
+
+        const productosVentaPrev = arrayCarrito.map((pv) => {
           return {
             nombreProducto: pv.nombre,
             descripcionProducto: pv.descripcion,
@@ -291,9 +310,10 @@ const Carrito = () => {
             total: pv.total,
           };
         });
+        setProductosVenta(productosVentaPrev);
 
         // GENERAR ORDEN
-        const orden = {
+        const ordenPrev = {
           // tipo de entrega 0 = RETIRO_LOCAL
           tipoEntrega: tiposEntrega[0].id,
           entregaDelivery: false,
@@ -307,7 +327,9 @@ const Carrito = () => {
           refLocalComercial: idTienda,
           productos: arrayCarrito,
         };
-        const productosOrden = arrayCarrito.map((pv) => {
+        setOrden(ordenPrev);
+
+        const productosOrdenPrev = arrayCarrito.map((pv) => {
           const notaEspecialValidacion = pv.notaEspecial.trim();
           if (notaEspecialValidacion === '') {
             return {
@@ -328,23 +350,76 @@ const Carrito = () => {
             cantidad: pv.cantidad,
           };
         });
+        setProductosOrden(productosOrdenPrev)
         // DESPACHAMOS LA ACCION PARA PROCESAR LA VENTA Y ORDEN
-        dispatch({
-          type: CARRITO_PROCESAR,
-          payload: {
-            venta,
-            productosVenta,
-            orden,
-            productosOrden,
-            refLocalComercia: idTienda,
-            history,
-            link,
-          }
-        })
       }
       if (payload.customRadioGroupFormaPago === 'DEBITO_CREDITO_MERCADOPAGO') {
-        console.log('Pgo con mercadopago online');
+        // GENERAR VENTA 
+        const ventaPrev = {
+          total,
+          // tipo de pago 1 = DEBITO_CREDITO_MERCADOPAGO
+          tipoPago: tiposPago[2].id,
+          // estado de pago 1 = PAGADO
+          estadoPago: estadosPago[1].id,
+          // estado de venta 1 = FINALIZADO
+          estadoVenta: estadosVenta[1].id,
+          refLocalComercial: idTienda,
+        }
+        setVenta(ventaPrev);
+
+        const productosVentaPrev = arrayCarrito.map((pv) => {
+          return {
+            nombreProducto: pv.nombre,
+            descripcionProducto: pv.descripcion,
+            cantidad: pv.cantidad,
+            precioUnitario: pv.precio,
+            total: pv.total,
+          };
+        });
+        setProductosVenta(productosVentaPrev);
+
+        // GENERAR ORDEN
+        const ordenPrev = {
+          // tipo de entrega 1 = RETIRO_LOCAL
+          tipoEntrega: tiposEntrega[0].id,
+          entregaDelivery: false,
+          // Estado de orden 0 = EN_COLA
+          estado: estadosOrden[0].id,
+          direccionEntrega: `Retiro en local (${direccionTienda})`,
+          telefonoEntrega: payload.telefono,
+          nombrePedido: payload.nombre,
+          precioEnvio: 0,
+          total,
+          tiempoEntrega: payload.tiempoRetiro,
+          refLocalComercial: idTienda,
+          productos: arrayCarrito,
+        };
+        setOrden(ordenPrev);
+
+        const productosOrdenPrev = arrayCarrito.map((pv) => {
+          const notaEspecialValidacion = pv.notaEspecial.trim();
+          if (notaEspecialValidacion === '') {
+            return {
+              nombre: pv.nombre,
+              descripcion: pv.descripcion,
+              notaEspecial: 'SIN NOTA ESPECIAL',
+              precioTotal: pv.total,
+              precioUnitario: pv.precio,
+              cantidad: pv.cantidad,
+            };
+          }
+          return {
+            nombre: pv.nombre,
+            descripcion: pv.descripcion,
+            notaEspecial: pv.notaEspecial,
+            precioTotal: pv.total,
+            precioUnitario: pv.precio,
+            cantidad: pv.cantidad,
+          };
+        });
+        setProductosOrden(productosOrdenPrev);
       }
+      setModalEnviandoOrden(!modalEnviandoOrden);
     }, 500);
   };
 
@@ -359,15 +434,19 @@ const Carrito = () => {
     setTimeout(() => {
       console.log(JSON.stringify(payload, null, 2));
       if (payload.customRadioGroupFormaPago === 'EFECTIVO') {
-        const venta = {
+        const ventaPrev = {
           total,
           // tipo de pago 1 = EFECTIVO
           tipoPago: tiposPago[0].id,
+          // estado de pago 0 = EN_ESPERA_PAGO 
           estadoPago: estadosPago[0].id,
-          estadosVenta: estadosVenta[0].id,
+          // estado de venta = EN_PROCESO
+          estadoVenta: estadosVenta[0].id,
           refLocalComercial: idTienda,
         }
-        const productosVenta = arrayCarrito.map((pv) => {
+        setVenta(ventaPrev);
+
+        const productosVentaPrev = arrayCarrito.map((pv) => {
           return {
             nombreProducto: pv.nombre,
             descripcionProducto: pv.descripcion,
@@ -376,9 +455,10 @@ const Carrito = () => {
             total: pv.total,
           };
         });
+        setProductosVenta(productosVentaPrev);
 
         // GENERAR ORDEN
-        const orden = {
+        const ordenPrev = {
           // tipo de entrega 1 = DELIVERY
           tipoEntrega: tiposEntrega[1].id,
           entregaDelivery: true,
@@ -393,7 +473,9 @@ const Carrito = () => {
           refLocalComercial: idTienda,
           productos: arrayCarrito,
         };
-        const productosOrden = arrayCarrito.map((pv) => {
+        setOrden(ordenPrev);
+
+        const productosOrdenPrev = arrayCarrito.map((pv) => {
           const notaEspecialValidacion = pv.notaEspecial.trim();
           if (notaEspecialValidacion === '') {
             return {
@@ -414,31 +496,24 @@ const Carrito = () => {
             cantidad: pv.cantidad,
           };
         });
-        // DESPACHAMOS LA ACCION PARA PROCESAR LA VENTA Y ORDEN
-        dispatch({
-          type: CARRITO_PROCESAR,
-          payload: {
-            venta,
-            productosVenta,
-            orden,
-            productosOrden,
-            refLocalComercia: idTienda,
-            history,
-            link,
-          }
-        });
+        setProductosOrden(productosOrdenPrev);
+
       }
       if (payload.customRadioGroupFormaPago === 'DEBITO_CREDITO_POS') {
         // GENERAR VENTA 
-        const venta = {
+        const ventaPrev = {
           total,
           // tipo de pago 1 = DEBITO_CREDITO_POS
           tipoPago: tiposPago[1].id,
+          // estado de pago 0 = EN_ESPERA_PAGO 
           estadoPago: estadosPago[0].id,
-          estadosVenta: estadosVenta[0].id,
+          // estado de venta = EN_PROCESO
+          estadoVenta: estadosVenta[0].id,
           refLocalComercial: idTienda,
         }
-        const productosVenta = arrayCarrito.map((pv) => {
+        setVenta(ventaPrev);
+
+        const productosVentaPrev = arrayCarrito.map((pv) => {
           return {
             nombreProducto: pv.nombre,
             descripcionProducto: pv.descripcion,
@@ -447,9 +522,10 @@ const Carrito = () => {
             total: pv.total,
           };
         });
+        setProductosVenta(productosVentaPrev);
 
         // GENERAR ORDEN
-        const orden = {
+        const ordenPrev = {
           // tipo de entrega 1 = DELIVERY
           tipoEntrega: tiposEntrega[1].id,
           entregaDelivery: true,
@@ -464,7 +540,9 @@ const Carrito = () => {
           refLocalComercial: idTienda,
           productos: arrayCarrito,
         };
-        const productosOrden = arrayCarrito.map((pv) => {
+        setOrden(ordenPrev);
+
+        const productosOrdenPrev = arrayCarrito.map((pv) => {
           const notaEspecialValidacion = pv.notaEspecial.trim();
           if (notaEspecialValidacion === '') {
             return {
@@ -485,26 +563,78 @@ const Carrito = () => {
             cantidad: pv.cantidad,
           };
         });
-        // DESPACHAMOS LA ACCION PARA PROCESAR LA VENTA Y ORDEN
-        dispatch({
-          type: CARRITO_PROCESAR,
-          payload: {
-            venta,
-            productosVenta,
-            orden,
-            productosOrden,
-            refLocalComercia: idTienda,
-            history,
-            link,
-          }
-        })
+        setProductosOrden(productosOrdenPrev);
       }
       if (payload.customRadioGroupFormaPago === 'DEBITO_CREDITO_MERCADOPAGO') {
-        console.log('Pgo con mercadopago online');
-      }
+        // GENERAR VENTA 
+        const ventaPrev = {
+          total,
+          // tipo de pago 1 = DEBITO_CREDITO_MERCADOPAGO
+          tipoPago: tiposPago[2].id,
+          // estado de pago 1 = PAGADO
+          estadoPago: estadosPago[1].id,
+          // estado de venta 1 = FINALIZADO
+          estadoVenta: estadosVenta[1].id,
+          refLocalComercial: idTienda,
+        }
+        setVenta(ventaPrev);
 
+        const productosVentaPrev = arrayCarrito.map((pv) => {
+          return {
+            nombreProducto: pv.nombre,
+            descripcionProducto: pv.descripcion,
+            cantidad: pv.cantidad,
+            precioUnitario: pv.precio,
+            total: pv.total,
+          };
+        });
+        setProductosVenta(productosVentaPrev);
+
+        // GENERAR ORDEN
+        const ordenPrev = {
+          // tipo de entrega 1 = DELIVERY
+          tipoEntrega: tiposEntrega[1].id,
+          entregaDelivery: true,
+          // Estado de orden 0 = EN_COLA
+          estado: estadosOrden[0].id,
+          direccionEntrega: payload.direccionDelivery,
+          telefonoEntrega: payload.telefono,
+          nombrePedido: payload.nombre,
+          precioEnvio: 0,
+          total,
+          tiempoEntrega: payload.tiempoRetiro,
+          refLocalComercial: idTienda,
+          productos: arrayCarrito,
+        };
+        setOrden(ordenPrev);
+
+        const productosOrdenPrev = arrayCarrito.map((pv) => {
+          const notaEspecialValidacion = pv.notaEspecial.trim();
+          if (notaEspecialValidacion === '') {
+            return {
+              nombre: pv.nombre,
+              descripcion: pv.descripcion,
+              notaEspecial: 'SIN NOTA ESPECIAL',
+              precioTotal: pv.total,
+              precioUnitario: pv.precio,
+              cantidad: pv.cantidad,
+            };
+          }
+          return {
+            nombre: pv.nombre,
+            descripcion: pv.descripcion,
+            notaEspecial: pv.notaEspecial,
+            precioTotal: pv.total,
+            precioUnitario: pv.precio,
+            cantidad: pv.cantidad,
+          };
+        });
+        setProductosOrden(productosOrdenPrev);
+      }
+      setModalEnviandoOrden(!modalEnviandoOrden);
     }, 500);
   };
+
 
   return (
     <div className="d-flex justify-content-center">
@@ -762,6 +892,11 @@ const Carrito = () => {
                               </FormGroup>
                             </Colxx>
                             <Colxx xxs="12" xs="12" lg="12">
+                              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                                DIRECCIÓN DE RETIRO  {direccionTienda}
+                              </CardText>
+                            </Colxx>
+                            <Colxx xxs="12" xs="12" lg="12">
                               <div className="form-group has-float-label">
                                 <FormGroup className="form-group has-top-label">
                                   <Label>
@@ -798,7 +933,7 @@ const Carrito = () => {
                                   value={values.customRadioGroupFormaPago}
                                   onChange={setFieldValue}
                                   onBlur={setFieldTouched}
-                                  options={opcionesPagoRetiroLocal}
+                                  options={opcionesVisiblesPagoRetiroLocal}
                                 />
                                 {errors.customRadioGroupFormaPago && touched.customRadioGroupFormaPago ? (
                                   <div className="invalid-feedback d-block">
@@ -949,7 +1084,7 @@ const Carrito = () => {
                                   value={values.customRadioGroupFormaPago}
                                   onChange={setFieldValue}
                                   onBlur={setFieldTouched}
-                                  options={opcionesPagoDelivery}
+                                  options={opcionesVisiblesPagoDelivery}
                                 />
                                 {errors.customRadioGroupFormaPago && touched.customRadioGroupFormaPago ? (
                                   <div className="invalid-feedback d-block">
@@ -992,6 +1127,17 @@ const Carrito = () => {
               </Card>
             </Colxx>
           </Row>
+        </ModalBody>
+      </Modal>
+      <Modal
+        isOpen={modalEnviandoOrden}
+        toggle={() => {
+          console.log('cancelando');
+        }}
+      >
+        <ModalBody>
+          <CardEnviarPedido modal={setModalEnviandoOrden} venta={venta}
+            productosVenta={productosVenta} orden={orden} productosOrden={productosOrden} link={link} history={history} />
         </ModalBody>
       </Modal>
     </div>

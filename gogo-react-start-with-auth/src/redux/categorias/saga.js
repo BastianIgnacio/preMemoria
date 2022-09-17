@@ -19,6 +19,7 @@ import {
   CATEGORIA_CHANGE_PAGE,
   CATEGORIA_CHANGE_PAGE_SIZE,
   CATEGORIA_CARGAR_CATEGORIAS,
+  PRODUCTO_CARGAR_CATEGORIAS,
 } from '../actions';
 
 //* * NOTIFICACIONES  */
@@ -76,6 +77,12 @@ function* addCategoria({ payload }) {
       payload: {
         paginaActual: 1,
         itemsPorPagina: 4,
+        refLocalComercial: payload.refLocalComercial,
+      },
+    });
+    yield put({
+      type: PRODUCTO_CARGAR_CATEGORIAS,
+      payload: {
         refLocalComercial: payload.refLocalComercial,
       },
     });

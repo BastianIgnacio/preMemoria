@@ -82,8 +82,8 @@ function* loginWithEmailPassword({ payload }) {
       user = {
         role: UserRole.SuperAdmin,
         id: data.data.user.id,
-        first_name: data.data.user.first_name,
-        last_name: data.data.user.last_name,
+        nombre: data.data.user.nombre,
+        apellido: data.data.user.apellido,
         telefono: data.data.user.telefono,
         access: data.data.access,
         refresh: data.data.refresh,
@@ -124,36 +124,6 @@ function* loginWithEmailPassword({ payload }) {
   }
 }
 
-const registerWithEmailPasswordAsync = async (email, password) =>
-  // eslint-disable-next-line no-return-await
-  await auth
-    .createUserWithEmailAndPassword(email, password)
-    .then((user) => user)
-    .catch((error) => error);
-
-/*   
-function* registerWithEmailPassword({ payload }) {
-  const { email, password } = payload.user;
-  const { history } = payload;
-  try {
-    const registerUser = yield call(
-      registerWithEmailPasswordAsync,
-      email,
-      password
-    );
-    if (!registerUser.message) {
-      const item = { uid: registerUser.user.uid, ...currentUser };
-      setCurrentUser(item);
-      yield put(registerUserSuccess(item));
-      history.push(adminRoot);
-    } else {
-      yield put(registerUserError(registerUser.message));
-    }
-  } catch (error) {
-    yield put(registerUserError(error));
-  }
-}
-*/
 export function* watchLogoutUser() {
   // eslint-disable-next-line no-use-before-define
   yield takeEvery(LOGOUT_USER, logout);

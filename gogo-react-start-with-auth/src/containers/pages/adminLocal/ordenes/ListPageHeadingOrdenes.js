@@ -16,7 +16,7 @@ import { injectIntl } from 'react-intl';
 import 'react-datepicker/dist/react-datepicker.css';
 import { Colxx, Separator } from '../../../../components/common/CustomBootstrap';
 // eslint-disable-next-line no-unused-vars
-import { ORDEN_CHANGE_ESTADO, ORDEN_SET_ESTADO } from '../../../../redux/actions';
+import { ORDEN_CHANGE_ESTADO, ORDEN_CHANGE_PAGE_SIZE, ORDEN_SET_ESTADO } from '../../../../redux/actions';
 import { estadosOrdenVisualizador } from '../../../../constants/defaultValues';
 
 const ListPageHeadingOrdenes = ({
@@ -30,27 +30,27 @@ const ListPageHeadingOrdenes = ({
 
   const idTienda = useSelector((state) => state.authUser.tienda.id);
 
-  const totalItems = useSelector((state) => state.ventas.totalItems);
-  const startItem = useSelector((state) => state.ventas.startItem);
-  const endItem = useSelector((state) => state.ventas.endItem);
+  const totalItems = useSelector((state) => state.ordenes.totalItems);
+  const startItem = useSelector((state) => state.ordenes.startItem);
+  const endItem = useSelector((state) => state.ordenes.endItem);
   const itemsPorPagina = useSelector(
-    (state) => state.ventas.itemsPorPagina
+    (state) => state.ordenes.itemsPorPagina
   );
+  const estadoOrden = useSelector((state) => state.ordenes.estado);
 
-  /*
   const changePageSize = (nuevosItemsPorPagina) => {
-    const formattedDate = formatDate(fecha);
+    console.log(nuevosItemsPorPagina);
+
     dispatch({
-      type: VENTA_CHANGE_PAGE_SIZE,
+      type: ORDEN_CHANGE_PAGE_SIZE,
       payload: {
-        paginaActual: 1,
         itemsPorPagina: nuevosItemsPorPagina,
-        formattedDate,
+        paginaActual: 1,
         refLocalComercial: idTienda,
+        estado: estadoOrden,
       },
     });
   }
-  */
 
   // eslint-disable-next-line no-unused-vars
   const changeEstado = (nuevoEstado) => {
@@ -120,7 +120,7 @@ const ListPageHeadingOrdenes = ({
                     return (
                       <DropdownItem
                         key={index}
-                      // onClick={() => changePageSize(size)}
+                        onClick={() => changePageSize(size)}
                       >
                         {size}
                       </DropdownItem>
