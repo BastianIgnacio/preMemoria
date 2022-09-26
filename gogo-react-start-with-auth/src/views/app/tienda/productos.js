@@ -144,6 +144,7 @@ const ProductosCategoria = (props) => {
       idLocalComercial: idTienda,
       nombre: productoSeleccionado.nombre,
       descripcion: productoSeleccionado.descripcion,
+      imagen: productoSeleccionado.imagen,
       notaEspecial,
       precio: productoSeleccionado.precio,
       cantidad: contadorProducto,

@@ -13,12 +13,18 @@ import {
   RESET_PASSWORD_SUCCESS,
   RESET_PASSWORD_ERROR,
   LOGIN_TIENDA_SUCCESS,
+  CARGAR_DATOS_TIENDA,
+  TIENDA_UPDATE,
+  CLICK_CARGAR_DATOS_TIENDA,
 } from '../actions';
 import { getCurrentUser, getCurrentTienda } from '../../helpers/Utils';
 
 const INIT_STATE = {
   currentUser: getCurrentUser(),
+  // Variables Redux para la configuracion de la tienda
+  tiendaCargada: false,
   tienda: getCurrentTienda(),
+  configuracionTiendaLoading: false,
   forgotUserMail: '',
   newPassword: '',
   resetPasswordCode: '',
@@ -101,7 +107,27 @@ export default (state = INIT_STATE, action) => {
         ...state,
         loading: false,
         tienda: action.payload,
+        tiendaCargada: true,
+        configuracionTiendaLoading: true,
         error: '',
+      };
+    case CARGAR_DATOS_TIENDA:
+      return {
+        ...state,
+        tienda: action.payload,
+        tiendaCargada: true,
+        configuracionTiendaLoading: true,
+        error: '',
+      };
+    case TIENDA_UPDATE:
+      return {
+        ...state,
+        configuracionTiendaLoading: false,
+      };
+    case CLICK_CARGAR_DATOS_TIENDA:
+      return {
+        ...state,
+        configuracionTiendaLoading: false,
       };
     default:
       return { ...state };

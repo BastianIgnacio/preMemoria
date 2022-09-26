@@ -18,26 +18,29 @@ import { useDispatch } from 'react-redux';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { ContextMenuTrigger } from 'react-contextmenu';
+import ReactCrop from 'react-image-crop';
 import { FormikSwitch } from '../../../form-validations/FormikFields';
 import { Colxx } from '../../../../components/common/CustomBootstrap';
 import PreviewImage from '../../previewImage';
 import { NotificationManager } from '../../../../components/common/react-notifications';
 import { CATEGORIA_DELETE, CATEGORIA_UPDATE } from '../../../../redux/actions';
 import { apiMediaUrl } from '../../../../constants/defaultValues';
+import 'react-image-crop/lib/ReactCrop.scss';
 
 const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
   const dispatch = useDispatch();
   const [modalEditar, setModalEditar] = useState(false);
-  const [urlPreview, setUrlPreview] = useState(true);
   const [modalEliminar, setModalEliminar] = useState(false);
-  // Promise para obtener el base64 de una imagen
-  const toBase64 = (file, setFunction) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
+
+  const [webPreview, setWebPreview] = useState(true);
+  const [modalCut, setModalCut] = useState(false);
+  const [src, setSrc] = useState(null);
+  const [crop, setCrop] = useState({ aspect: 1 / 1 });
+  const [image, setImage] = useState(null);
+  const [output, setOutput] = useState(null);
+  const [canAdd, setCanAdd] = useState(false);
+  const [error, setError] = useState(null);
+
   const notificacionWarning = (titulo, subtitulo) => {
     NotificationManager.warning(titulo, subtitulo, 4000, null, null, 'filled');
   };
@@ -47,6 +50,60 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
     nombre: Yup.string().required('El nombre es requerido!'),
     desc: Yup.string().required('La descripcion es requerida!'),
   });
+
+  // Metodo para ocultar imagen al cerrar el modal de recorte
+  const toggleModalCut = () => {
+    setSrc(null);
+    setImage(null);
+    setOutput(null);
+    setCanAdd(false);
+    setModalCut(false);
+    setError(null);
+    setWebPreview(true);
+  };
+
+  // Metodo para cortar la imagen
+  const cropImageNow = () => {
+    const canvas = document.createElement('canvas');
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    canvas.width = crop.width;
+    canvas.height = crop.height;
+    const ctx = canvas.getContext('2d');
+
+    const pixelRatio = window.devicePixelRatio;
+    canvas.width = crop.width * pixelRatio;
+    canvas.height = crop.height * pixelRatio;
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    ctx.imageSmoothingQuality = 'high';
+
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width,
+      crop.height
+    );
+
+    // Converting to base64
+    const base64Image = canvas.toDataURL('image/jpeg');
+    // Validamos si la seleccion es vacia
+    if (base64Image === 'data:,') {
+      notificacionWarning(
+        'Debes seleccionar un trazo de la imagen',
+        'ERROR AL RECORTAR'
+      );
+    } else {
+      setCanAdd(true);
+      setOutput(base64Image);
+      setModalCut(!modalCut);
+      setWebPreview(false);
+    }
+  };
 
   const onSubmitEliminar = () => {
     dispatch({
@@ -67,8 +124,7 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
       console.log(JSON.stringify(payload, null, 2));
       setSubmitting(false);
       // No se ha editado la imagen, por ende no se debe enviar en el PUT
-      if (payload.webPreview) {
-        // PASAMOS HACER EL BASE64
+      if (webPreview) {
         const putCategoria = {
           nombre: payload.nombre,
           descripcion: payload.desc,
@@ -85,39 +141,34 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
           },
         });
         setModalEditar(!modalEditar);
+        // eslint-disable-next-line no-useless-return
+        return;
+      }
+      if (canAdd) {
+        const imagen = output;
+        const putCategoria = {
+          nombre: payload.nombre,
+          descripcion: payload.desc,
+          esVisible: payload.esVisible,
+          esNuevo: payload.esNuevo,
+          imagen,
+          refLocalComercial,
+        };
+        dispatch({
+          type: CATEGORIA_UPDATE,
+          payload: {
+            idCategoria: categoria.id,
+            categoria: putCategoria,
+            refLocalComercial,
+          },
+        });
+        setModalEditar(!modalEditar);
       } else {
-        // El put si tiene foto
-        const { type } = payload.fileMediaImagen;
-        const { fileMediaImagen } = payload;
-        if (type === 'image/jpeg' || type === 'image/png') {
-          toBase64(fileMediaImagen).then((value) => {
-            const imagen = value;
-            const putCategoria = {
-              nombre: payload.nombre,
-              descripcion: payload.desc,
-              esVisible: payload.esVisible,
-              esNuevo: payload.esNuevo,
-              imagen,
-              refLocalComercial,
-            };
-            dispatch({
-              type: CATEGORIA_UPDATE,
-              payload: {
-                idCategoria: categoria.id,
-                categoria: putCategoria,
-                refLocalComercial,
-              },
-            });
-            setModalEditar(!modalEditar);
-          });
-        } else {
-          // Enviamos la aleta de que la foto no corresponde
-          console.log('Debe ser una imgen tipo png ');
-          notificacionWarning(
-            'La imagen seleccionada debe ser .PNG O .JPEG',
-            'IMAGEN'
-          );
-        }
+        // Enviamos la aleta de que la foto no corresponde
+        notificacionWarning(
+          'La imagen seleccionada debe ser .PNG O .JPEG',
+          'IMAGEN'
+        );
       }
     }, 500);
   };
@@ -196,7 +247,6 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
               desc: categoria.descripcion,
               esVisible: categoria.esVisible,
               esNuevo: categoria.esNuevo,
-              webPreview: true,
               urlMediaImagen: categoria.imagen,
               fileMediaImagen: null,
             }}
@@ -243,8 +293,13 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
                       ) : null}
                     </FormGroup>
                   </Colxx>
-                  <Colxx xxs="12" xs="12" lg="6">
-                    <FormGroup className="error-l-100">
+                  <Colxx
+                    xxs="12"
+                    xs="12"
+                    lg="12"
+                    className="d-flex justify-content-start"
+                  >
+                    <FormGroup className="error-l-100 m-2">
                       <Label className="d-block">Es visible</Label>
                       <FormikSwitch
                         name="esVisible"
@@ -259,9 +314,7 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
                         </div>
                       ) : null}
                     </FormGroup>
-                  </Colxx>
-                  <Colxx xxs="12" xs="12" lg="6">
-                    <FormGroup className="error-l-100">
+                    <FormGroup className="error-l-100 m-2">
                       <Label className="d-block">Es nuevo</Label>
                       <FormikSwitch
                         name="esNuevo"
@@ -277,10 +330,10 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
                       ) : null}
                     </FormGroup>
                   </Colxx>
-                  <Colxx xxs="12" xs="12" lg="12">
+                  <Colxx xxs="12" xs="12" lg="12" className="m-2">
                     <FormGroup className="error-l-175">
                       <Label className="d-block">
-                        NUEVA FOTO DE LA CATEGORIA (Opcional)
+                        NUEVA FOTO DE LA CATEGORIA
                       </Label>
                       <InputGroup className="mb-3">
                         <Input
@@ -288,16 +341,29 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
                           type="file"
                           name="rutaFoto"
                           onChange={(event) => {
-                            setFieldValue(
-                              'fileMediaImagen',
-                              event.target.files[0]
-                            );
-                            setFieldValue('webPreview', false);
+                            const { type } = event.target.files[0];
+                            if (type === 'image/jpeg' || type === 'image/png') {
+                              setSrc(
+                                URL.createObjectURL(event.target.files[0])
+                              );
+                              setCanAdd(false);
+                              setWebPreview(false);
+                              setModalCut(!modalCut);
+                            } else {
+                              setSrc(null);
+                              setImage(null);
+                              setOutput(null);
+                              setCanAdd(false);
+                              setError(
+                                'Imposible visualizar, debe ser formato PNG O JPEG'
+                              );
+                              setWebPreview(false);
+                            }
                           }}
                         />
                       </InputGroup>
                     </FormGroup>
-                    {values.webPreview ? (
+                    {webPreview && (
                       <div>
                         <img
                           src={apiMediaUrl + values.urlMediaImagen}
@@ -306,9 +372,9 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
                           height="250px"
                         />
                       </div>
-                    ) : (
-                      <PreviewImage file={values.fileMediaImagen} />
                     )}
+                    {output && <PreviewImage base64={output} />}
+                    {error && <Label className="d-block">{error}</Label>}
                   </Colxx>
                   <Colxx xxs="12" xs="12" lg="12" className="mt-1">
                     <Button block color="primary" type="submit">
@@ -345,6 +411,29 @@ const ThumbListViewCategorias = ({ categoria, collect, refLocalComercial }) => {
             Cancelar
           </Button>
         </ModalFooter>
+      </Modal>
+      <Modal isOpen={modalCut} size="lg" toggle={() => toggleModalCut()}>
+        <ModalHeader>Recortando la imagen</ModalHeader>
+        <ModalBody>
+          <div>
+            {src && (
+              <div>
+                <ReactCrop
+                  src={src}
+                  onImageLoaded={setImage}
+                  crop={crop}
+                  onChange={setCrop}
+                />
+                <br />
+                <Button block onClick={cropImageNow}>
+                  Recortar y guardar
+                </Button>
+                <br />
+                <br />
+              </div>
+            )}
+          </div>
+        </ModalBody>
       </Modal>
     </Colxx>
   );

@@ -1,5 +1,5 @@
 /* eslint-disable no-unused-vars */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Row,
   Card,
@@ -9,40 +9,68 @@ import {
   Button,
   InputGroup,
   Input,
+  CardText,
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
+import { useDispatch, useSelector } from 'react-redux';
 import { FormikSwitch } from '../../containers/form-validations/FormikFields';
 import { Colxx, Separator } from '../../components/common/CustomBootstrap';
-import BreadcrumbNoItems from '../../containers/navs/BreadcrumbNoItems';
-import PreviewImage from '../../containers/pages/previewImage';
 import { regionesChile } from '../../constants/defaultValues';
+import { CLICK_CARGAR_DATOS_TIENDA, TIENDA_UPDATE } from '../../redux/actions';
+import { NotificationManager } from '../../components/common/react-notifications';
 
 const ConfiguracionTienda = () => {
+  const notificacionWarning = (titulo, subtitulo) => {
+    NotificationManager.warning(titulo, subtitulo, 4000, null, null, 'filled');
+  };
+
+  const dispatch = useDispatch();
+  const tiendaCargada = useSelector((state) => state.authUser.tiendaCargada);
+  const tienda = useSelector((state) => state.authUser.tienda);
+  const isLoaded = useSelector(
+    (state) => state.authUser.configuracionTiendaLoading
+  );
+  const refTienda = tienda.id;
+  const { privateKeyMercadopago, publicKeyMercadopago, estado } = tienda;
+
+  const { tieneMercadopago } = tienda;
+  // Metodos de Entrega
+  const { tieneRetiroLocal, tieneDelivery } = tienda;
+
+  // Metodos de pago disponibles Retiro Local
+  const {
+    pagoRetiroLocalEfectivo,
+    pagoRetiroLocalPos,
+    pagoRetiroLocalMercadopago,
+  } = tienda;
+
+  // Metodos de pago disponibles Delivery
+
+  const {
+    pagoDeliveryEfectivo,
+    pagoDeliveryPos,
+    pagoDeliveryMercadopago,
+  } = tienda;
+
+  // Ubicacion
+  const { region, comuna, direccion } = tienda;
+
+  // Configuracion de la tienda
+  const { nombre, link, horarioAtencion, telefono } = tienda;
+
   // eslint-disable-next-line no-unused-vars
   const [regiones, setRegiones] = useState(
     JSON.parse(JSON.stringify(regionesChile))
   );
-
-  const [region, setRegion] = useState(regiones[0].region);
-  const [comunas, setComunas] = useState(
-    JSON.parse(JSON.stringify(regiones[0].comunas))
-  );
-
   const getComunas = (regionBuscar) => {
     const comunasReturn = regiones.find(
       (regionIterator) => regionIterator.region === regionBuscar
     );
     return JSON.parse(JSON.stringify(comunasReturn.comunas));
   };
-
-  const [switchDeliery, setSwitchDelvivery] = useState(false);
-  const [direccionTienda, setDireccionTienda] = useState(
-    'DIRECCION DE LA TIENDA'
-  );
-  const [nombreTienda, setNombreTienda] = useState('NOMBRE DE LA TIENDA');
-  const [linkPersonalizado, setLinkPersonalizado] = useState(
-    'Linkpersonalizadodelatienda'
+  const [comunas, setComunas] = useState(
+    JSON.parse(JSON.stringify(getComunas(region)))
   );
 
   const onSubmit = (values, { setSubmitting }) => {
@@ -52,41 +80,92 @@ const ConfiguracionTienda = () => {
     setTimeout(() => {
       console.log(JSON.stringify(payload, null, 2));
       setSubmitting(false);
-      // Aca deberiamos llamar a la API PARA ENVIAR EL PEDIDO
+      const putTienda = {
+        nombre: payload.nombre,
+        link: payload.link,
+        horarioAtencion: payload.horarioAtencion,
+        telefono: payload.telefono,
+        region: payload.selectRegion,
+        comuna: payload.selectComuna,
+        direccion: payload.direccion,
+        tieneDelivery: payload.switchTieneDelivery,
+        tieneRetiroLocal: payload.switchTieneRetiroLocal,
+        pagoDeliveryEfectivo: payload.switchPagoDeliveryEfectivo,
+        pagoDeliveryPos: payload.switchPagoDeliveryPos,
+        pagoDeliveryMercadopago: payload.switchPagoDeliveryMercadopago,
+        pagoRetiroLocalEfectivo: payload.switchPagoRetiroLocalEfectivo,
+        pagoRetiroLocalPos: payload.switchPagoRetiroLocalPos,
+        pagoRetiroLocalMercadopago: payload.switchPagoRetiroLocalMercadopago,
+        privateKeyMercadopago,
+        publicKeyMercadopago,
+        estado,
+      };
+
+      dispatch({
+        type: TIENDA_UPDATE,
+        payload: {
+          localComercial: putTienda,
+          refLocalComercial: refTienda,
+        },
+      });
     }, 500);
   };
 
+  useEffect(() => {
+    if (!tiendaCargada) {
+      dispatch({
+        type: CLICK_CARGAR_DATOS_TIENDA,
+        payload: refTienda,
+      });
+    }
+  });
   // Validacion para el form que envia la orden
   const SignupSchema = Yup.object().shape({
-    nombreTienda: Yup.string().required('El nombre del producto es requerido!'),
-    direccionTienda: Yup.string().required(
-      'El nombre del producto es requerido!'
+    nombre: Yup.string().required('El nombre es un campo requerido!'),
+    link: Yup.string().required('El link es un campo requerido'),
+    horarioAtencion: Yup.string().required(
+      'El horario de atencion es un campo requerido'
     ),
-    selectRegion: Yup.string().required('El nombre del producto es requerido!'),
-    selectComuna: Yup.string().required('El nombre del producto es requerido!'),
-    linkPersonalizado: Yup.string().required(
-      'El nombre del producto es requerido!'
-    ),
+    telefono: Yup.string()
+      .required('Debe ingresar el telefono!')
+      .matches(
+        '^[+569][1-9]{11}$',
+        'Debe ingresar con el formato +569XXXXXXXX.'
+      ),
+    selectRegion: Yup.string().required('La region es un campo requerido!'),
+    selectComuna: Yup.string().required('La comuna es un campo requerido!'),
+    direccion: Yup.string().required('La direccion es un campo requerido!'),
   });
 
-  return (
+  return !isLoaded ? (
+    <div className="loading" />
+  ) : (
     <>
-      <Row>
-        <Colxx xxs="12">
-          <BreadcrumbNoItems heading="Configuracion de tu tienda" />
-          <Separator className="mb-5" />
-        </Colxx>
-      </Row>
       <Card>
         <CardBody>
           <Formik
+            enableReinitialize
             initialValues={{
-              nombreTienda,
-              direccionTienda,
+              nombre,
+              link,
+              horarioAtencion,
+              telefono,
+
               selectRegion: region,
-              selectComuna: comunas[0],
-              linkPersonalizado,
-              switch: switchDeliery,
+              selectComuna: comuna,
+              direccion,
+
+              // Switch para delivery
+              switchTieneDelivery: tieneDelivery,
+              switchPagoDeliveryEfectivo: pagoDeliveryEfectivo,
+              switchPagoDeliveryPos: pagoDeliveryPos,
+              switchPagoDeliveryMercadopago: pagoDeliveryMercadopago,
+
+              // Switch para retiro local
+              switchTieneRetiroLocal: tieneRetiroLocal,
+              switchPagoRetiroLocalEfectivo: pagoRetiroLocalEfectivo,
+              switchPagoRetiroLocalPos: pagoRetiroLocalPos,
+              switchPagoRetiroLocalMercadopago: pagoRetiroLocalMercadopago,
             }}
             validationSchema={SignupSchema}
             onSubmit={onSubmit}
@@ -103,17 +182,52 @@ const ConfiguracionTienda = () => {
               <Form className="av-tooltip tooltip-label-right">
                 <Row>
                   <Colxx xxs="12" xs="12" lg="6">
-                    <FormGroup>
-                      <Label>Nombre de la tienda</Label>
-                      <Field className="form-control" name="nombreTienda" />
-                      {errors.name && touched.name && (
+                    <CardText className="text-muted text-left text-medium mb-2 font-weight-bold">
+                      Configuracion de la tienda
+                    </CardText>
+                    <FormGroup className="form-group has-top-label ml-3">
+                      <Label>NOMBRE DE LA TIENDA</Label>
+                      <Field className="form-control" name="nombre" />
+                      {errors.nombre && touched.nombre ? (
                         <div className="invalid-feedback d-block">
-                          {errors.name}
+                          {errors.nombre}
                         </div>
-                      )}
+                      ) : null}
                     </FormGroup>
-                    <FormGroup className="error-l-150">
-                      <Label>Region</Label>
+                    <FormGroup className="form-group has-top-label ml-3">
+                      <Label>LINK</Label>
+                      <Field className="form-control" name="link" disabled />
+                      {errors.link && touched.link ? (
+                        <div className="invalid-feedback d-block">
+                          {errors.link}
+                        </div>
+                      ) : null}
+                    </FormGroup>
+                    <FormGroup className="form-group has-top-label ml-3">
+                      <Label>HORARIO ATENCION</Label>
+                      <Field className="form-control" name="horarioAtencion" />
+                      {errors.horarioAtencion && touched.horarioAtencion ? (
+                        <div className="invalid-feedback d-block">
+                          {errors.horarioAtencion}
+                        </div>
+                      ) : null}
+                    </FormGroup>
+                    <FormGroup className="form-group has-top-label ml-3">
+                      <Label>TELEFONO </Label>
+                      <Field className="form-control" name="telefono" />
+                      {errors.telefono && touched.telefono ? (
+                        <div className="invalid-feedback d-block">
+                          {errors.telefono}
+                        </div>
+                      ) : null}
+                    </FormGroup>
+                  </Colxx>
+                  <Colxx xxs="12" xs="12" lg="6">
+                    <CardText className="text-muted text-left text-medium mb-2 font-weight-bold">
+                      Ubicación
+                    </CardText>
+                    <FormGroup className="form-group has-top-label ml-3">
+                      <Label>REGION</Label>
                       <select
                         name="selectRegion"
                         className="form-control"
@@ -137,8 +251,8 @@ const ConfiguracionTienda = () => {
                         })}
                       </select>
                     </FormGroup>
-                    <FormGroup>
-                      <Label> Comuna </Label>
+                    <FormGroup className="form-group has-top-label ml-3">
+                      <Label>COMUNA</Label>
                       <select
                         name="selectComuna"
                         className="form-control"
@@ -157,64 +271,250 @@ const ConfiguracionTienda = () => {
                         })}
                       </select>
                     </FormGroup>
-                    <FormGroup>
-                      <Label>Direccion de la tienda</Label>
-                      <Field className="form-control" name="direccionTienda" />
-                      {errors.name && touched.name && (
+                    <FormGroup className="form-group has-top-label ml-3">
+                      <Label>DIRECCION </Label>
+                      <Field className="form-control" name="direccion" />
+                      {errors.direccion && touched.direccion ? (
                         <div className="invalid-feedback d-block">
-                          {errors.name}
-                        </div>
-                      )}
-                    </FormGroup>
-                    <FormGroup>
-                      <Label>Link Personalizado</Label>
-                      <Field
-                        className="form-control"
-                        name="linkPersonalizado"
-                      />
-                      {errors.name && touched.name && (
-                        <div className="invalid-feedback d-block">
-                          {errors.name}
-                        </div>
-                      )}
-                    </FormGroup>
-                  </Colxx>
-                  <Colxx xxs="12" xs="12" lg="6">
-                    <FormGroup className="error-l-175">
-                      <Label className="d-block">
-                        FOTO DE LA CATEGORIA (Opcional)
-                      </Label>
-                      <InputGroup className="mb-3">
-                        <Input
-                          type="file"
-                          name="foto"
-                          onChange={(event) => {
-                            setFieldValue('foto', event.target.files[0]);
-                          }}
-                        />
-                      </InputGroup>
-                    </FormGroup>
-                    {values.foto && <PreviewImage file={values.foto} />}
-                  </Colxx>
-                  <Colxx xxs="12" xs="12" lg="6">
-                    <FormGroup className="error-l-100">
-                      <Label>Recibir ordenes con servicio de DELIVERY</Label>
-                      <FormikSwitch
-                        name="switch"
-                        className="custom-switch custom-switch-primary"
-                        value={values.switch}
-                        onChange={setFieldValue}
-                        onBlur={setFieldTouched}
-                      />
-                      {errors.switch && touched.switch ? (
-                        <div className="invalid-feedback d-block">
-                          {errors.switch}
+                          {errors.direccion}
                         </div>
                       ) : null}
                     </FormGroup>
                   </Colxx>
+                  <Colxx xxs="12" xs="12" lg="6" className="mb-3">
+                    <CardText className="text-muted text-left text-medium mb-2 font-weight-bold">
+                      Configuracion para ordenes con servicio Delivery
+                    </CardText>
+                    <FormGroup row className="m-1">
+                      <Label for="emailHorizontal" sm={9}>
+                        Recibir ordenes con servicio delivery
+                      </Label>
+                      <Colxx sm={3}>
+                        <FormikSwitch
+                          name="switchTieneDelivery"
+                          className="custom-switch custom-switch-primary"
+                          value={values.switchTieneDelivery}
+                          onChange={() => {
+                            if (values.switchTieneDelivery) {
+                              setFieldValue(
+                                'switchTieneDelivery',
+                                !values.switchTieneDelivery
+                              );
+                              setFieldValue(
+                                'switchPagoDeliveryEfectivo',
+                                false
+                              );
+                              setFieldValue('switchPagoDeliveryPos', false);
+                              setFieldValue(
+                                'switchPagoDeliveryMercadopago',
+                                false
+                              );
+                            } else {
+                              setFieldValue(
+                                'switchTieneDelivery',
+                                !values.switchTieneDelivery
+                              );
+                            }
+                          }}
+                          onBlur={setFieldTouched}
+                        />
+                      </Colxx>
+                    </FormGroup>
+                    <FormGroup row className="ml-2 mt-1 mb-1 mr-1">
+                      <Label for="emailHorizontal" sm={10}>
+                        Pago con efectivo
+                      </Label>
+                      <Colxx sm={2}>
+                        <FormikSwitch
+                          name="switchPagoDeliveryEfectivo"
+                          className="custom-switch custom-switch-primary"
+                          value={values.switchPagoDeliveryEfectivo}
+                          onChange={() => {
+                            if (values.switchTieneDelivery) {
+                              setFieldValue(
+                                'switchPagoDeliveryEfectivo',
+                                !values.switchPagoDeliveryEfectivo
+                              );
+                            }
+                          }}
+                          onBlur={setFieldTouched}
+                        />
+                      </Colxx>
+                    </FormGroup>
+                    <FormGroup row className="ml-2 mt-1 mb-1 mr-1">
+                      <Label for="emailHorizontal" sm={10}>
+                        Pago con tarjetas de credito/debito POS
+                      </Label>
+                      <Colxx sm={2}>
+                        <FormikSwitch
+                          name="switchPagoDeliveryPos"
+                          className="custom-switch custom-switch-primary"
+                          value={values.switchPagoDeliveryPos}
+                          onChange={() => {
+                            if (values.switchTieneDelivery) {
+                              setFieldValue(
+                                'switchPagoDeliveryPos',
+                                !values.switchPagoDeliveryPos
+                              );
+                            }
+                          }}
+                          onBlur={setFieldTouched}
+                        />
+                      </Colxx>
+                    </FormGroup>
+                    <FormGroup row className="ml-2 mt-1 mb-1 mr-1">
+                      <Label for="emailHorizontal" sm={10}>
+                        Pago con MercadoPago
+                      </Label>
+                      <Colxx sm={2}>
+                        <FormikSwitch
+                          name="switchPagoDeliveryMercadopago"
+                          className="custom-switch custom-switch-primary"
+                          value={values.switchPagoDeliveryMercadopago}
+                          onChange={() => {
+                            if (values.switchPagoDeliveryMercadopago) {
+                              setFieldValue(
+                                'switchPagoDeliveryMercadopago',
+                                false
+                              );
+                            } else if (
+                              values.switchTieneDelivery &&
+                              tieneMercadopago
+                            ) {
+                              setFieldValue(
+                                'switchPagoDeliveryMercadopago',
+                                true
+                              );
+                            } else {
+                              notificacionWarning(
+                                'Debes tener activar la opcion de recibir compras con MercadoPago',
+                                'Error de activacion'
+                              );
+                            }
+                          }}
+                          onBlur={setFieldTouched}
+                        />
+                      </Colxx>
+                    </FormGroup>
+                  </Colxx>
+                  <Colxx xxs="12" xs="12" lg="6" className="mb-3">
+                    <CardText className="text-muted text-left text-medium mb-2 font-weight-bold">
+                      Configuracion para ordenes con servicio Retiro en local
+                    </CardText>
+                    <FormGroup row className="m-1">
+                      <Label for="emailHorizontal" sm={9}>
+                        Recibir ordenes con retiro en local
+                      </Label>
+                      <Colxx sm={3}>
+                        <FormikSwitch
+                          name="switchTieneRetiroLocal"
+                          className="custom-switch custom-switch-primary"
+                          value={values.switchTieneRetiroLocal}
+                          onChange={() => {
+                            if (values.switchTieneRetiroLocal) {
+                              setFieldValue(
+                                'switchTieneRetiroLocal',
+                                !values.switchTieneRetiroLocal
+                              );
+                              setFieldValue(
+                                'switchPagoRetiroLocalEfectivo',
+                                false
+                              );
+                              setFieldValue('switchPagoRetiroLocalPos', false);
+                              setFieldValue(
+                                'switchPagoRetiroLocalMercadopago',
+                                false
+                              );
+                            } else {
+                              setFieldValue(
+                                'switchTieneRetiroLocal',
+                                !values.switchTieneRetiroLocal
+                              );
+                            }
+                          }}
+                          onBlur={setFieldTouched}
+                        />
+                      </Colxx>
+                    </FormGroup>
+                    <FormGroup row className="ml-2 mt-1 mb-1 mr-1">
+                      <Label for="emailHorizontal" sm={10}>
+                        Pago con efectivo
+                      </Label>
+                      <Colxx sm={2}>
+                        <FormikSwitch
+                          name="switchPagoRetiroLocalEfectivo"
+                          className="custom-switch custom-switch-primary"
+                          value={values.switchPagoRetiroLocalEfectivo}
+                          onChange={() => {
+                            if (values.switchTieneRetiroLocal) {
+                              setFieldValue(
+                                'switchPagoRetiroLocalEfectivo',
+                                !values.switchPagoRetiroLocalEfectivo
+                              );
+                            }
+                          }}
+                          onBlur={setFieldTouched}
+                        />
+                      </Colxx>
+                    </FormGroup>
+                    <FormGroup row className="ml-2 mt-1 mb-1 mr-1">
+                      <Label for="emailHorizontal" sm={10}>
+                        Pago con tarjetas de credito/debito POS
+                      </Label>
+                      <Colxx sm={2}>
+                        <FormikSwitch
+                          name="switchPagoRetiroLocalPos"
+                          className="custom-switch custom-switch-primary"
+                          value={values.switchPagoRetiroLocalPos}
+                          onChange={() => {
+                            if (values.switchTieneRetiroLocal) {
+                              setFieldValue(
+                                'switchPagoRetiroLocalPos',
+                                !values.switchPagoRetiroLocalPos
+                              );
+                            }
+                          }}
+                          onBlur={setFieldTouched}
+                        />
+                      </Colxx>
+                    </FormGroup>
+                    <FormGroup row className="ml-2 mt-1 mb-1 mr-1">
+                      <Label for="emailHorizontal" sm={10}>
+                        Pago con MercadoPago
+                      </Label>
+                      <Colxx sm={2}>
+                        <FormikSwitch
+                          name="switchPagoRetiroLocalMercadopago"
+                          className="custom-switch custom-switch-primary"
+                          value={values.switchPagoRetiroLocalMercadopago}
+                          onChange={() => {
+                            if (values.switchPagoRetiroLocalMercadopago) {
+                              setFieldValue(
+                                'switchPagoRetiroLocalMercadopago',
+                                false
+                              );
+                            } else if (
+                              values.switchTieneRetiroLocal &&
+                              tieneMercadopago
+                            ) {
+                              setFieldValue(
+                                'switchPagoRetiroLocalMercadopago',
+                                true
+                              );
+                            } else {
+                              notificacionWarning(
+                                'Debes tener activar la opcion de recibir compras con MercadoPago',
+                                'Error de activacion'
+                              );
+                            }
+                          }}
+                          onBlur={setFieldTouched}
+                        />
+                      </Colxx>
+                    </FormGroup>
+                  </Colxx>
                   <Colxx xxs="12" xs="12" lg="12">
-                    <Button color="primary" type="submit" block>
+                    <Button color="primary" type="submit" block className="m-2">
                       Guardar Cambios
                     </Button>
                   </Colxx>

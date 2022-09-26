@@ -355,6 +355,7 @@ function* carritoProcesar({ payload }) {
     productosOrden,
     history,
     link,
+    localComercialData,
     ordenSuccess,
   } = payload;
   try {
@@ -410,6 +411,7 @@ function* carritoProcesar({ payload }) {
       payload: {
         ordenSuccess: dataPostOrden.data,
         arrayOrdenSuccess: poArray,
+        localComercialData,
         fechaSuccess,
         horaSuccess,
       },

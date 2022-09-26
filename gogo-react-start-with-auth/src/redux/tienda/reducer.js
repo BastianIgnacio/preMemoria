@@ -25,6 +25,7 @@ const INIT_STATE = {
   exist: false,
   nombre: '',
   direccion: '',
+  telefono: '',
   estado: 'CERRADO',
   horarioAtencion: '',
   tieneDelivery: false,
@@ -66,6 +67,7 @@ export default (state = INIT_STATE, action) => {
         categorias: action.payload.categorias,
         idTienda: action.payload.idTienda,
         link: action.payload.link,
+        telefono: action.payload.telefono,
       };
     case TIENDA_SET_CATEGORIAS:
       return {

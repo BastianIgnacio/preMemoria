@@ -12,6 +12,7 @@ const INIT_STATE = {
   success: false,
   ordenSuccess: [],
   arrayOrdenSuccess: [],
+  localComercialData: [],
   fechaSuccess: '',
   horaSuccess: '',
   //
@@ -109,6 +110,7 @@ export default (state = INIT_STATE, action) => {
         success: true,
         ordenSuccess: action.payload.ordenSuccess,
         arrayOrdenSuccess: action.payload.arrayOrdenSuccess,
+        localComercialData: action.payload.localComercialData,
         fechaSuccess: action.payload.fechaSuccess,
         horaSuccess: action.payload.horaSuccess,
         arrayCarrito: [],

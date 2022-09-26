@@ -50,6 +50,8 @@ module.exports = {
   'menu.productos': 'Productos',
   'menu.ventas': 'Ventas',
   'menu.ordenes': 'Ordenes',
+  'menu.ordenesvisualizador': 'Visualizador de ordenes',
+  'menu.ordenesCanceladas': 'Ordenes canceladas',
   'menu.configuracion': 'Configuración',
   'menu.mercadopago': 'MercadoPago',
   'menu.locales': 'Locales',

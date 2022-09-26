@@ -18,8 +18,8 @@ import {
 } from 'reactstrap';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
-
 import { useParams, useHistory } from 'react-router-dom';
+
 import { FormikReactSelect, FormikCustomRadioGroup } from '../../../containers/form-validations/FormikFields';
 
 import { Colxx } from '../../../components/common/CustomBootstrap';
@@ -31,7 +31,7 @@ import {
   CARRITO_SUM_PRODUCTO,
   TIENDA_CARGAR_TIENDA,
 } from '../../../redux/actions';
-import { tiposPago, estadosPago, estadosVenta, tiposEntrega, estadosOrden } from '../../../constants/defaultValues';
+import { tiposPago, estadosPago, estadosVenta, tiposEntrega, estadosOrden, apiMediaUrl } from '../../../constants/defaultValues';
 import CardEnviarPedido from './CardEnviarPedido';
 
 const Carrito = () => {
@@ -62,6 +62,14 @@ const Carrito = () => {
   const arrayCarrito = useSelector((state) => state.carrito.arrayCarrito);
   const productoParaEliminar = useSelector((state) => state.carrito.productoParaEliminar);
   const direccionTienda = useSelector((state) => state.tienda.direccion);
+  const nombreTienda = useSelector((state) => state.tienda.nombre);
+  const telefonoTienda = useSelector((state) => state.tienda.telefono);
+
+  const localComercialData = {
+    nombreLocalComercial: nombreTienda,
+    telefonoLocalComercial: telefonoTienda,
+    direccionLocalComercial: direccionTienda,
+  };
 
 
   // METODOS DE PAGO DISPONIBLES
@@ -181,7 +189,8 @@ const Carrito = () => {
   // Validacion para el form que envia la orden
   const SignupSchemaRetiroLocal = Yup.object().shape({
     nombre: Yup.string().required('El nombre es requerido!'),
-    telefono: Yup.string().required('El telefono o whatsapp es requerido!'),
+    // eslint-disable-next-line no-useless-escape
+    telefono: Yup.string().required('Debe ingresar el telefono!').matches("^[+569][1-9]{11}$", "Debe ingresar con el formato +569XXXXXXXX."),
     email: Yup.string()
       .email('La direccion de email es invalida')
       .required('La direccion de email es requerida!'),
@@ -191,7 +200,7 @@ const Carrito = () => {
   // Validacion para el form que envia la orden
   const SignupSchemaDelivery = Yup.object().shape({
     nombre: Yup.string().required('El nombre es requerido!'),
-    telefono: Yup.string().required('El telefono o whatsapp es requerido!'),
+    telefono: Yup.string().required('Debe ingresar el telefono!').matches("^[+569][1-9]{11}$", "Debe ingresar con el formato +569XXXXXXXX."),
     email: Yup.string()
       .email('La direccion de email es invalida!')
       .required('La direccion de email es requerida!'),
@@ -320,6 +329,7 @@ const Carrito = () => {
           estado: estadosOrden[0].id,
           direccionEntrega: 'NO HAY DIRECCION ENTREGA',
           telefonoEntrega: payload.telefono,
+          emailEntrega: payload.email,
           nombrePedido: payload.nombre,
           precioEnvio: 0,
           total,
@@ -387,6 +397,7 @@ const Carrito = () => {
           estado: estadosOrden[0].id,
           direccionEntrega: `Retiro en local (${direccionTienda})`,
           telefonoEntrega: payload.telefono,
+          emailEntrega: payload.email,
           nombrePedido: payload.nombre,
           precioEnvio: 0,
           total,
@@ -466,6 +477,7 @@ const Carrito = () => {
           estado: estadosOrden[0].id,
           direccionEntrega: payload.direccionDelivery,
           telefonoEntrega: payload.telefono,
+          emailEntrega: payload.email,
           nombrePedido: payload.nombre,
           precioEnvio: 0,
           total,
@@ -533,6 +545,7 @@ const Carrito = () => {
           estado: estadosOrden[0].id,
           direccionEntrega: payload.direccionDelivery,
           telefonoEntrega: payload.telefono,
+          emailEntrega: payload.email,
           nombrePedido: payload.nombre,
           precioEnvio: 0,
           total,
@@ -599,6 +612,7 @@ const Carrito = () => {
           estado: estadosOrden[0].id,
           direccionEntrega: payload.direccionDelivery,
           telefonoEntrega: payload.telefono,
+          emailEntrega: payload.email,
           nombrePedido: payload.nombre,
           precioEnvio: 0,
           total,
@@ -650,7 +664,7 @@ const Carrito = () => {
                         <div className="d-flex">
                           <img
                             alt="Thumbnail"
-                            src="/assets/img/products/chocolate-cake-thumb.jpg"
+                            src={apiMediaUrl + producto.imagen}
                             className="list-thumbnail responsive border-0 card-img-left"
                           />
                         </div>
@@ -709,7 +723,7 @@ const Carrito = () => {
                   <Colxx xxs="12" xs="12" lg="12">
                     <div className="d-flex justify-content-center w-100">
                       <div className=" m-2 card-icon w-80">
-                        EL CARRITO ESTA VACIO UWU
+                        EL CARRITO ESTA VACÍO UWU
                       </div>
                     </div>
                   </Colxx>
@@ -811,7 +825,7 @@ const Carrito = () => {
                         ENTREGA
                       </CardText>
                     </Colxx>
-                    <Colxx xxs="12" xs="12" lg="12">
+                    <Colxx xxs="12" xs="12" lg="12" className="mb-2">
                       <CustomInput
                         type="radio"
                         id="exCustomRadio"
@@ -828,299 +842,309 @@ const Carrito = () => {
                       />
                     </Colxx>
                     {(metodoDeEntrega === 1) && (
-                      <Formik
-                        initialValues={{
-                          nombre: '',
-                          telefono: '',
-                          email: '',
-                          direccionDelivery: '',
-                          tiempoDelivery: {
-                            label: 'Lo antes posible',
-                            value: 0,
-                            key: 0,
-                          },
-                          tiempoRetiro: { label: 'Lo antes posible', value: 0, key: 0 },
-                          customRadioGroupFormaPago: '',
-                        }}
-                        validationSchema={SignupSchemaRetiroLocal}
-                        onSubmit={enviarPedidoRetiroLocal}
-                      >
-                        {({
-                          setFieldValue,
-                          setFieldTouched,
-                          values,
-                          errors,
-                          touched,
-                        }) => (
-                          <Form className="av-tooltip tooltip-label-bottom">
-                            <Colxx xxs="12" xs="12" lg="12">
-                              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                                DATOS DE CONTACTO
-                              </CardText>
-                            </Colxx>
-                            <Colxx xxs="12" xs="12" lg="12">
-                              <FormGroup className="form-group has-top-label error-l-100 tooltip-right-top">
-                                <Label>NOMBRE</Label>
-                                <Field className="form-control" name="nombre" />
-                                {errors.nombre && touched.nombre ? (
-                                  <div className="invalid-feedback d-block ">
-                                    {errors.nombre}
-                                  </div>
-                                ) : null}
-                              </FormGroup>
-                              <FormGroup className="form-group has-top-label error-l-100 tooltip-right-top">
-                                <Label>TELEFONO/ WHATSAPP (+569XXXXXXXX)</Label>
-                                <Field
-                                  className="form-control"
-                                  name="telefono"
-                                  maxLength="14"
-                                />
-                                {errors.telefono && touched.telefono ? (
-                                  <div className="invalid-feedback d-block">
-                                    {errors.telefono}
-                                  </div>
-                                ) : null}
-                              </FormGroup>
-                              <FormGroup className="form-group has-top-label error-l-100 tooltip-right-top">
-                                <Label>EMAIL</Label>
-                                <Field className="form-control" name="email" />
-                                {errors.email && touched.email ? (
-                                  <div className="invalid-feedback d-block">
-                                    {errors.email}
-                                  </div>
-                                ) : null}
-                              </FormGroup>
-                            </Colxx>
-                            <Colxx xxs="12" xs="12" lg="12">
-                              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                                DIRECCIÓN DE RETIRO  {direccionTienda}
-                              </CardText>
-                            </Colxx>
-                            <Colxx xxs="12" xs="12" lg="12">
-                              <div className="form-group has-float-label">
+                      <Colxx xxs="12" xs="12" lg="12">
+                        <Formik
+                          initialValues={{
+                            nombre: '',
+                            telefono: '',
+                            email: '',
+                            direccionDelivery: '',
+                            tiempoDelivery: {
+                              label: 'Lo antes posible',
+                              value: 0,
+                              key: 0,
+                            },
+                            tiempoRetiro: { label: 'Lo antes posible', value: 0, key: 0 },
+                            customRadioGroupFormaPago: '',
+                          }}
+                          validationSchema={SignupSchemaRetiroLocal}
+                          onSubmit={enviarPedidoRetiroLocal}
+                        >
+                          {({
+                            setFieldValue,
+                            setFieldTouched,
+                            values,
+                            errors,
+                            touched,
+                          }) => (
+                            <Form className="av-tooltip tooltip-label-bottom">
+                              <Colxx xxs="12" xs="12" lg="12">
+                                <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                                  DATOS DE CONTACTO
+                                </CardText>
+                              </Colxx>
+                              <Colxx xxs="12" xs="12" lg="12" className="w-100">
+                                <FormGroup className="form-group has-top-label error-l-100 tooltip-right-top">
+                                  <Label>NOMBRE</Label>
+                                  <Field className="form-control" name="nombre" />
+                                  {errors.nombre && touched.nombre ? (
+                                    <div className="invalid-feedback d-block ">
+                                      {errors.nombre}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                                <FormGroup className="form-group has-top-label error-l-100 tooltip-right-top">
+                                  <Label>TELEFONO/ WHATSAPP (+569XXXXXXXX)</Label>
+                                  <Field
+                                    className="form-control"
+                                    name="telefono"
+                                    maxLength="12"
+                                  />
+                                  {errors.telefono && touched.telefono ? (
+                                    <div className="invalid-feedback d-block">
+                                      {errors.telefono}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                                <FormGroup className="w-100 form-group has-top-label error-l-100 tooltip-right-top">
+                                  <Label>EMAIL</Label>
+                                  <Field className="form-control" name="email" />
+                                  {errors.email && touched.email ? (
+                                    <div className="invalid-feedback d-block">
+                                      {errors.email}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                              </Colxx>
+                              <Colxx xxs="12" xs="12" lg="12">
+                                <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                                  DIRECCIÓN DE RETIRO
+                                </CardText>
+                                <CardText className="text-muted text-left text-medium m-2 font-weight-bold">
+                                  {direccionTienda}
+                                </CardText>
+                              </Colxx>
+                              <Colxx xxs="12" xs="12" lg="12">
+                                <div className="form-group has-float-label">
+                                  <FormGroup className="form-group has-top-label">
+                                    <Label>
+                                      EN CUANTO TIEMPO DESEAS RETIRAR?
+                                    </Label>
+                                    <FormikReactSelect
+                                      name="tiempoRetiro"
+                                      id="state"
+                                      value={values.tiempoRetiro}
+                                      options={dataDelivery}
+                                      onChange={setFieldValue}
+                                      onBlur={setFieldTouched}
+                                    />
+                                    {errors.state && touched.state ? (
+                                      <div className="invalid-feedback d-block">
+                                        {errors.state}
+                                      </div>
+                                    ) : null}
+                                  </FormGroup>
+                                </div>
+                              </Colxx>
+                              <Colxx xxs="12" xs="12" lg="12">
+                                <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                                  FORMA DE PAGO
+                                </CardText>
+                              </Colxx>
+                              <Colxx xxs="12" xs="12" lg="12" >
+                                <FormGroup className="error-l-175 tooltip-right-top">
+                                  <FormikCustomRadioGroup
+                                    inline
+                                    name="customRadioGroupFormaPago"
+                                    id="customRadioGroupFormaPago"
+                                    label="Which of these?"
+                                    value={values.customRadioGroupFormaPago}
+                                    onChange={setFieldValue}
+                                    onBlur={setFieldTouched}
+                                    options={opcionesVisiblesPagoRetiroLocal}
+                                  />
+                                  {errors.customRadioGroupFormaPago && touched.customRadioGroupFormaPago ? (
+                                    <div className="invalid-feedback d-block">
+                                      {errors.customRadioGroupFormaPago}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                              </Colxx>
+                              <Colxx
+                                xxs="12"
+                                xs="12"
+                                lg="12"
+                                className="text-center mt-2"
+                              >
+                                <CardText className="text-muted text-center text-large font-weight-bold mt-1 mb-2">
+                                  TOTAL ${total}
+                                </CardText>
+                                <Button
+                                  color="primary"
+                                  className="iconsminds-add-cart"
+                                  type="submit"
+                                  block
+                                >
+                                  ENVIAR PEDIDO
+                                </Button>
+                                <Button
+                                  color="secondary"
+                                  block
+                                  onClick={() => setModalFinalizarCompra(false)}
+                                >
+                                  Volver
+                                </Button>
+                              </Colxx>
+                            </Form>
+                          )}
+                        </Formik>
+                      </Colxx>
+                    )}
+                    {(metodoDeEntrega === 2) && (
+                      <Colxx xxs="12" xs="12" lg="12">
+                        <Formik
+                          initialValues={{
+                            nombre: '',
+                            telefono: '',
+                            email: '',
+                            direccionDelivery: '',
+                            tiempoDelivery: {
+                              label: 'Lo antes posible',
+                              value: 0,
+                              key: 0,
+                            },
+                            customRadioGroupFormaPago: '',
+                          }}
+                          validationSchema={SignupSchemaDelivery}
+                          onSubmit={enviarPedidoDelivery}
+                        >
+                          {({
+                            setFieldValue,
+                            setFieldTouched,
+                            values,
+                            errors,
+                            touched,
+                          }) => (
+                            <Form className="av-tooltip tooltip-label-bottom">
+                              <Colxx xxs="12" xs="12" lg="12">
+                                <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                                  DATOS DE CONTACTO
+                                </CardText>
+                              </Colxx>
+                              <Colxx xxs="12" xs="12" lg="12">
+                                <FormGroup className="form-group has-top-label error-l-100 tooltip-right-top">
+                                  <Label>NOMBRE</Label>
+                                  <Field className="form-control" name="nombre" />
+                                  {errors.nombre && touched.nombre ? (
+                                    <div className="invalid-feedback d-block ">
+                                      {errors.nombre}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                                <FormGroup className="form-group has-top-label error-l-100 tooltip-right-top">
+                                  <Label>TELEFONO/ WHATSAPP (+569XXXXXXXX)</Label>
+                                  <Field
+                                    className="form-control"
+                                    name="telefono"
+                                    maxLength="12"
+                                  />
+                                  {errors.telefono && touched.telefono ? (
+                                    <div className="invalid-feedback d-block">
+                                      {errors.telefono}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                                <FormGroup className="form-group has-top-label error-l-100 tooltip-right-top">
+                                  <Label>EMAIL</Label>
+                                  <Field className="form-control" name="email" />
+                                  {errors.email && touched.email ? (
+                                    <div className="invalid-feedback d-block">
+                                      {errors.email}
+                                    </div>
+                                  ) : null}
+                                </FormGroup>
+                              </Colxx>
+                              <Colxx xxs="12" xs="12" lg="12">
+                                <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                                  DATOS DE LA ENTREGA
+                                </CardText>
+                                <CardText className="text-muted text-left text-medium m-2 font-weight-bold">
+                                  El costo del delivery no ha sido incluido, es variable y depende de la zona de despacho!
+                                </CardText>
+                              </Colxx>
+                              <Colxx xxs="12" xs="12" lg="12">
                                 <FormGroup className="form-group has-top-label">
                                   <Label>
-                                    EN CUANTO TIEMPO DESEAS RETIRAR?
+                                    EN CUANTO TIEMPO DESEAS LA ENTREGA?
                                   </Label>
                                   <FormikReactSelect
-                                    name="tiempoRetiro"
-                                    id="state"
-                                    value={values.tiempoRetiro}
+                                    name="tiempoDelivery"
+                                    value={values.tiempoDelivery}
                                     options={dataDelivery}
                                     onChange={setFieldValue}
                                     onBlur={setFieldTouched}
                                   />
-                                  {errors.state && touched.state ? (
+
+                                </FormGroup>
+                                <FormGroup className="form-group has-top-label tooltip-right-top">
+                                  <Label>EN DONDE LO ENTREGAMOS ? </Label>
+                                  <Field
+                                    as="textarea"
+                                    className="form-control"
+                                    name="direccionDelivery"
+                                  />
+                                  {errors.direccionDelivery &&
+                                    touched.direccionDelivery ? (
                                     <div className="invalid-feedback d-block">
-                                      {errors.state}
+                                      {errors.direccionDelivery}
+                                    </div>
+                                  ) : null}
+
+                                </FormGroup>
+                              </Colxx>
+                              <Colxx xxs="12" xs="12" lg="12">
+                                <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
+                                  FORMA DE PAGO
+                                </CardText>
+                              </Colxx>
+                              <Colxx xxs="12" xs="12" lg="12">
+                                <FormGroup className="tooltip-right-top">
+                                  <FormikCustomRadioGroup
+                                    inline
+                                    name="customRadioGroupFormaPago"
+                                    id="customRadioGroupFormaPago"
+                                    label="Which of these?"
+                                    value={values.customRadioGroupFormaPago}
+                                    onChange={setFieldValue}
+                                    onBlur={setFieldTouched}
+                                    options={opcionesVisiblesPagoDelivery}
+                                  />
+                                  {errors.customRadioGroupFormaPago && touched.customRadioGroupFormaPago ? (
+                                    <div className="invalid-feedback d-block">
+                                      {errors.customRadioGroupFormaPago}
                                     </div>
                                   ) : null}
                                 </FormGroup>
-                              </div>
-                            </Colxx>
-                            <Colxx xxs="12" xs="12" lg="12">
-                              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                                FORMA DE PAGO
-                              </CardText>
-                            </Colxx>
-                            <Colxx xxs="12" xs="12" lg="12" >
-                              <FormGroup className="error-l-175 tooltip-right-top">
-                                <FormikCustomRadioGroup
-                                  inline
-                                  name="customRadioGroupFormaPago"
-                                  id="customRadioGroupFormaPago"
-                                  label="Which of these?"
-                                  value={values.customRadioGroupFormaPago}
-                                  onChange={setFieldValue}
-                                  onBlur={setFieldTouched}
-                                  options={opcionesVisiblesPagoRetiroLocal}
-                                />
-                                {errors.customRadioGroupFormaPago && touched.customRadioGroupFormaPago ? (
-                                  <div className="invalid-feedback d-block">
-                                    {errors.customRadioGroupFormaPago}
-                                  </div>
-                                ) : null}
-                              </FormGroup>
-                            </Colxx>
-                            <Colxx
-                              xxs="12"
-                              xs="12"
-                              lg="12"
-                              className="text-center mt-2"
-                            >
-                              <CardText className="text-muted text-center text-large font-weight-bold mt-1 mb-2">
-                                TOTAL ${total}
-                              </CardText>
-                              <Button
-                                color="primary"
-                                className="iconsminds-add-cart"
-                                type="submit"
-                                block
+                              </Colxx>
+                              <Colxx
+                                xxs="12"
+                                xs="12"
+                                lg="12"
+                                className="text-center"
                               >
-                                ENVIAR PEDIDO
-                              </Button>
-                              <Button
-                                color="secondary"
-                                block
-                                onClick={() => setModalFinalizarCompra(false)}
-                              >
-                                Volver
-                              </Button>
-                            </Colxx>
-                          </Form>
-                        )}
-                      </Formik>
-                    )}
-                    {(metodoDeEntrega === 2) && (
-                      <Formik
-                        initialValues={{
-                          nombre: '',
-                          telefono: '',
-                          email: '',
-                          direccionDelivery: '',
-                          tiempoDelivery: {
-                            label: 'Lo antes posible',
-                            value: 0,
-                            key: 0,
-                          },
-                          customRadioGroupFormaPago: '',
-                        }}
-                        validationSchema={SignupSchemaDelivery}
-                        onSubmit={enviarPedidoDelivery}
-                      >
-                        {({
-                          setFieldValue,
-                          setFieldTouched,
-                          values,
-                          errors,
-                          touched,
-                        }) => (
-                          <Form className="av-tooltip tooltip-label-bottom">
-                            <Colxx xxs="12" xs="12" lg="12">
-                              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                                DATOS DE CONTACTO
-                              </CardText>
-                            </Colxx>
-                            <Colxx xxs="12" xs="12" lg="12">
-                              <FormGroup className="form-group has-top-label error-l-100 tooltip-right-top">
-                                <Label>NOMBRE</Label>
-                                <Field className="form-control" name="nombre" />
-                                {errors.nombre && touched.nombre ? (
-                                  <div className="invalid-feedback d-block ">
-                                    {errors.nombre}
-                                  </div>
-                                ) : null}
-                              </FormGroup>
-                              <FormGroup className="form-group has-top-label error-l-100 tooltip-right-top">
-                                <Label>TELEFONO/ WHATSAPP (+569XXXXXXXX)</Label>
-                                <Field
-                                  className="form-control"
-                                  name="telefono"
-                                  maxLength="14"
-                                />
-                                {errors.telefono && touched.telefono ? (
-                                  <div className="invalid-feedback d-block">
-                                    {errors.telefono}
-                                  </div>
-                                ) : null}
-                              </FormGroup>
-                              <FormGroup className="form-group has-top-label error-l-100 tooltip-right-top">
-                                <Label>EMAIL</Label>
-                                <Field className="form-control" name="email" />
-                                {errors.email && touched.email ? (
-                                  <div className="invalid-feedback d-block">
-                                    {errors.email}
-                                  </div>
-                                ) : null}
-                              </FormGroup>
-                            </Colxx>
-                            <Colxx xxs="12" xs="12" lg="12">
-                              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                                DATOS DE LA ENTREGA
-                              </CardText>
-                            </Colxx>
-                            <Colxx xxs="12" xs="12" lg="12">
-                              <FormGroup className="form-group has-top-label">
-                                <Label>
-                                  EN CUANTO TIEMPO DESEAS LA ENTREGA?
-                                </Label>
-                                <FormikReactSelect
-                                  name="tiempoDelivery"
-                                  value={values.tiempoDelivery}
-                                  options={dataDelivery}
-                                  onChange={setFieldValue}
-                                  onBlur={setFieldTouched}
-                                />
-
-                              </FormGroup>
-                              <FormGroup className="form-group has-top-label tooltip-right-top">
-                                <Label>EN DONDE LO ENTREGAMOS ? </Label>
-                                <Field
-                                  as="textarea"
-                                  className="form-control"
-                                  name="direccionDelivery"
-                                />
-                                {errors.direccionDelivery &&
-                                  touched.direccionDelivery ? (
-                                  <div className="invalid-feedback d-block">
-                                    {errors.direccionDelivery}
-                                  </div>
-                                ) : null}
-
-                              </FormGroup>
-                            </Colxx>
-                            <Colxx xxs="12" xs="12" lg="12">
-                              <CardText className="text-muted text-left text-medium mb-1 font-weight-bold">
-                                FORMA DE PAGO
-                              </CardText>
-                            </Colxx>
-                            <Colxx xxs="12" xs="12" lg="12">
-                              <FormGroup className="tooltip-right-top">
-                                <FormikCustomRadioGroup
-                                  inline
-                                  name="customRadioGroupFormaPago"
-                                  id="customRadioGroupFormaPago"
-                                  label="Which of these?"
-                                  value={values.customRadioGroupFormaPago}
-                                  onChange={setFieldValue}
-                                  onBlur={setFieldTouched}
-                                  options={opcionesVisiblesPagoDelivery}
-                                />
-                                {errors.customRadioGroupFormaPago && touched.customRadioGroupFormaPago ? (
-                                  <div className="invalid-feedback d-block">
-                                    {errors.customRadioGroupFormaPago}
-                                  </div>
-                                ) : null}
-                              </FormGroup>
-                            </Colxx>
-                            <Colxx
-                              xxs="12"
-                              xs="12"
-                              lg="12"
-                              className="text-center"
-                            >
-                              <CardText className="text-muted text-center text-large font-weight-bold mt-1 mb-2">
-                                TOTAL ${total}
-                              </CardText>
-                              <Button
-                                color="primary"
-                                className="iconsminds-add-cart"
-                                type="submit"
-                                block
-                              >
-                                ENVIAR PEDIDO
-                              </Button>
-                              <Button
-                                color="secondary"
-                                block
-                                onClick={() => setModalFinalizarCompra(false)}
-                              >
-                                Volver
-                              </Button>
-                            </Colxx>
-                          </Form>
-                        )}
-                      </Formik>
+                                <CardText className="text-muted text-center text-large font-weight-bold mt-1 mb-2">
+                                  TOTAL ${total}
+                                </CardText>
+                                <Button
+                                  color="primary"
+                                  className="iconsminds-add-cart"
+                                  type="submit"
+                                  block
+                                >
+                                  ENVIAR PEDIDO
+                                </Button>
+                                <Button
+                                  color="secondary"
+                                  block
+                                  onClick={() => setModalFinalizarCompra(false)}
+                                >
+                                  Volver
+                                </Button>
+                              </Colxx>
+                            </Form>
+                          )}
+                        </Formik>
+                      </Colxx>
                     )}
                   </Row>
                 </CardBody>
@@ -1136,7 +1160,7 @@ const Carrito = () => {
         }}
       >
         <ModalBody>
-          <CardEnviarPedido modal={setModalEnviandoOrden} venta={venta}
+          <CardEnviarPedido modal={setModalEnviandoOrden} venta={venta} localComercialData={localComercialData}
             productosVenta={productosVenta} orden={orden} productosOrden={productosOrden} link={link} history={history} />
         </ModalBody>
       </Modal>

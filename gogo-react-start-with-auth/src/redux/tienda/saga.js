@@ -69,7 +69,6 @@ const getProductosAsync = async (refCategoria) => {
 };
 
 //* * FUNCIONES */
-// Funcion para actualizar los items que se muestran
 // Funcion para CARGAR LA TIENDA
 function* cargarTienda({ payload }) {
   const linkTienda = payload;
@@ -98,11 +97,20 @@ function* cargarTienda({ payload }) {
           horarioAtencion: tienda.horarioAtencion,
           tieneDelivery: tienda.tieneDelivery,
           tieneMercadopago: tienda.tieneMercadopago,
+          tieneRetiroLocal: tienda.tieneMercadopago,
+          // Metodos de pago
+          pagoRetiroLocalEfectivo: tienda.pagoRetiroLocalEfectivo,
+          pagoRetiroLocalPos: tienda.pagoRetiroLocalPos,
+          pagoRetiroLocalMercadopago: tienda.pagoRetiroLocalMercadopago,
+          pagoDeliveryEfectivo: tienda.pagoDeliveryEfectivo,
+          pagoDeliveryPos: tienda.pagoDeliveryPos,
+          pagoDeliveryMercadopago: tienda.pagoDeliveryMercadopago,
           isLoaded: true,
           exist: true,
           categorias: dataCategorias.results,
           idTienda: tienda.id,
           link: tienda.link,
+          telefono: tienda.telefono,
         },
       });
     }
@@ -135,7 +143,7 @@ function* cargarProductos({ payload }) {
       // SI HAY PRODUCTOS EN LA CATEGORIA
       // VER SI HAY PRODUCTOS VIISIBLES
       const visibles = productosCategoria.filter(
-        (producto) => producto.esVisible === true
+        (producto) => producto.esVisible === true && producto.precio > 100
       );
       // HAY PRODUCTOS PERO NINGUNO VISIBLE
       if (visibles.length === 0) {

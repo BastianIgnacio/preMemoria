@@ -1,3 +1,4 @@
+/* eslint-disable prettier/prettier */
 /* eslint-disable react/no-array-index-key */
 import React, { Component } from 'react';
 import { connect } from 'react-redux';
@@ -279,6 +280,9 @@ class Sidebar extends Component {
         viewingParentMenu: selectedParent,
         selectedParentMenu: selectedParent,
       });
+      // Aca enviamos la action 
+      console.log('Enviando Action');
+      console.log(menuItem.id);
       this.toggle();
     } else {
       e.preventDefault();
@@ -388,7 +392,9 @@ class Sidebar extends Component {
                         ) : (
                           <NavLink
                             to={item.to}
-                            onClick={(e) => this.openSubMenu(e, item)}
+                            onClick={(e) => {
+                              this.openSubMenu(e, item);
+                            }}
                             data-flag={item.id}
                           >
                             <i className={item.icon} />{' '}
@@ -429,11 +435,11 @@ class Sidebar extends Component {
                           return (
                             <NavItem
                               key={`${item.id}_${index}`}
-                              className={`${
-                                sub.subs && sub.subs.length > 0
-                                  ? 'has-sub-item'
-                                  : ''
-                              }`}
+                              className={`${sub.subs && sub.subs.length > 0
+                                ? 'has-sub-item'
+                                : ''
+                                }`}
+                              onClick={() => console.log(sub)}
                             >
                               {/* eslint-disable-next-line no-nested-ternary */}
                               {sub.newWindow ? (
@@ -448,13 +454,12 @@ class Sidebar extends Component {
                               ) : sub.subs && sub.subs.length > 0 ? (
                                 <>
                                   <NavLink
-                                    className={`rotate-arrow-icon opacity-50 ${
-                                      collapsedMenus.indexOf(
-                                        `${item.id}_${index}`
-                                      ) === -1
-                                        ? ''
-                                        : 'collapsed'
-                                    }`}
+                                    className={`rotate-arrow-icon opacity-50 ${collapsedMenus.indexOf(
+                                      `${item.id}_${index}`
+                                    ) === -1
+                                      ? ''
+                                      : 'collapsed'
+                                      }`}
                                     to={sub.to}
                                     id={`${item.id}_${index}`}
                                     onClick={(e) =>

@@ -35,6 +35,20 @@ const data = [
     label: 'menu.ordenes',
     to: `${adminRoot}/ordenes`,
     roles: [UserRole.AdminLocalComercial],
+    subs: [
+      {
+        icon: 'simple-icon-briefcase',
+        label: 'menu.ordenesvisualizador',
+        to: `${adminRoot}/dashboards/default`,
+        // roles: [UserRole.Admin],
+      },
+      {
+        icon: 'simple-icon-pie-chart',
+        label: 'menu.ordenesCanceladas',
+        to: `${adminRoot}/dashboards/analytics`,
+        // roles: [UserRole.Admin],
+      },
+    ],
   },
   {
     id: 'configuracionTienda',

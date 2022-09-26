@@ -9,6 +9,9 @@ import {
   LOGOUT_USER,
   FORGOT_PASSWORD,
   RESET_PASSWORD,
+  CLICK_CARGAR_DATOS_TIENDA,
+  CARGAR_DATOS_TIENDA,
+  TIENDA_UPDATE,
 } from '../actions';
 
 import {
@@ -33,9 +36,18 @@ import {
   themeColorStorageKey,
   UserRole,
 } from '../../constants/defaultValues';
+
+import { NotificationManager } from '../../components/common/react-notifications';
 // ACA SE GUARDA EL EN LOCALSTORAGE
 // eslint-disable-next-line no-unused-vars
 import { setCurrentUser, setCurrentTienda } from '../../helpers/Utils';
+
+const notificacionSuccess = (titulo, subtitulo) => {
+  NotificationManager.success(titulo, subtitulo, 4000, null, null, 'filled');
+};
+const notificacionError = (titulo, subtitulo) => {
+  NotificationManager.error(titulo, subtitulo, 4000, null, null, 'filled');
+};
 
 export function* watchLoginUser() {
   // eslint-disable-next-line no-use-before-define
@@ -198,6 +210,54 @@ function* resetPassword({ payload }) {
   }
 }
 
+function* cargarTienda({ payload }) {
+  const refTienda = payload;
+  try {
+    const tienda = yield call(getTiendaAsync, refTienda);
+    setCurrentTienda(tienda);
+    yield put({
+      type: CARGAR_DATOS_TIENDA,
+      payload: tienda,
+    });
+  } catch (error) {
+    console.log(error);
+  }
+}
+
+export function* watchCargarDatosTienda() {
+  yield takeEvery(CLICK_CARGAR_DATOS_TIENDA, cargarTienda);
+}
+
+// PUT para actualizar un local comercial
+const putLocalComercialAsync = async (localComercial, refLocalComercial) =>
+  axios.put(
+    `${apiRestUrl}/localComercials/${refLocalComercial}/`,
+    localComercial
+  );
+
+function* actualizarTienda({ payload }) {
+  const { localComercial, refLocalComercial } = payload;
+  try {
+    const result = yield call(
+      putLocalComercialAsync,
+      localComercial,
+      refLocalComercial
+    );
+    setCurrentTienda(result.data);
+    yield put({
+      type: CARGAR_DATOS_TIENDA,
+      payload: result.data,
+    });
+    notificacionSuccess('Configuracion', 'Actualizada correctamente');
+  } catch (error) {
+    notificacionError('Configuracion', 'Error al actualizar');
+  }
+}
+
+export function* watchTiendaUpdate() {
+  yield takeEvery(TIENDA_UPDATE, actualizarTienda);
+}
+
 export default function* rootSaga() {
   yield all([
     fork(watchLoginUser),
@@ -205,5 +265,7 @@ export default function* rootSaga() {
     // fork(watchRegisterUser),
     fork(watchForgotPassword),
     fork(watchResetPassword),
+    fork(watchCargarDatosTienda),
+    fork(watchTiendaUpdate),
   ]);
 }

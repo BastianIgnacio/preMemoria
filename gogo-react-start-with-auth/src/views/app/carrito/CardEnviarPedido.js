@@ -11,6 +11,7 @@ const CardEnviarPedido = ({
   orden,
   productosOrden,
   refLocalComercial,
+  localComercialData,
   history,
   link,
 }) => {
@@ -38,7 +39,7 @@ const CardEnviarPedido = ({
     setTimeout(() => {
       modal(false);
       history.push(`/success/${link}`);
-    }, 1500);
+    }, 1000);
   };
 
   const enviar = () => {
@@ -50,6 +51,7 @@ const CardEnviarPedido = ({
         orden,
         productosOrden,
         refLocalComercial,
+        localComercialData,
         history,
         link,
         ordenSuccess,

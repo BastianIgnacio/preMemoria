@@ -18,25 +18,28 @@ import { useDispatch } from 'react-redux';
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { ContextMenuTrigger } from 'react-contextmenu';
+import ReactCrop from 'react-image-crop';
 import { FormikSwitch } from '../../../form-validations/FormikFields';
 import { Colxx } from '../../../../components/common/CustomBootstrap';
 import PreviewImage from '../../previewImage';
 import { NotificationManager } from '../../../../components/common/react-notifications';
 import { apiMediaUrl } from '../../../../constants/defaultValues';
 import { PRODUCTO_DELETE, PRODUCTO_UPDATE } from '../../../../redux/actions';
+import 'react-image-crop/lib/ReactCrop.scss';
 
 const ThumbListViewProductos = ({ productoCategoria }) => {
   const dispatch = useDispatch();
   const [modalEditar, setModalEditar] = useState(false);
   const [modalEliminar, setModalEliminar] = useState(false);
 
-  const toBase64 = (file) =>
-    new Promise((resolve, reject) => {
-      const reader = new FileReader();
-      reader.readAsDataURL(file);
-      reader.onload = () => resolve(reader.result);
-      reader.onerror = (error) => reject(error);
-    });
+  const [webPreview, setWebPreview] = useState(true);
+  const [modalCut, setModalCut] = useState(false);
+  const [src, setSrc] = useState(null);
+  const [crop, setCrop] = useState({ aspect: 1 / 1 });
+  const [image, setImage] = useState(null);
+  const [output, setOutput] = useState(null);
+  const [canAdd, setCanAdd] = useState(false);
+  const [error, setError] = useState(null);
 
   const notificacionWarning = (titulo, subtitulo) => {
     NotificationManager.warning(titulo, subtitulo, 4000, null, null, 'filled');
@@ -46,6 +49,59 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
     nombre: Yup.string().required('El nombre es requerido!'),
     desc: Yup.string().required('La descripcion es requerida!'),
   });
+
+  // Metodo para ocultar imagen al cerrar el modal de recorte
+  const toggleModalCut = () => {
+    setSrc(null);
+    setImage(null);
+    setOutput(null);
+    setCanAdd(false);
+    setModalCut(false);
+    setWebPreview(true);
+  };
+
+  // Metodo para cortar la imagen
+  const cropImageNow = () => {
+    const canvas = document.createElement('canvas');
+    const scaleX = image.naturalWidth / image.width;
+    const scaleY = image.naturalHeight / image.height;
+    canvas.width = crop.width;
+    canvas.height = crop.height;
+    const ctx = canvas.getContext('2d');
+
+    const pixelRatio = window.devicePixelRatio;
+    canvas.width = crop.width * pixelRatio;
+    canvas.height = crop.height * pixelRatio;
+    ctx.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+    ctx.imageSmoothingQuality = 'high';
+
+    ctx.drawImage(
+      image,
+      crop.x * scaleX,
+      crop.y * scaleY,
+      crop.width * scaleX,
+      crop.height * scaleY,
+      0,
+      0,
+      crop.width,
+      crop.height
+    );
+
+    // Converting to base64
+    const base64Image = canvas.toDataURL('image/jpeg');
+    // Validamos si la seleccion es vacia
+    if (base64Image === 'data:,') {
+      notificacionWarning(
+        'Debes seleccionar un trazo de la imagen',
+        'ERROR AL RECORTAR'
+      );
+    } else {
+      setCanAdd(true);
+      setOutput(base64Image);
+      setModalCut(!modalCut);
+      setWebPreview(false);
+    }
+  };
 
   const onSubmitEliminar = () => {
     dispatch({
@@ -67,7 +123,7 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
       console.log(JSON.stringify(payload, null, 2));
       setSubmitting(false);
       // No se ha editado la imagen, por ende no se debe enviar en el PUT
-      if (payload.webPreview) {
+      if (webPreview) {
         const putProducto = {
           nombre: payload.nombre,
           descripcion: payload.desc,
@@ -85,40 +141,34 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
           },
         });
         setModalEditar(!modalEditar);
+        return;
+      }
+      if (canAdd) {
+        const putProducto = {
+          nombre: payload.nombre,
+          descripcion: payload.desc,
+          precio: payload.precio,
+          esVisible: payload.esVisible,
+          esNuevo: payload.esNuevo,
+          isBestProduct: payload.isBestProduct,
+          refCategoria: productoCategoria.refCategoria,
+          imagen: output,
+        };
+        dispatch({
+          type: PRODUCTO_UPDATE,
+          payload: {
+            idProducto: productoCategoria.id,
+            producto: putProducto,
+          },
+        });
+        setModalEditar(!modalEditar);
       } else {
-        // El put si tiene foto
-        const { type } = payload.fileMediaImagen;
-        const { fileMediaImagen } = payload;
-        if (type === 'image/jpeg' || type === 'image/png') {
-          toBase64(fileMediaImagen).then((value) => {
-            const imagen = value;
-            const putProducto = {
-              nombre: payload.nombre,
-              descripcion: payload.desc,
-              precio: payload.precio,
-              esVisible: payload.esVisible,
-              esNuevo: payload.esNuevo,
-              isBestProduct: payload.isBestProduct,
-              refCategoria: productoCategoria.refCategoria,
-              imagen,
-            };
-            dispatch({
-              type: PRODUCTO_UPDATE,
-              payload: {
-                idProducto: productoCategoria.id,
-                producto: putProducto,
-              },
-            });
-            setModalEditar(!modalEditar);
-          });
-        } else {
-          // Enviamos la aleta de que la foto no corresponde
-          console.log('Debe ser una imgen tipo png ');
-          notificacionWarning(
-            'La imagen seleccionada debe ser .PNG O .JPEG',
-            'IMAGEN'
-          );
-        }
+        // Enviamos la aleta de que la foto no corresponde
+        console.log('Debe ser una imgen tipo png ');
+        notificacionWarning(
+          'La imagen seleccionada debe ser .PNG O .JPEG',
+          'IMAGEN'
+        );
       }
     }, 500);
   };
@@ -333,16 +383,30 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
                           type="file"
                           name="rutaFoto"
                           onChange={(event) => {
-                            setFieldValue(
-                              'fileMediaImagen',
-                              event.target.files[0]
-                            );
-                            setFieldValue('webPreview', false);
+                            const { type } = event.target.files[0];
+                            if (type === 'image/jpeg' || type === 'image/png') {
+                              setSrc(
+                                URL.createObjectURL(event.target.files[0])
+                              );
+                              setCanAdd(false);
+                              setWebPreview(false);
+                              setError(null);
+                              setModalCut(!modalCut);
+                            } else {
+                              setSrc(null);
+                              setImage(null);
+                              setOutput(null);
+                              setCanAdd(false);
+                              setError(
+                                'Imposible visualizar, debe ser formato PNG O JPEG'
+                              );
+                              setWebPreview(false);
+                            }
                           }}
                         />
                       </InputGroup>
                     </FormGroup>
-                    {values.webPreview ? (
+                    {webPreview && (
                       <div>
                         <img
                           src={apiMediaUrl + values.urlMediaImagen}
@@ -351,9 +415,9 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
                           height="250px"
                         />
                       </div>
-                    ) : (
-                      <PreviewImage file={values.fileMediaImagen} />
                     )}
+                    {output && <PreviewImage base64={output} />}
+                    {error && <Label className="d-block">{error}</Label>}
                   </Colxx>
                   <Colxx xxs="12" xs="12" lg="12" className="mt-1">
                     <Button block color="primary" type="submit">
@@ -393,6 +457,29 @@ const ThumbListViewProductos = ({ productoCategoria }) => {
             Cancelar
           </Button>
         </ModalFooter>
+      </Modal>
+      <Modal isOpen={modalCut} size="lg" toggle={() => toggleModalCut()}>
+        <ModalHeader>Recortando la imagen</ModalHeader>
+        <ModalBody>
+          <div>
+            {src && (
+              <div>
+                <ReactCrop
+                  src={src}
+                  onImageLoaded={setImage}
+                  crop={crop}
+                  onChange={setCrop}
+                />
+                <br />
+                <Button block onClick={cropImageNow}>
+                  Recortar y guardar
+                </Button>
+                <br />
+                <br />
+              </div>
+            )}
+          </div>
+        </ModalBody>
       </Modal>
     </Colxx>
   );
