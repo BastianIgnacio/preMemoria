@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { Row } from 'reactstrap';
 import Pagination from '../../Pagination';
 import ThumbListViewCategorias from './ThumbListViewCategorias';
+import { Colxx } from '../../../../components/common/CustomBootstrap';
 import { CATEGORIA_CHANGE_PAGE } from '../../../../redux/actions';
 
 const ListPageListingCategorias = () => {
@@ -29,7 +30,15 @@ const ListPageListingCategorias = () => {
   return (
     <div>
       {items.length === 0 ? (
-        <Row>No hay CATEGORIAS PARA MOSTRAR</Row>
+        <Row>
+          <Colxx xxs="12" xs="12" lg="12">
+            <div className="d-flex justify-content-center w-100">
+              <div className=" m-2 card-icon w-80">
+                NO HAY CATEGORIAS PARA MOSTRAR
+              </div>
+            </div>
+          </Colxx>
+        </Row>
       ) : (
         <Row>
           {items.map((product) => {

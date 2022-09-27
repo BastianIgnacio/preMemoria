@@ -13,16 +13,16 @@ import {
 } from 'reactstrap';
 import { injectIntl } from 'react-intl';
 import { Colxx, Separator } from '../../../../components/common/CustomBootstrap';
-import { PRODUCTO_CHANGE_PAGE_SIZE, PRODUCTO_CHANGE_CATEGORIA } from '../../../../redux/actions';
+import { PRODUCTO_CHANGE_PAGE_SIZE, PRODUCTO_CHANGE_CATEGORIA, PRODUCTO_OPEN_MODAL } from '../../../../redux/actions';
 
 
 const ListPageHeadingProductos = ({
-  toggleModal,
   heading,
   pageSizes,
 }) => {
   const [displayOptionsIsOpen, setDisplayOptionsIsOpen] = useState(false);
   const dispatch = useDispatch();
+  const items = useSelector((state) => state.productos.items);
   const totalItems = useSelector((state) => state.productos.totalItems);
   const startItem = useSelector((state) => state.productos.startItem);
   const endItem = useSelector((state) => state.productos.endItem);
@@ -53,6 +53,10 @@ const ListPageHeadingProductos = ({
     });
   }
 
+  const openModal = () => {
+    dispatch({ type: PRODUCTO_OPEN_MODAL });
+  };
+
 
   return (
     <Row>
@@ -67,9 +71,14 @@ const ListPageHeadingProductos = ({
               color="primary"
               size="lg"
               className="top-right-button"
-              onClick={() => toggleModal()}
-            >
-              Nuevo Producto
+              onClick={() => openModal()}
+            > {items.length === 0 ? (
+              <> Añadir primer producto a {categoriaSeleccionada.nombre}
+              </>
+            ) : (
+              <>Nuevo Producto
+              </>
+            )}
             </Button>
             {'  '}
           </div>

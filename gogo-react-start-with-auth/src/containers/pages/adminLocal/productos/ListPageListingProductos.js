@@ -36,7 +36,7 @@ const ListPageListingProductos = () => {
     <div>
       {items.length === 0 ? (
         <Row>
-          <ThumbListViewEmpty />
+          <ThumbListViewEmpty categoriaSeleccionada={categoriaSeleccionada} />
         </Row>
       ) : (
         <Row>

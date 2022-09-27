@@ -74,8 +74,6 @@ const getCategoriasAsync = async (refLocalComercial) => {
 //* * FUNCIONES */
 function* cargarCategorias({ payload }) {
   const { refLocalComercial } = payload;
-  console.log('refLocal comercial');
-  console.log(refLocalComercial);
   try {
     // eslint-disable-next-line no-unused-vars
     const llamada = yield call(getCategoriasAsync, refLocalComercial);

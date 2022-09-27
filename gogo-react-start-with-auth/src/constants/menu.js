@@ -39,14 +39,14 @@ const data = [
       {
         icon: 'simple-icon-briefcase',
         label: 'menu.ordenesvisualizador',
-        to: `${adminRoot}/dashboards/default`,
-        // roles: [UserRole.Admin],
+        to: `${adminRoot}/ordenes`,
+        roles: [UserRole.AdminLocalComercial],
       },
       {
         icon: 'simple-icon-pie-chart',
         label: 'menu.ordenesCanceladas',
-        to: `${adminRoot}/dashboards/analytics`,
-        // roles: [UserRole.Admin],
+        to: `${adminRoot}/ordenesCanceladas`,
+        roles: [UserRole.AdminLocalComercial],
       },
     ],
   },

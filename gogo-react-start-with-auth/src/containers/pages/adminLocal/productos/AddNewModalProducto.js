@@ -24,9 +24,10 @@ import 'react-image-crop/lib/ReactCrop.scss';
 
 import { NotificationManager } from '../../../../components/common/react-notifications';
 // eslint-disable-next-line no-unused-vars
-import { PRODUCTO_ADD } from '../../../../redux/actions';
+import { PRODUCTO_ADD, PRODUCTO_CLOSE_MODAL } from '../../../../redux/actions';
 
-const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
+const AddNewModalProducto = () => {
+  const modalOpen = useSelector((state) => state.productos.modalOpen);
   // eslint-disable-next-line no-unused-vars
   const dispatch = useDispatch();
   const categoriaSeleccionada = useSelector(
@@ -47,6 +48,11 @@ const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
   const [output, setOutput] = useState(null);
   const [canAdd, setCanAdd] = useState(false);
   const [error, setError] = useState('No hay imagen seleccionada');
+
+  // Metodo para cerrar el modal
+  const closeModal = () => {
+    dispatch({ type: PRODUCTO_CLOSE_MODAL });
+  };
 
   // Metodo para ocultar imagen al cerrar el modal de recorte
   const toggleModalCut = () => {
@@ -131,7 +137,7 @@ const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
         console.log(producto);
         dispatch({ type: PRODUCTO_ADD, payload: producto });
         // Cerramos el modal y reseteamos el formik
-        toggleModal();
+        closeModal();
         resetForm();
         // Reseteamos la imagen seleccionada
         setSrc(null);
@@ -177,12 +183,12 @@ const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
         <>
           <Modal
             isOpen={modalOpen}
-            toggle={toggleModal}
+            toggle={closeModal}
             wrapClassName="modal-right"
             backdrop="static"
           >
             <Form className="av-tooltip tooltip-label-bottom">
-              <ModalHeader toggle={toggleModal}>
+              <ModalHeader toggle={() => closeModal()}>
                 Añadir Producto a {categoriaSeleccionada.nombre}
               </ModalHeader>
               <ModalBody>
@@ -295,7 +301,7 @@ const AddNewModalProducto = ({ modalOpen, toggleModal }) => {
                     setOutput(null);
                     setCanAdd(false);
                     setError('No hay imagen seleccionada');
-                    toggleModal();
+                    closeModal();
                   }}
                 >
                   Cancelar

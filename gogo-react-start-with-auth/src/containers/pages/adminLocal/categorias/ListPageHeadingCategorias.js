@@ -29,6 +29,7 @@ const ListPageHeadingCategorias = ({
     (state) => state.categorias.itemsPorPagina
   );
   const idTienda = useSelector((state) => state.authUser.tienda.id);
+  const items = useSelector((state) => state.categorias.items);
 
   const changePageSize = (nuevosItemsPorPagina) => {
     dispatch({
@@ -55,7 +56,10 @@ const ListPageHeadingCategorias = ({
               className="top-right-button"
               onClick={() => toggleModal()}
             >
-              Nueva Categoria
+              {items.length === 0 ? (
+                <>Añade tu Primera Categoria </>
+
+              ) : (<> Nueva Categoria</>)}
             </Button>
             {'  '}
           </div>

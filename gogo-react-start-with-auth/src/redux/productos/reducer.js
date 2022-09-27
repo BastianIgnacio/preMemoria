@@ -11,6 +11,8 @@ import {
   PRODUCTO_SET_SELECTED_CATEGORIA,
   PRODUCTO_SET_CATEGORIAS,
   PRODUCTO_SET_CATEGORIA_ID,
+  PRODUCTO_OPEN_MODAL,
+  PRODUCTO_CLOSE_MODAL,
 } from '../actions';
 
 const INIT_STATE = {
@@ -20,11 +22,13 @@ const INIT_STATE = {
   items: [],
   categoriasTienda: [],
   existenCategorias: false,
-  categoriaSeleccionada: null,
+  categoriaSeleccionada: [],
   paginas: 1,
   startItem: 0,
   endItem: 0,
   totalItems: 0,
+  // Funcionamiento del modal
+  modalOpen: false,
 };
 
 export default (state = INIT_STATE, action) => {
@@ -83,11 +87,22 @@ export default (state = INIT_STATE, action) => {
         ...state,
         categoriasTienda: action.payload.categoriasTienda,
         existenCategorias: action.payload.existenCategorias,
+        isLoaded: true,
       };
     case PRODUCTO_SET_CATEGORIA_ID:
       return {
         ...state,
         categoriaSeleccionadaId: action.payload,
+      };
+    case PRODUCTO_OPEN_MODAL:
+      return {
+        ...state,
+        modalOpen: true,
+      };
+    case PRODUCTO_CLOSE_MODAL:
+      return {
+        ...state,
+        modalOpen: false,
       };
     default:
       return { ...state };

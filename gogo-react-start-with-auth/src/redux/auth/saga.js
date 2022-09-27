@@ -12,6 +12,7 @@ import {
   CLICK_CARGAR_DATOS_TIENDA,
   CARGAR_DATOS_TIENDA,
   TIENDA_UPDATE,
+  CONFIGURACION_LOADING,
 } from '../actions';
 
 import {
@@ -213,6 +214,7 @@ function* resetPassword({ payload }) {
 function* cargarTienda({ payload }) {
   const refTienda = payload;
   try {
+    yield put({ type: CONFIGURACION_LOADING });
     const tienda = yield call(getTiendaAsync, refTienda);
     setCurrentTienda(tienda);
     yield put({

@@ -9,7 +9,6 @@ import classnames from 'classnames';
 import PerfectScrollbar from 'react-perfect-scrollbar';
 
 import IntlMessages from '../../helpers/IntlMessages';
-
 import {
   setContainerClassnames,
   addContainerClassname,
@@ -280,9 +279,6 @@ class Sidebar extends Component {
         viewingParentMenu: selectedParent,
         selectedParentMenu: selectedParent,
       });
-      // Aca enviamos la action 
-      console.log('Enviando Action');
-      console.log(menuItem.id);
       this.toggle();
     } else {
       e.preventDefault();
