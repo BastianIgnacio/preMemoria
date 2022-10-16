@@ -9,11 +9,10 @@ const ConfiguracionTienda = () => {
   const configuracionTiendaLoading = useSelector(
     (state) => state.authUser.configuracionTiendaLoading
   );
-  const refTienda = useSelector((state) => state.authUser.idTienda);
+  const refTienda = useSelector((state) => state.authUser.tienda.id);
 
   useEffect(() => {
     if (configuracionTiendaLoading) {
-      console.log('llamando api');
       dispatch({
         type: CLICK_CARGAR_DATOS_TIENDA,
         payload: refTienda,

@@ -1,4 +1,11 @@
-import { all, call, fork, takeEvery, put } from 'redux-saga/effects';
+import {
+  all,
+  call,
+  fork,
+  takeEvery,
+  put,
+  takeLatest,
+} from 'redux-saga/effects';
 import axios from 'axios';
 import { apiRestUrl } from '../../constants/defaultValues';
 import { NotificationManager } from '../../components/common/react-notifications';
@@ -397,7 +404,7 @@ function* changePage({ payload }) {
 }
 
 export function* watchAddProducto() {
-  yield takeEvery(PRODUCTO_ADD, addProducto);
+  yield takeLatest(PRODUCTO_ADD, addProducto);
 }
 export function* watchUpdateProducto() {
   yield takeEvery(PRODUCTO_UPDATE, updateProducto);

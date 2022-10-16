@@ -69,8 +69,7 @@ const TopNav = ({
         to={`${tiendaRoot}/${link}`}
         onClick={() => verTienda()}
       >
-        <span className="logo d-none d-xs-block" />
-        <span className="logo-mobile d-block d-xs-none" />
+        LOGO TIENDA
       </NavLink>
 
       <div className="navbar-right">

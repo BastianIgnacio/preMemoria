@@ -28,13 +28,6 @@ const notificacionSuccess = (titulo, subtitulo) => {
 
 //* * LLAMADAS AXIOS POST, DELETE, PUT, GET */
 
-// DELETE para eliminar un producto de una categoria
-const deleteProductoAsync = async (idProducto) =>
-  axios.delete(`${apiRestUrl}/productoCategorias/${idProducto}/`);
-// PUT para editar una categoria
-const putProductoAsync = async (idProducto, producto) =>
-  axios.put(`${apiRestUrl}/productoCategorias/${idProducto}/`, producto);
-
 // GET para obtener una tienda en base al link
 const getOrdenAsync = async (link) => {
   return axios
@@ -68,6 +61,17 @@ const getProductosAsync = async (refCategoria) => {
     });
 };
 
+// GET para obtener los productos de una categoria
+const getMejoresProductosAsync = async (refLocalComercial) => {
+  return axios
+    .get(
+      `${apiRestUrl}/productoCategoriaMejoresProductos/?refLocalComercial=${refLocalComercial}`
+    )
+    .then((res) => {
+      return res.data;
+    });
+};
+
 //* * FUNCIONES */
 // Funcion para CARGAR LA TIENDA
 function* cargarTienda({ payload }) {
@@ -88,6 +92,10 @@ function* cargarTienda({ payload }) {
     } else {
       const tienda = results[0];
       const dataCategorias = yield call(getCategoriasAsync, tienda.id);
+      const dataMejoresProductos = yield call(
+        getMejoresProductosAsync,
+        tienda.id
+      );
       yield put({
         type: TIENDA_SET_TIENDA,
         payload: {
@@ -111,6 +119,8 @@ function* cargarTienda({ payload }) {
           idTienda: tienda.id,
           link: tienda.link,
           telefono: tienda.telefono,
+          abierto: tienda.abierto,
+          mejoresProductos: dataMejoresProductos.results,
         },
       });
     }

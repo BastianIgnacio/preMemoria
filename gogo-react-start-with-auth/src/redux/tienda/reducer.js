@@ -27,6 +27,7 @@ const INIT_STATE = {
   direccion: '',
   telefono: '',
   estado: 'CERRADO',
+  abierto: false,
   horarioAtencion: '',
   tieneDelivery: false,
   tieneMercadopago: false,
@@ -34,6 +35,7 @@ const INIT_STATE = {
   categorias: [],
   categoriaSeleccionada: [],
   productos: [],
+  mejoresProductos: [],
   //
   productoSeleccionado: [],
   contadorProducto: 0,
@@ -68,6 +70,8 @@ export default (state = INIT_STATE, action) => {
         idTienda: action.payload.idTienda,
         link: action.payload.link,
         telefono: action.payload.telefono,
+        mejoresProductos: action.payload.mejoresProductos,
+        abierto: action.payload.abierto,
       };
     case TIENDA_SET_CATEGORIAS:
       return {

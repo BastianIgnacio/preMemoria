@@ -12,6 +12,7 @@ import {
 import { Formik, Form, Field } from 'formik';
 import * as Yup from 'yup';
 import { useDispatch, useSelector } from 'react-redux';
+import { useHistory } from 'react-router-dom';
 import { FormikSwitch } from '../../containers/form-validations/FormikFields';
 import { Colxx } from '../../components/common/CustomBootstrap';
 import { regionesChile } from '../../constants/defaultValues';
@@ -19,8 +20,29 @@ import { TIENDA_UPDATE } from '../../redux/actions';
 import { NotificationManager } from '../../components/common/react-notifications';
 
 const ConfiguracionTiendaCard = () => {
-  const notificacionWarning = (titulo, subtitulo) => {
-    NotificationManager.warning(titulo, subtitulo, 4000, null, null, 'filled');
+  const history = useHistory();
+  const notificacionWarning = (titulo, subtitulo, historyRef) => {
+    if (historyRef) {
+      NotificationManager.warning(
+        titulo,
+        subtitulo,
+        4000,
+        () => {
+          history.push(historyRef);
+        },
+        null,
+        'filled'
+      );
+    } else {
+      NotificationManager.warning(
+        titulo,
+        subtitulo,
+        4000,
+        null,
+        null,
+        'filled'
+      );
+    }
   };
 
   const dispatch = useDispatch();
@@ -72,7 +94,6 @@ const ConfiguracionTiendaCard = () => {
       ...values,
     };
     setTimeout(() => {
-      console.log(JSON.stringify(payload, null, 2));
       setSubmitting(false);
       const putTienda = {
         nombre: payload.nombre,
@@ -371,8 +392,13 @@ const ConfiguracionTiendaCard = () => {
                               !tieneMercadopago
                             ) {
                               notificacionWarning(
-                                'Debes habilitar la opción Delivery y ademas debes activar la opcion de recibir compras con MercadoPago ',
+                                'Primero: Debes habilitar la opción Recibir ordenes con servicio delivery',
                                 'Error de activacion'
+                              );
+                              notificacionWarning(
+                                'Segundo: Debes activar la opcion Recibir pagos con platadorma MERCADOPAGO ',
+                                'Error de activacion',
+                                '/app/configuracionMercadoPago'
                               );
                               return;
                             }
@@ -384,8 +410,9 @@ const ConfiguracionTiendaCard = () => {
                             }
                             if (!tieneMercadopago) {
                               notificacionWarning(
-                                'Debes tener activar la opcion de recibir compras con MercadoPago',
-                                'Error de activacion'
+                                'Segundo: Debes activar la opcion Recibir pagos con platadorma MERCADOPAGO ',
+                                'Error de activacion',
+                                '/app/configuracionMercadoPago'
                               );
                             }
                           }
@@ -505,8 +532,13 @@ const ConfiguracionTiendaCard = () => {
                               !tieneMercadopago
                             ) {
                               notificacionWarning(
-                                'Debes habilitar la opción retiro en local y ademas debes activar la opcion de recibir compras con MercadoPago ',
+                                'Primero: Debes habilitar la opción Recibir ordenes con retiro en local',
                                 'Error de activacion'
+                              );
+                              notificacionWarning(
+                                'Segundo: Debes activar la opcion Recibir pagos con platadorma MERCADOPAGO ',
+                                'Error de activacion',
+                                '/app/configuracionMercadoPago'
                               );
                               return;
                             }
@@ -518,8 +550,9 @@ const ConfiguracionTiendaCard = () => {
                             }
                             if (!tieneMercadopago) {
                               notificacionWarning(
-                                'Debes tener activar la opcion de recibir compras con MercadoPago',
-                                'Error de activacion'
+                                'Debes activar la opcion Recibir pagos con platadorma MERCADOPAGO ',
+                                'Error de activacion',
+                                '/app/configuracionMercadoPago'
                               );
                             }
                           }

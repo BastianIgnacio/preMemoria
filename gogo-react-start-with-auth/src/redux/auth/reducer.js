@@ -22,7 +22,6 @@ import { getCurrentUser, getCurrentTienda } from '../../helpers/Utils';
 const INIT_STATE = {
   currentUser: getCurrentUser(),
   // Variables Redux para la configuracion de la tienda
-  idTienda: getCurrentTienda().id,
   tienda: getCurrentTienda(),
   configuracionTiendaLoading: true,
   forgotUserMail: '',
@@ -107,7 +106,6 @@ export default (state = INIT_STATE, action) => {
         ...state,
         loading: false,
         tienda: action.payload,
-        idTienda: action.payload.id,
         configuracionTiendaLoading: false,
         error: '',
       };

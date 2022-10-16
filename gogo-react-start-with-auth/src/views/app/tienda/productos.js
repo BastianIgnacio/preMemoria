@@ -23,7 +23,7 @@ import { useParams, NavLink, useHistory } from 'react-router-dom';
 import { Colxx, Separator } from '../../../components/common/CustomBootstrap';
 import BreadcrumbTienda from '../../../containers/navs/BreadcrumbTienda';
 import { NotificationManager } from '../../../components/common/react-notifications';
-import { TIENDA_CARGAR_PRODUCTOS_CATEGORIA, TIENDA_CERRAR_MODAL_PRODUCTO, TIENDA_SET_PRODUCTO_SELECCIONADO, TIENDA_DETALLE_MODAL, TIENDA_VOLVER_A_CATEGORIAS, CARRITO_INIT } from '../../../redux/actions';
+import { TIENDA_CERRAR_MODAL_PRODUCTO, TIENDA_SET_PRODUCTO_SELECCIONADO, TIENDA_DETALLE_MODAL, TIENDA_VOLVER_A_CATEGORIAS, CARRITO_INIT } from '../../../redux/actions';
 import { apiMediaUrl } from '../../../constants/defaultValues';
 
 const ResponsiveEllipsis = responsiveHOC()(LinesEllipsis);
@@ -182,7 +182,7 @@ const ProductosCategoria = (props) => {
       {existeTienda && (
         <Row className="background-tienda d-flex justify-content-center">
           <div className="mb-4  background-tienda-contents w-96">
-            <Button color="primary" size="lg" block className="mb-2 d-flex justify-content-between rounded-0 " onClick={volverCategorias}>
+            <Button color="primary" size="lg" block className="mb-2 d-flex justify-content-between rounded-top rounded-bottom " onClick={volverCategorias}>
               <div className=" mr-auto iconsminds-arrow-left-2" >
                 {reformatStringUpperCase(categoriaSeleccionada.nombre)}
               </div>
@@ -269,48 +269,54 @@ const ProductosCategoria = (props) => {
                   onSubmit={(event, errors, values) => onSubmit(event, errors, values)}
                 >
                   <Colxx xxs="12" xs="12" lg="12">
-                    <Card className="card-modal mb-2">
+                    <Card className="mb-1">
                       <CardBody>
-                        <CardText className="text-muted text-center text-medium mb-2 font-weight-bold">
-                          {reformatString(productoSeleccionado.nombre)} ${productoSeleccionado.precio}
-                        </CardText>
-                        <Separator className="mb-2" />
-                        <p className="overflow-auto text-muted text-center text-medium mb-2 font-weight-light">
-                          {reformatString(productoSeleccionado.descripcion)}
-                        </p>
-                      </CardBody>
-                      <Row className="d-flex justify-content-center m-1 ">
-                        <div className="w-70 m-2 ">
-                          <CardImg
-                            top
-                            src={apiMediaUrl + productoSeleccionado.imagen}
-                            alt="Card image cap"
-                          />
-                        </div>
-                        <Colxx xxs="12" xs="12" lg="12" className="text-center mb-2 mt-3" >
-                          <CardText className="text-muted text-center text-large font-weight-bold">
-                            $ {total}
-                          </CardText>
-                        </Colxx>
-                        <Colxx xxs="12" xs="12" lg="12" className="text-center mb-2 ">
-                          <ButtonGroup >
-                            <Button color="primary" block onClick={() => restarProducto()}>
-                              -
-                            </Button>
-                            <Button color="primary">
-                              {contadorProducto}
-                            </Button>
-                            <Button color="primary" onClick={() => sumarProducto()}>
-                              +
-                            </Button>
-                          </ButtonGroup>
-                        </Colxx>
+                        <Row className="d-flex justify-content-center ">
+                          <Colxx xxs="12" xs="12" lg="12" className="mb-2" >
+                            <CardText className="text-muted text-center text-medium mb-1 font-weight-bold">
+                              {reformatString(productoSeleccionado.nombre)}
+                            </CardText>
+                            <Separator className="mb-2" />
+                          </Colxx>
+                          <Colxx xxs="12" xs="12" lg="12" className="mb-2" >
+                            <CardText className="text-muted text-center text-medium mb-1 ">
+                              {reformatString(productoSeleccionado.descripcion)}
+                            </CardText>
+                          </Colxx>
 
-                      </Row>
+                          <Colxx xxs="12" xs="12" lg="12" className="mb-3 text-center" >
+                            <div >
+                              <img
+                                src={apiMediaUrl + productoSeleccionado.imagen}
+                                alt="product"
+                                className="w-100 rounded-top rounded-bottom"
+                              />
+                            </div>
+                          </Colxx>
+                          <Colxx xxs="12" xs="12" lg="12" className="text-center mb-4">
+                            <div className="d-flex justify-content-around">
+                              <Button color="primary" block className="font-weight-bold btn-lg default rounded-top rounded-bottom ml-1 " outline onClick={() => restarProducto()}>
+                                -
+                              </Button>
+                              <Button color="primary" className=" default rounded-top rounded-bottom ml-1 mr-1" disabled >
+                                {contadorProducto}
+                              </Button>
+                              <Button color="primary" block className="border-5 font-weight-bold  text-medium  btn-lg default rounded-top rounded-bottom mr-1" outline onClick={() => sumarProducto()}>
+                                +
+                              </Button>
+                            </div>
+                          </Colxx>
+                          <Colxx xxs="12" xs="12" lg="12" className="text-center " >
+                            <CardText className="text-muted text-start text-large font-weight-bold">
+                              $ {total}
+                            </CardText>
+                          </Colxx>
+                        </Row>
+                      </CardBody>
                     </Card>
                   </Colxx>
                   <Colxx xxs="12" xs="12" lg="12">
-                    <Card className="card-modal mb-2">
+                    <Card className="mb-2">
                       <CardBody>
                         <AvGroup>
                           <CardText className="text-muted text-center text-medium mb-2 font-weight-bold">

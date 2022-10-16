@@ -11,7 +11,7 @@ const ConfiguracionMercadoPago = () => {
   const configuracionTiendaLoading = useSelector(
     (state) => state.authUser.configuracionTiendaLoading
   );
-  const refTienda = useSelector((state) => state.authUser.idTienda);
+  const refTienda = useSelector((state) => state.authUser.tienda.id);
 
   useEffect(() => {
     if (configuracionTiendaLoading) {
