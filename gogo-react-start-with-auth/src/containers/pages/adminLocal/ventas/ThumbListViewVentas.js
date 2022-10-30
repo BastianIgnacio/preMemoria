@@ -27,6 +27,8 @@ const ThumbListViewVentas = ({ venta }) => {
   const [modalDetalle, setModalDetalle] = useState(false);
   const [modalOrden, setModalOrden] = useState(false);
   const tipoPago = venta.tipoPago.toUpperCase();
+  const estadoPago = venta.estadoPago.toUpperCase();
+  const estadoVenta = venta.estadoVenta.toUpperCase();
 
   const formatDate = (date) => {
     const d = new Date(date);
@@ -89,6 +91,16 @@ const ThumbListViewVentas = ({ venta }) => {
               <div className="w-5 w-sm-10 mb-1">
                 <Badge color={venta.statusColor} pill>
                   {tipoPago}
+                </Badge>
+              </div>
+              <div className="w-5 w-sm-10 mb-1">
+                <Badge color={venta.statusColor} pill>
+                  {estadoPago}
+                </Badge>
+              </div>
+              <div className="w-5 w-sm-10 mb-1">
+                <Badge color={venta.statusColor} pill>
+                  {estadoVenta}
                 </Badge>
               </div>
               <Button

@@ -41,7 +41,7 @@ const AddNewModalLocalComercial = ({ modalOpen, toggleModal }) => {
         horarioAtencion: 'seteado',
         tieneDelivery: false,
         estado: 'Cerrado',
-        privateKeyMercadopago: 'NO',
+        accessTokenMercadopago: 'NO',
         publicKeyMercadopago: 'NO',
         logo: 'deafult',
       };

@@ -33,6 +33,7 @@ import {
 } from '../../../redux/actions';
 import { tiposPago, estadosPago, estadosVenta, tiposEntrega, estadosOrden, apiMediaUrl } from '../../../constants/defaultValues';
 import CardEnviarPedido from './CardEnviarPedido';
+import MercadoPagoCheckOutPro from './MercadoPagoCheckOutPro';
 
 const Carrito = () => {
   // ID DE LA TIENDA QUE ESTAMOS CARGANDO EN EL COMPONENTE
@@ -48,6 +49,8 @@ const Carrito = () => {
   const [modalFinalizarCompra, setModalFinalizarCompra] = useState(false);
   const [modalEliminar, setModalEliminar] = useState(false);
   const [modalEnviandoOrden, setModalEnviandoOrden] = useState(false);
+  // eslint-disable-next-line no-unused-vars
+  const [modalMercadoPago, setModalMercadoPago] = useState(false);
 
   // VARIABLES PARA UN PEDIDO
   const [venta, setVenta] = useState([]);
@@ -369,10 +372,10 @@ const Carrito = () => {
           total,
           // tipo de pago 1 = DEBITO_CREDITO_MERCADOPAGO
           tipoPago: tiposPago[2].id,
-          // estado de pago 1 = PAGADO
-          estadoPago: estadosPago[1].id,
-          // estado de venta 1 = FINALIZADO
-          estadoVenta: estadosVenta[1].id,
+          // estado de pago 1 = EN_ESPERA_PAGO
+          estadoPago: estadosPago[0].id,
+          // estado de venta 1 = EN_PROCESO
+          estadoVenta: estadosVenta[0].id,
           refLocalComercial: idTienda,
         }
         setVenta(ventaPrev);
@@ -584,10 +587,10 @@ const Carrito = () => {
           total,
           // tipo de pago 1 = DEBITO_CREDITO_MERCADOPAGO
           tipoPago: tiposPago[2].id,
-          // estado de pago 1 = PAGADO
-          estadoPago: estadosPago[1].id,
-          // estado de venta 1 = FINALIZADO
-          estadoVenta: estadosVenta[1].id,
+          // estado de pago 1 = EN_ESPERA_PAGO
+          estadoPago: estadosPago[0].id,
+          // estado de venta 1 = EN_PROCESO
+          estadoVenta: estadosVenta[0].id,
           refLocalComercial: idTienda,
         }
         setVenta(ventaPrev);
@@ -654,6 +657,11 @@ const Carrito = () => {
     <div className="d-flex justify-content-center">
       <Row className="background-tienda d-flex justify-content-center">
         <div className="mb-4  background-tienda-contents w-96">
+          <Button color="primary" size="lg" block className="mb-2 d-flex justify-content-between rounded-top rounded-bottom " >
+            <div className=" mr-auto iconsminds-arrow-left-2" >
+              Carrito de compras
+            </div>
+          </Button>{' '}
           <Card>
             <CardBody>
               <Row className="d-flex justify-content-center">
@@ -1161,7 +1169,18 @@ const Carrito = () => {
       >
         <ModalBody>
           <CardEnviarPedido modal={setModalEnviandoOrden} venta={venta} localComercialData={localComercialData}
-            productosVenta={productosVenta} orden={orden} productosOrden={productosOrden} link={link} history={history} />
+            productosVenta={productosVenta} orden={orden} productosOrden={productosOrden} link={link} history={history}
+            modalMercadoPago={setModalMercadoPago} modalFinalizarCompra={setModalFinalizarCompra} />
+        </ModalBody>
+      </Modal>
+      <Modal
+        isOpen={modalMercadoPago}
+        toggle={() => {
+          console.log('cancelando');
+        }}
+      >
+        <ModalBody>
+          <MercadoPagoCheckOutPro />
         </ModalBody>
       </Modal>
     </div>

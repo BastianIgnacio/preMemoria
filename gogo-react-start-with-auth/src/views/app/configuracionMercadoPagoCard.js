@@ -19,7 +19,7 @@ const ConfiguracionMercadoPagoCard = () => {
   const refTienda = tienda.id;
   const {
     publicKeyMercadopago,
-    privateKeyMercadopago,
+    accessTokenMercadopago,
     tieneMercadopago,
   } = tienda;
 
@@ -32,7 +32,7 @@ const ConfiguracionMercadoPagoCard = () => {
       const putTienda = {
         ...tienda,
         publicKeyMercadopago: payload.publicKeyMercadopago,
-        privateKeyMercadopago: payload.privateKeyMercadopago,
+        accessTokenMercadopago: payload.accessTokenMercadopago,
         tieneMercadopago: payload.switchTieneMercadopago,
       }
       if (!putTienda.tieneMercadopago) {
@@ -54,8 +54,8 @@ const ConfiguracionMercadoPagoCard = () => {
   const SignupSchema = Yup.object().shape({
     publicKeyMercadopago: Yup.string()
       .required('Por favor ingresar la Public Key de MercadoPago').matches(/^(\S+$)/g, 'Este campo no puede tener espacios en blanco.'),
-    privateKeyMercadopago: Yup.string()
-      .required('Por favor ingresar la PrivateKey de MercadoPago').matches(/^(\S+$)/g, 'Este campo no puede tener espacios en blanco.'),
+    accessTokenMercadopago: Yup.string()
+      .required('Por favor ingresar el Access Token de MercadoPago').matches(/^(\S+$)/g, 'Este campo no puede tener espacios en blanco.'),
   });
 
 
@@ -72,7 +72,7 @@ const ConfiguracionMercadoPagoCard = () => {
               enableReinitialize
               initialValues={{
                 publicKeyMercadopago,
-                privateKeyMercadopago,
+                accessTokenMercadopago,
                 switchTieneMercadopago: tieneMercadopago,
               }}
               onSubmit={onSubmit}
@@ -93,7 +93,7 @@ const ConfiguracionMercadoPagoCard = () => {
                   <Row>
                     <Colxx xxs="12" xs="12" lg="12" className="m-1">
                       <FormGroup className="form-group has-top-label">
-                        <Label>PUBLICK KEY MERCADOPAGO </Label>
+                        <Label>PUBLICK KEY DE MERCADOPAGO </Label>
                         <Field
                           className="form-control"
                           name="publicKeyMercadopago"
@@ -108,15 +108,15 @@ const ConfiguracionMercadoPagoCard = () => {
                     </Colxx>
                     <Colxx xxs="12" xs="12" lg="12" className="m-1">
                       <FormGroup className="form-group has-top-label">
-                        <Label>PRIVATE KEY MERCADOPAGO </Label>
+                        <Label>ACCESS TOKEN DE MERCADOPAGO </Label>
                         <Field
                           className="form-control"
-                          name="privateKeyMercadopago"
+                          name="accessTokenMercadopago"
                         />
-                        {errors.privateKeyMercadopago &&
-                          touched.privateKeyMercadopago ? (
+                        {errors.accessTokenMercadopago &&
+                          touched.accessTokenMercadopago ? (
                           <div className="invalid-feedback d-block">
-                            {errors.privateKeyMercadopago}
+                            {errors.accessTokenMercadopago}
                           </div>
                         ) : null}
                       </FormGroup>

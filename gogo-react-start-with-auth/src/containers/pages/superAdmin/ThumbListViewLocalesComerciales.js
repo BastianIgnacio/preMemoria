@@ -120,7 +120,7 @@ const ThumbListViewLocalesComerciales = ({ localComercial, collect }) => {
       .min(largoKeyMercadopago, `El largo debe ser de ${largoKeyMercadopago} caracteres`)
       .max(largoKeyMercadopago, `El largo debe ser de ${largoKeyMercadopago} caracteres`)
       .matches(/^\S*$/, 'No son permitidos los espacios en blanco.'),
-    privateKeyMercadopago: Yup.string().required('Requerido!')
+    accessTokenMercadopago: Yup.string().required('Requerido!')
       .min(largoKeyMercadopago, `El largo debe ser de ${largoKeyMercadopago} caracteres`)
       .max(largoKeyMercadopago, `El largo debe ser de ${largoKeyMercadopago} caracteres`)
       .matches(/^\S*$/, 'No son permitidos los espacios en blanco.'),

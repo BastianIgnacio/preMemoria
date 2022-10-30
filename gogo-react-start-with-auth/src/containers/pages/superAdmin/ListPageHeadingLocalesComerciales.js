@@ -160,7 +160,7 @@ const ListPageHeading = () => {
       horarioAtencion: 'HORARIOTIENDA',
       estado: 'Cerrado',
       publicKeyMercadopago: '-------------------',
-      privateKeyMercadopago: '-------------------',
+      accessTokenMercadopago: '-------------------',
       tieneMercadopago: false,
     };
 

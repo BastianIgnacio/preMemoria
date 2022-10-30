@@ -31,15 +31,7 @@ import {
 const notificacionError = (titulo, subtitulo) => {
   NotificationManager.error(titulo, subtitulo, 4000, null, null, 'filled');
 };
-const notificacionSuccess = (titulo, subtitulo) => {
-  NotificationManager.success(titulo, subtitulo, 4000, null, null, 'filled');
-};
-
 //* * LLAMADAS AXIOS POST, DELETE, PUT, GET */
-
-// DELETE para eliminar un producto de una categoria
-const deleteProductoAsync = async (idProducto) =>
-  axios.delete(`${apiRestUrl}/productoCategorias/${idProducto}/`);
 // PUT para editar una categoria
 const putProductoAsync = async (idProducto, producto) =>
   axios.put(`${apiRestUrl}/productoCategorias/${idProducto}/`, producto);
@@ -68,7 +60,7 @@ const getVentasLimitOffsetAsync = async (
       return res.data;
     });
 };
-// GET para obtener las VENTAS DE UN LOCAL COMERCIAL con limit y offset
+// GET para obtener los productos de una venta
 const getProductosVentaAsync = async (refVenta) => {
   return axios
     .get(`${apiRestUrl}/productoVentas/?refVenta=${refVenta}`)

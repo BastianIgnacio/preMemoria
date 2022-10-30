@@ -48,7 +48,7 @@ const ConfiguracionTiendaCard = () => {
   const dispatch = useDispatch();
   const tienda = useSelector((state) => state.authUser.tienda);
   const refTienda = tienda.id;
-  const { privateKeyMercadopago, publicKeyMercadopago, estado } = tienda;
+  const { accessTokenMercadopago, publicKeyMercadopago, estado } = tienda;
 
   const { tieneMercadopago } = tienda;
   // Metodos de Entrega
@@ -111,7 +111,7 @@ const ConfiguracionTiendaCard = () => {
         pagoRetiroLocalEfectivo: payload.switchPagoRetiroLocalEfectivo,
         pagoRetiroLocalPos: payload.switchPagoRetiroLocalPos,
         pagoRetiroLocalMercadopago: payload.switchPagoRetiroLocalMercadopago,
-        privateKeyMercadopago,
+        accessTokenMercadopago,
         publicKeyMercadopago,
         estado,
       };

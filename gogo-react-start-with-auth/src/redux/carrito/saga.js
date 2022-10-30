@@ -34,6 +34,9 @@ import {
   CARRITO_PROCESAR,
   CARRITO_SUCCESS,
   CARRITO_CARGAR_CARRITO_SUM_RES,
+  CARRITO_PROCESAR_MERCADOPAGO,
+  CARRITO_RESPONSE_MERCADOPAGO,
+  VENTA_CHANGE_DATE,
 } from '../actions';
 
 /** NOTIFICACIONES  */
@@ -75,13 +78,6 @@ const formatDateHora = (date) => {
 
 //* * LLAMADAS AXIOS POST, DELETE, PUT, GET */
 
-// DELETE para eliminar un producto de una categoria
-const deleteProductoAsync = async (idProducto) =>
-  axios.delete(`${apiRestUrl}/productoCategorias/${idProducto}/`);
-// PUT para editar una categoria
-const putProductoAsync = async (idProducto, producto) =>
-  axios.put(`${apiRestUrl}/productoCategorias/${idProducto}/`, producto);
-
 // GET para obtener una tienda en base al link
 const getTiendaAsync = async (link) => {
   return axios
@@ -90,19 +86,13 @@ const getTiendaAsync = async (link) => {
       return res.data;
     });
 };
-// GET para obtener una tienda en base al link
-const getCategoriasAsync = async (refLocalComercial) => {
-  return axios
-    .get(`${apiRestUrl}/categorias/?refLocalComercial=${refLocalComercial}`)
-    .then((res) => {
-      return res.data;
-    });
-};
 
-// GET para obtener los productos de una categoria
-const getProductosAsync = async (refCategoria) => {
+// GET para obtener la informacion de un payment
+const getPaymentInfoAsync = async (payment, accessToken) => {
   return axios
-    .get(`${apiRestUrl}/productoCategorias/?refCategoria=${refCategoria}`)
+    .get(
+      `https://api.mercadopago.com/v1/payments/${payment}/?access_token=${accessToken}`
+    )
     .then((res) => {
       return res.data;
     });
@@ -111,6 +101,10 @@ const getProductosAsync = async (refCategoria) => {
 // Post para agregar una venta a un local Comercial
 const postAddVentaAsync = async (venta) =>
   axios.post(`${apiRestUrl}/ventas/`, venta);
+
+const putVentaAsync = async (idVenta, venta) =>
+  axios.put(`${apiRestUrl}/ventas/${idVenta}/`, venta);
+
 // Post para agregar un productoVenta a una venta
 const postAddProductoVentaAsync = async (productoVenta) =>
   axios.post(`${apiRestUrl}/productoVentas/`, productoVenta);
@@ -121,6 +115,10 @@ const postAddOrdenAsync = async (orden) =>
 // Post para agregar un productoOrden a una orden
 const postAddProductoOrdenAsync = async (productoOrden) =>
   axios.post(`${apiRestUrl}/productoOrdens/`, productoOrden);
+
+// Post para crear una preferencia en MercadoPago Desde nuestra API
+const postCreatePreference = async (productos) =>
+  axios.post(`${apiRestUrl}/mercadoPago/`, productos);
 
 //* * FUNCIONES */
 // Funcion para actualizar los items que se muestran
@@ -357,72 +355,250 @@ function* carritoProcesar({ payload }) {
     link,
     localComercialData,
     ordenSuccess,
+    mercadoPago,
+    modalCard,
+    modalMercadoPago,
+    modalFinalizarCompra,
   } = payload;
   try {
-    // ENVIAMOS LA VENTA
-    const dataPost = yield call(postAddVentaAsync, venta);
-    // TENEMOS LA REFERENCIA DE LA VENTA
-    const refVenta = dataPost.data.id;
-    // TENEMOS EL ARRAY DE PRODUCTOS DE LA VENTA
-    const pvArray = productosVenta.map((productoVenta) => {
-      const pvSend = {
-        cantidad: productoVenta.cantidad,
-        descripcionProducto: productoVenta.descripcionProducto,
-        nombreProducto: productoVenta.nombreProducto,
-        precioUnitario: productoVenta.precioUnitario,
-        total: productoVenta.total,
-        refVenta,
+    if (mercadoPago) {
+      // Bajamos los modals
+      modalFinalizarCompra(false);
+      modalCard(false);
+
+      // ENVIAMOS LA VENTA
+      const dataPost = yield call(postAddVentaAsync, venta);
+      // TENEMOS LA REFERENCIA DE LA VENTA
+      const refVenta = dataPost.data.id;
+
+      // CREAMOS LA PREFERENCIA DE MERCADOLIBRE
+      const items = [];
+      productosVenta.map((producto) => {
+        return items.push({
+          tittle: producto.nombreProducto,
+          quantity: producto.cantidad,
+          unit_price: producto.precioUnitario,
+        });
+      });
+
+      // eslint-disable-next-line camelcase
+      const back_urls = {
+        success: 'http://192.168.3.4:3000/mercadopago/success',
+        pending: 'http://192.168.3.4:3000/mercadopago/pending',
+        failure: 'http://192.168.3.4:3000/mercadopago/failure',
       };
-      return pvSend;
-    });
 
-    // ENVIAMOS LOS PRODUCTOS DE LA VENTA
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < pvArray.length; i++) {
-      yield call(postAddProductoVentaAsync, pvArray[i]);
-    }
+      // eslint-disable-next-line camelcase
+      const notification_url = 'https://eobcigwtc8r9uo9.m.pipedream.net';
+      // PREFERENCIA CREADA
+      const preference = {
+        external_reference: refVenta,
+        items,
+        back_urls,
+        notification_url,
+        auto_return: 'approved',
+      };
 
-    // HACEMOS LA ORDEN
-    const ordenSend = { ...orden, refVenta };
-    // ENVIAMOS LA ORDEN
-    console.log(ordenSend);
-    const dataPostOrden = yield call(postAddOrdenAsync, ordenSend);
-    // TENEMOS LA REFERENCIA DE LA ORDEN
-    const refOrden = dataPostOrden.data.id;
-    // TENEMOS EL ARRAY DE PRODUCTOS DE LA ORDEN CON NOTAS ESPECIALES
-    const poArray = productosOrden.map((productoOrden) => {
-      return { ...productoOrden, refOrden };
-    });
-    // ENVIAMOS LOS PRODUCTOS DE LA ORDEN
-    // eslint-disable-next-line no-plusplus
-    for (let i = 0; i < poArray.length; i++) {
-      yield call(postAddProductoOrdenAsync, poArray[i]);
+      // ENVIAMOS LA PREFERENCIA A NUESTRA API
+      const response = yield call(postCreatePreference, preference);
+
+      // Tenemos los datos de la preferencia
+      const dataPreference = response.data;
+
+      yield put({
+        type: CARRITO_RESPONSE_MERCADOPAGO,
+        payload: dataPreference,
+      });
+
+      // DEBEMOS MODIFICAR PARA ENVIAR LAS CREDENCIALES DE MERCADOPAGO
+      const ventaMercadoPago = {
+        ...venta,
+        pagadoViaMercadopago: true,
+        mercadopago_external_reference: refVenta,
+        mercadopago_preference_id: dataPreference.id,
+        mercadopago_status: '-',
+        mercadopago_payment_id: '-',
+        mercadopago_collection_id: '-',
+        mercadopago_collection_status: '-',
+        mercadopago_merchant_order_id: '-',
+      };
+
+      // DEBEMOS ENVIAR EL PUT DE LA VENTA
+      const responsePutVenta = yield call(
+        putVentaAsync,
+        refVenta,
+        ventaMercadoPago
+      );
+      // TENEMOS EL ARRAY DE PRODUCTOS DE LA VENTA
+      const pvArray = productosVenta.map((productoVenta) => {
+        const pvSend = {
+          cantidad: productoVenta.cantidad,
+          descripcionProducto: productoVenta.descripcionProducto,
+          nombreProducto: productoVenta.nombreProducto,
+          precioUnitario: productoVenta.precioUnitario,
+          total: productoVenta.total,
+          refVenta,
+        };
+        return pvSend;
+      });
+
+      // ENVIAMOS LOS PRODUCTOS DE LA VENTA
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < pvArray.length; i++) {
+        yield call(postAddProductoVentaAsync, pvArray[i]);
+      }
+
+      // HACEMOS LA ORDEN
+      const ordenSend = { ...orden, refVenta };
+      // ENVIAMOS LA ORDEN
+      console.log(ordenSend);
+      const dataPostOrden = yield call(postAddOrdenAsync, ordenSend);
+      // TENEMOS LA REFERENCIA DE LA ORDEN
+      const refOrden = dataPostOrden.data.id;
+      // TENEMOS EL ARRAY DE PRODUCTOS DE LA ORDEN CON NOTAS ESPECIALES
+      const poArray = productosOrden.map((productoOrden) => {
+        return { ...productoOrden, refOrden };
+      });
+      // ENVIAMOS LOS PRODUCTOS DE LA ORDEN
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < poArray.length; i++) {
+        yield call(postAddProductoOrdenAsync, poArray[i]);
+      }
+
+      // LIMPIAMOS EL ARRAY DEL LOCALSTORAGE
+      const nuevoArray = [];
+      // Le enviamos el nuevo carrito editado al local storage
+      localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
+      console.log('eliminado items del carrito');
+      // AHORA SE DEBE REDIRECCIONAR DESDE EL SDK DE MERCADOPAGO
+      // ABRIMOS EL MODAL DONDE SE HARA LA TRANSACCION DE MERCADOPAGO
+      modalMercadoPago(true);
+    } else {
+      // ENVIAMOS LA VENTA
+      const dataPost = yield call(postAddVentaAsync, venta);
+      // TENEMOS LA REFERENCIA DE LA VENTA
+      const refVenta = dataPost.data.id;
+      // TENEMOS EL ARRAY DE PRODUCTOS DE LA VENTA
+      const pvArray = productosVenta.map((productoVenta) => {
+        const pvSend = {
+          cantidad: productoVenta.cantidad,
+          descripcionProducto: productoVenta.descripcionProducto,
+          nombreProducto: productoVenta.nombreProducto,
+          precioUnitario: productoVenta.precioUnitario,
+          total: productoVenta.total,
+          refVenta,
+        };
+        return pvSend;
+      });
+
+      // ENVIAMOS LOS PRODUCTOS DE LA VENTA
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < pvArray.length; i++) {
+        yield call(postAddProductoVentaAsync, pvArray[i]);
+      }
+
+      // HACEMOS LA ORDEN
+      const ordenSend = { ...orden, refVenta };
+      // ENVIAMOS LA ORDEN
+      console.log(ordenSend);
+      const dataPostOrden = yield call(postAddOrdenAsync, ordenSend);
+      // TENEMOS LA REFERENCIA DE LA ORDEN
+      const refOrden = dataPostOrden.data.id;
+      // TENEMOS EL ARRAY DE PRODUCTOS DE LA ORDEN CON NOTAS ESPECIALES
+      const poArray = productosOrden.map((productoOrden) => {
+        return { ...productoOrden, refOrden };
+      });
+      // ENVIAMOS LOS PRODUCTOS DE LA ORDEN
+      // eslint-disable-next-line no-plusplus
+      for (let i = 0; i < poArray.length; i++) {
+        yield call(postAddProductoOrdenAsync, poArray[i]);
+      }
+
+      // LIMPIAMOS EL ARRAY DEL LOCALSTORAGE
+      const nuevoArray = [];
+      // Le enviamos el nuevo carrito editado al local storage
+      localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
+      console.log('eliminado items del carrito');
+
+      // AHORA DEBEMOS ENVIAR UN SUCESS DE LA COMPRA
+      // PROCESAMOS LA FECHA PARA SETEARLA EN EL REDUCER
+      const fechaSuccess = formatDateFecha(dataPostOrden.data.fecha);
+      const horaSuccess = formatDateHora(dataPostOrden.data.fecha);
+      yield put({
+        type: CARRITO_SUCCESS,
+        payload: {
+          ordenSuccess: dataPostOrden.data,
+          arrayOrdenSuccess: poArray,
+          localComercialData,
+          fechaSuccess,
+          horaSuccess,
+        },
+      });
+      ordenSuccess();
     }
-    // AHORA DEBEMOS ENVIAR UN SUCESS DE LA COMPRA
-    // LIMPIAMOS EL ARRAY DEL LOCALSTORAGE
-    const nuevoArray = [];
-    // Le enviamos el nuevo carrito editado al local storage
-    localStorage.setItem('carritoLocalStorage', JSON.stringify(nuevoArray));
-    // PROCESAMOS LA FECHA PARA SETEARLA EN EL REDUCER
-    const fechaSuccess = formatDateFecha(dataPostOrden.data.fecha);
-    const horaSuccess = formatDateHora(dataPostOrden.data.fecha);
-    yield put({
-      type: CARRITO_SUCCESS,
-      payload: {
-        ordenSuccess: dataPostOrden.data,
-        arrayOrdenSuccess: poArray,
-        localComercialData,
-        fechaSuccess,
-        horaSuccess,
-      },
-    });
-    ordenSuccess();
   } catch (error) {
     console.log(error);
     notificacionError('Error', 'Error al enviar la orden');
   }
 }
 
+// Funcion para procesar un pago en modo sandBox de mercadopago
+function* procesarMercadoPago({ payload }) {
+  const {
+    refVenta,
+    productosVenta,
+    modalCard,
+    modalMercadoPago,
+    modalFinalizarCompra,
+  } = payload;
+  modalFinalizarCompra(false);
+  modalCard(false);
+  const items = [];
+  productosVenta.map((producto) => {
+    return items.push({
+      tittle: producto.nombreProducto,
+      quantity: producto.cantidad,
+      unit_price: producto.precioUnitario,
+    });
+  });
+
+  // eslint-disable-next-line camelcase
+  const back_urls = {
+    success: 'http://192.168.3.4:3000/mercadopago/success',
+    pending: 'http://192.168.3.4:3000/mercadopago/pending',
+    failure: 'http://192.168.3.4:3000/mercadopago/failure',
+  };
+
+  // eslint-disable-next-line camelcase
+  const notification_url = 'https://eobcigwtc8r9uo9.m.pipedream.net';
+
+  const preference = {
+    external_reference: refVenta,
+    items,
+    back_urls,
+    notification_url,
+    auto_return: 'approved',
+  };
+  try {
+    const response = yield call(postCreatePreference, preference);
+
+    // Tenemos los datos de la preferencia
+    const dataPreference = response.data;
+    console.log(dataPreference);
+    yield put({ type: CARRITO_RESPONSE_MERCADOPAGO, payload: dataPreference });
+
+    // Debemos buscar la venta correspondiente
+    // Debemos modificar la venta (con las variables de mercadopago)
+    // Debemos hacer un put de la venta
+
+    // Debemos buscar la orden y especificar que no ha sido pagada
+    // Debemos hacer un put de la orden y poner como no pagada
+    modalMercadoPago(true);
+  } catch (error) {
+    console.log(error);
+    notificacionError('Error', 'Error con mercadopago');
+  }
+}
 export function* watchCarritoInit() {
   yield takeEvery(CARRITO_INIT, carritoInit);
 }
@@ -438,6 +614,9 @@ export function* watchCarritoEliminarProducto() {
 export function* watchCarritoProcesar() {
   yield takeEvery(CARRITO_PROCESAR, carritoProcesar);
 }
+export function* watchProcesarMercadoPago() {
+  yield takeEvery(CARRITO_PROCESAR_MERCADOPAGO, procesarMercadoPago);
+}
 
 export default function* rootSaga() {
   yield all([
@@ -446,5 +625,6 @@ export default function* rootSaga() {
     fork(watchCarritoResProducto),
     fork(watchCarritoEliminarProducto),
     fork(watchCarritoProcesar),
+    fork(watchProcesarMercadoPago),
   ]);
 }

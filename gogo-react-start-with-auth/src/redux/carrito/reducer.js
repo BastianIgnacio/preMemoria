@@ -6,6 +6,8 @@ import {
   CARRITO_SUCCESS,
   CARRITO_CARGAR_CARRITO_SUM_RES,
   CARRITO_PRODUCTO_ELIMINAR,
+  CARRITO_RESPONSE_MERCADOPAGO,
+  CARRITO_PROCESAR_MERCADOPAGO,
 } from '../actions';
 
 const INIT_STATE = {
@@ -59,6 +61,11 @@ const INIT_STATE = {
     { label: 'En 90 a 120 minutos', value: 3, key: 3 },
     { label: 'En 120 a 150 minutos', value: 4, key: 4 },
   ],
+
+  // Variables para mercadopago
+  mercadoPago: false,
+  responseMercadoPago: [],
+  preferenceId: null,
 };
 
 export default (state = INIT_STATE, action) => {
@@ -133,7 +140,17 @@ export default (state = INIT_STATE, action) => {
         ...state,
         productoParaEliminar: action.payload,
       };
-
+    case CARRITO_RESPONSE_MERCADOPAGO:
+      return {
+        ...state,
+        responseMercadoPago: action.payload,
+        preferenceId: action.payload.id,
+      };
+    case CARRITO_PROCESAR_MERCADOPAGO:
+      return {
+        ...state,
+        mercadoPago: true,
+      };
     default:
       return { ...state };
   }

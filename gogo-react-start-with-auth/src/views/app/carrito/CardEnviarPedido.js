@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import { useDispatch } from 'react-redux';
 import { Card, CardBody, Button } from 'reactstrap';
 import { CircularProgressbar } from 'react-circular-progressbar';
-import { useDispatch } from 'react-redux';
 import { CARRITO_PROCESAR } from '../../../redux/actions';
 
 const CardEnviarPedido = ({
   modal,
+  modalMercadoPago,
+  modalFinalizarCompra,
   venta,
   productosVenta,
   orden,
@@ -19,9 +21,7 @@ const CardEnviarPedido = ({
   const [percent, setPercent] = useState(0);
   const [progressText, setProgressText] = useState('0%');
   const [actualizando, setActualizando] = useState(true);
-
   const [mostrarCancelar, setMostrarCancelar] = useState(true);
-
   const [modalDetail, setModalDetail] = useState(
     'Tu pedido está por ser enviado'
   );
@@ -43,20 +43,43 @@ const CardEnviarPedido = ({
   };
 
   const enviar = () => {
-    dispatch({
-      type: CARRITO_PROCESAR,
-      payload: {
-        venta,
-        productosVenta,
-        orden,
-        productosOrden,
-        refLocalComercial,
-        localComercialData,
-        history,
-        link,
-        ordenSuccess,
-      },
-    });
+    if (venta.tipoPago === 'DEBITO_CREDITO_MERCADOPAGO') {
+      // Aca debemos despachar la action para mercadopago
+      dispatch({
+        type: CARRITO_PROCESAR,
+        payload: {
+          venta,
+          productosVenta,
+          orden,
+          productosOrden,
+          refLocalComercial,
+          localComercialData,
+          history,
+          link,
+          ordenSuccess,
+          mercadoPago: true,
+          modalCard: modal,
+          modalMercadoPago,
+          modalFinalizarCompra,
+        },
+      });
+    } else {
+      dispatch({
+        type: CARRITO_PROCESAR,
+        payload: {
+          venta,
+          productosVenta,
+          orden,
+          productosOrden,
+          refLocalComercial,
+          localComercialData,
+          history,
+          link,
+          ordenSuccess,
+          mercadoPago: false,
+        },
+      });
+    }
   };
 
   useEffect(() => {
